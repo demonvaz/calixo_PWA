@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 30, 41, 59;
+  --background-start-rgb: 245, 240, 232;
+  --background-end-rgb: 245, 240, 232;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 245, 240, 232;
+    --background-start-rgb: 15, 23, 42;
+    --background-end-rgb: 15, 23, 42;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer base {
+  * {
+    @apply border-neutral-gray/20;
+  }
+  body {
+    @apply font-sans antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold text-dark-navy;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-soft-blue text-white px-6 py-3 rounded-xl font-medium hover:bg-soft-blue-dark transition-colors focus:outline-none focus:ring-2 focus:ring-soft-blue focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-beige text-dark-navy px-6 py-3 rounded-xl font-medium hover:bg-beige-dark transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-gray focus:ring-offset-2;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl shadow-sm p-6 border border-neutral-gray/10;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Accessibility: Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
