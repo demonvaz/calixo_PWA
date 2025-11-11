@@ -1,245 +1,372 @@
-# 🌟 Calixo - PWA de Desconexión Digital
+# Calixo PWA - Digital Detox Gamification App 🌟
 
-Calixo es una Progressive Web App (PWA) social diseñada para fomentar la desconexión digital a través de retos gamificados. Los usuarios pueden aceptar desafíos diarios, personalizar su avatar CALI, y compartir su progreso en una comunidad que valora el bienestar digital.
+> Una aplicación progresiva que gamifica la desconexión digital para mejorar el bienestar mental
 
-## 📋 Descripción del Proyecto
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-green)](https://supabase.com/)
+[![Stripe](https://img.shields.io/badge/Stripe-Payments-purple)](https://stripe.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Calixo permite a los usuarios:
-- ✅ Completar retos diarios, de enfoque y sociales
-- 🎨 Personalizar un avatar amigable llamado CALI
-- 💰 Ganar monedas in-app para desbloquear cosméticos
-- 👥 Compartir progreso en un feed social
-- 🔔 Recibir notificaciones in-app y push
-- 💳 Suscribirse a planes premium con Stripe
-- 🛡️ Sistema de moderación y administración
+**Estado del Proyecto:** 🚀 En Desarrollo Activo - **9/13 Fases Completadas (69.2%)**
 
-## 🚀 Estado del Proyecto
+---
 
-**Fase Actual:** Fase 1 - Configuración Inicial ✅
+## 🎯 ¿Qué es Calixo?
 
-### Fases Completadas
-- [x] Fase 1: Configuración del proyecto y entorno
-  - [x] Inicialización de Next.js con TypeScript
-  - [x] Configuración de Tailwind CSS y shadcn/ui
-  - [x] Configuración de Drizzle ORM
-  - [x] Docker y docker-compose
-  - [x] Configuración PWA básica
+Calixo es una PWA (Progressive Web App) que ayuda a los usuarios a reducir su uso de pantallas mediante:
+- 🎮 **Gamificación**: Sistema de retos y recompensas
+- 🎨 **Avatar Virtual (CALI)**: Mascota que refleja tu energía mental
+- 🏪 **Tienda Virtual**: Personaliza tu avatar con monedas ganadas
+- 👥 **Social**: Compite y colabora con amigos
+- ⭐ **Premium**: Funcionalidades avanzadas con subscripción
 
-### Fases Pendientes
-- [ ] Fase 2: Autenticación con Supabase
-- [ ] Fase 3: Base de datos y migraciones
-- [ ] Fase 4: Sistema de retos
-- [ ] Fase 5: Avatar CALI
-- [ ] Fase 6: Moneda in-app y tienda
-- [ ] Fase 7: Feed social y perfiles
-- [ ] Fase 8: Suscripciones con Stripe
-- [ ] Fase 9: Notificaciones
-- [ ] Fase 10: Panel de administración
-- [ ] Fase 11: PWA completo
-- [ ] Fase 12: Accesibilidad e i18n
-- [ ] Fase 13: CI/CD y despliegue
+---
 
-## 🛠️ Stack Tecnológico
+## ✨ Funcionalidades Principales
 
-### Frontend
-- **Next.js 16**: Framework React con App Router
-- **React 19**: Librería de UI
-- **TypeScript**: Tipado estático
-- **Tailwind CSS**: Framework de utilidades CSS
-- **shadcn/ui**: Componentes accesibles
+### ✅ Implementado
+- 🔐 **Autenticación completa** con Supabase
+- 🎯 **3 tipos de retos**: Diarios, Enfoque, y Sociales
+- 🎨 **Editor de avatar** con 6 categorías de personalización
+- 🏪 **Tienda virtual** con +300 items únicos
+- 📱 **Feed social** con posts, likes y comentarios
+- 💳 **Subscripciones** con Stripe (mensual y anual)
+- 🔔 **Notificaciones** in-app con 6 tipos
+- 🪙 **Sistema de monedas** y recompensas
+- 📊 **Tracking de progreso** y rachas
 
-### Backend
-- **Supabase**: Auth, Database (PostgreSQL), Storage
-- **Drizzle ORM**: ORM tipado para PostgreSQL
-- **Stripe**: Procesamiento de pagos
-- **OpenAI**: Moderación de contenido (opcional)
+### 🚧 En Desarrollo
+- 👨‍💼 Panel de administración
+- 📱 PWA optimizada con offline mode
+- 📈 Analytics avanzados
+- 🧪 Testing automatizado
 
-### DevOps
-- **Docker**: Contenerización
-- **GitHub Actions**: CI/CD (próximamente)
-- **Vercel**: Hosting y deployment
+---
 
-## 📦 Instalación
+## 🚀 Quick Start
 
 ### Prerrequisitos
-- Node.js 20+ 
-- npm o pnpm
-- Docker y Docker Compose (opcional, para desarrollo local)
+```bash
+Node.js >= 18.0.0
+npm >= 9.0.0
+PostgreSQL (via Supabase)
+```
 
-### Configuración Local
+### Instalación
 
-1. **Clonar el repositorio**
+1. **Clona el repositorio**
 ```bash
 git clone https://github.com/tu-usuario/calixo.git
 cd calixo
 ```
 
-2. **Instalar dependencias**
+2. **Instala dependencias**
 ```bash
 npm install
 ```
 
-3. **Configurar variables de entorno**
-
-Crea un archivo `.env.local` basado en `env.example.txt`:
-
+3. **Configura variables de entorno**
 ```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/calixo_dev
-
-# Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_key
-STRIPE_SECRET_KEY=your_stripe_secret
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+cp .env.example .env.local
+# Edita .env.local con tus valores
 ```
 
-4. **Iniciar base de datos con Docker** (opcional)
-```bash
-docker-compose up postgres -d
-```
+📖 **Guía detallada:** [docs/setup/README_ENV.md](docs/setup/README_ENV.md)
 
-5. **Ejecutar migraciones** (cuando estén disponibles)
+4. **Ejecuta migraciones**
 ```bash
 npm run db:push
+npm run db:seed
 ```
 
-6. **Iniciar servidor de desarrollo**
+5. **Inicia el servidor**
 ```bash
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
-
-## 🏗️ Estructura del Proyecto
-
+6. **Abre en tu navegador**
 ```
-calixo/
-├── app/                    # App Router de Next.js
-│   ├── api/               # API routes
-│   ├── (auth)/            # Rutas de autenticación
-│   ├── (main)/            # Rutas principales
-│   ├── layout.tsx         # Layout raíz
-│   ├── page.tsx           # Página principal
-│   └── globals.css        # Estilos globales
-├── components/            # Componentes React
-│   ├── ui/               # Componentes de shadcn/ui
-│   ├── auth/             # Componentes de autenticación
-│   ├── challenges/       # Componentes de retos
-│   ├── avatar/           # Componentes del avatar
-│   └── layout/           # Componentes de layout
-├── db/                   # Base de datos
-│   ├── schema.ts         # Esquema de Drizzle
-│   └── index.ts          # Cliente de base de datos
-├── lib/                  # Utilidades y helpers
-│   ├── supabase.ts       # Cliente de Supabase
-│   └── utils.ts          # Funciones de utilidad
-├── types/                # Definiciones de tipos TypeScript
-│   └── index.ts          # Tipos principales
-├── public/               # Archivos estáticos
-│   ├── icons/           # Iconos PWA
-│   └── manifest.json    # Manifest PWA
-├── docs/                 # Documentación del proyecto
-├── drizzle/             # Migraciones de base de datos
-└── docker-compose.yml   # Configuración de Docker
+http://localhost:3000
 ```
-
-## 📜 Scripts Disponibles
-
-```bash
-# Desarrollo
-npm run dev              # Inicia servidor de desarrollo
-npm run build           # Construye para producción
-npm run start           # Inicia servidor de producción
-npm run lint            # Ejecuta linter
-npm run type-check      # Verifica tipos TypeScript
-
-# Base de datos (próximamente)
-npm run db:push         # Aplica cambios al esquema
-npm run db:studio       # Abre Drizzle Studio
-npm run db:generate     # Genera migraciones
-```
-
-## 🎨 Paleta de Colores
-
-- **Beige Background**: `#F5F0E8` - Color de fondo principal
-- **Soft Blue**: `#5A8DEE` - Color primario
-- **Neutral Gray**: `#6B7280` - Texto y bordes
-- **Accent Green**: `#22C55E` - Éxito
-- **Accent Red**: `#EF4444` - Error
-- **Dark Navy**: `#1E293B` - Encabezados
-
-## 🔐 Seguridad
-
-- Autenticación con Supabase Auth (JWT)
-- Row-Level Security (RLS) en PostgreSQL
-- Validación de entrada con Zod
-- URLs firmadas para imágenes
-- Verificación de webhooks de Stripe
-- HTTPS en producción
-- Content Security Policy (CSP)
-
-## ♿ Accesibilidad
-
-Calixo cumple con WCAG 2.1 AA:
-- Ratios de contraste ≥ 4.5:1
-- Navegación completa por teclado
-- Etiquetas ARIA apropiadas
-- Soporte para lectores de pantalla
-- Respeto a `prefers-reduced-motion`
-
-## 📱 PWA Features
-
-- ✅ Instalable en dispositivos móviles y desktop
-- ✅ Funcionamiento offline con Service Worker
-- ✅ Caché de assets estáticos
-- ✅ Notificaciones push web
-- ✅ Sincronización en background
-
-## 📄 Documentación
-
-La documentación completa del proyecto se encuentra en la carpeta `/docs`:
-
-- [Requisitos del Proyecto](./docs/project_requirements_document.md)
-- [Stack Tecnológico](./docs/tech_stack_document.md)
-- [Estructura del Backend](./docs/backend_structure_document.md)
-- [Guía del Frontend](./docs/frontend_guidelines_document.md)
-- [Plan de Implementación](./docs/security_guideline_document.md)
-- [Flujo de la Aplicación](./docs/app_flow_document.md)
-
-## 🤝 Contribución
-
-Este proyecto está en desarrollo activo. Para contribuir:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📝 Licencia
-
-Este proyecto está bajo la licencia ISC.
-
-## 👥 Equipo
-
-Desarrollado con ❤️ por el equipo de Calixo.
-
-## 🔗 Enlaces
-
-- [Documentación](./docs/)
-- [Issues](https://github.com/tu-usuario/calixo/issues)
-- [Supabase](https://supabase.com/)
-- [Next.js](https://nextjs.org/)
 
 ---
 
-**Nota**: Este proyecto está en desarrollo activo. Las características y la documentación pueden cambiar.
+## 📚 Documentación
 
+### 🔥 Inicio Rápido
+- **[Setup Guide](docs/setup/SETUP_SUMMARY.md)** - Instalación completa
+- **[Environment Variables](docs/setup/README_ENV.md)** - Configuración de entorno
+- **[PRE vs PRO Mode](docs/setup/ENVIRONMENT_MODES_GUIDE.md)** - Modos de desarrollo
+
+### 📖 Documentación Completa
+- **[Documentation Index](docs/INDEX.md)** - Índice completo de documentación
+- **[Project Status](docs/progress/PROJECT_STATUS.md)** - Estado actual del proyecto
+- **[Progress Report](docs/progress/PROGRESS_REPORT.md)** - Reporte de progreso
+
+### 🏗️ Arquitectura
+- **[Tech Stack](docs/tech_stack_document.md)** - Tecnologías utilizadas
+- **[Backend Structure](docs/backend_structure_document.md)** - Arquitectura del backend
+- **[Frontend Guidelines](docs/frontend_guidelines_document.md)** - Guías de frontend
+
+### 🔐 Seguridad
+- **[Security Guidelines](docs/security_guideline_document.md)** - Políticas de seguridad
+- **[Auth Implementation](docs/AUTH_IMPLEMENTATION.md)** - Sistema de autenticación
+
+---
+
+## 🛠️ Stack Tecnológico
+
+### Frontend
+- **Next.js 14** - Framework React con App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Utility-first CSS
+- **shadcn/ui** - Component library
+
+### Backend
+- **Next.js API Routes** - REST API
+- **Supabase** - Auth, Database (PostgreSQL), Storage
+- **Drizzle ORM** - Type-safe database queries
+- **Stripe** - Payment processing
+
+### DevOps
+- **Vercel** - Hosting y deployment
+- **GitHub Actions** - CI/CD (próximamente)
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+calixo/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # Main dashboard
+│   ├── challenges/        # Challenge pages
+│   ├── avatar/            # Avatar editor
+│   ├── store/             # Store & transactions
+│   ├── feed/              # Social feed
+│   └── ...
+├── components/            # React components
+│   ├── ui/               # Base UI components
+│   ├── avatar/           # Avatar-specific
+│   ├── challenges/       # Challenge-specific
+│   └── ...
+├── db/                   # Database
+│   ├── schema.ts         # Drizzle schema
+│   ├── rls-policies.sql  # Row Level Security
+│   └── seed.ts           # Database seeding
+├── docs/                 # Documentation
+│   ├── phases/          # Phase summaries
+│   ├── setup/           # Setup guides
+│   ├── progress/        # Progress reports
+│   └── ...
+├── lib/                 # Utilities
+│   ├── supabase/       # Supabase clients
+│   ├── stripe/         # Stripe config
+│   └── ...
+└── public/             # Static assets
+```
+
+---
+
+## 🎮 Características Detalladas
+
+### Sistema de Retos
+
+#### 📅 Retos Diarios
+- 3 retos gratuitos por día
+- Ilimitados con Premium
+- Categorías: Desayuno, ejercicio, lectura, etc.
+- Recompensas: 50-100 monedas
+
+#### 🎯 Modo Enfoque
+- Timer personalizable (15min - 2h)
+- Tracking con visibilitychange API
+- Sistema de "honor"
+- Recompensa por minuto
+
+#### 👥 Retos Sociales
+- Invita amigos
+- Desconexión grupal
+- Recompensas compartidas
+
+### Avatar CALI
+
+- **6 Categorías**: Color, Camiseta, Sombrero, Gafas, Fondo, Accesorios
+- **3 Niveles de Energía**: Alta (😊), Media (😐), Baja (😴)
+- **Personalización**: +300 items únicos
+- **Unlocking**: Items gratuitos y premium
+
+### Sistema de Monedas
+
+- Gana monedas completando retos
+- Compra items en la tienda
+- Historial de transacciones
+- Filtros y búsqueda avanzada
+
+### Feed Social
+
+- Comparte tus logros con foto y nota
+- Da likes y comenta
+- Sigue a otros usuarios
+- Feed personalizado (siguiendo) o global
+
+### Subscripciones Premium
+
+#### Plan Mensual: $4.99/mes
+- Retos diarios ilimitados
+- Items exclusivos
+- Estadísticas avanzadas
+- Sin anuncios (futuro)
+
+#### Plan Anual: $49.99/año
+- Todo lo del mensual
+- Ahorra 17%
+- 2 meses gratis
+
+---
+
+## 🔧 Development
+
+### Scripts Disponibles
+
+```bash
+# Desarrollo
+npm run dev              # Iniciar servidor de desarrollo
+npm run build           # Build de producción
+npm run start           # Servidor de producción
+
+# Base de datos
+npm run db:generate     # Generar migraciones
+npm run db:push         # Aplicar cambios al schema
+npm run db:studio       # Abrir Drizzle Studio
+npm run db:seed         # Seed inicial
+
+# Linting
+npm run lint            # Ejecutar ESLint
+npm run lint:fix        # Fix automático
+
+# Testing (próximamente)
+npm run test            # Ejecutar tests
+npm run test:watch      # Tests en modo watch
+```
+
+### Environment Modes
+
+#### PRE Mode (Development)
+```bash
+APP_ENV=PRE  # Pagos simulados, desarrollo rápido
+```
+
+#### PRO Mode (Production)
+```bash
+APP_ENV=PRO  # Stripe real, producción
+```
+
+📖 **Más info:** [Environment Modes Guide](docs/setup/ENVIRONMENT_MODES_GUIDE.md)
+
+---
+
+## 📊 Estadísticas del Proyecto
+
+```
+Fases Completadas:      9 / 13 (69.2%)
+Archivos Creados:       ~114 archivos
+Líneas de Código:       ~16,311 líneas
+Componentes React:      25 componentes
+API Endpoints:          27 endpoints
+Documentación:          18 documentos
+Tiempo de Desarrollo:   5 días
+```
+
+---
+
+## 🗺️ Roadmap
+
+### ✅ Fase 1-9 (Completado)
+- [x] Setup del proyecto
+- [x] Autenticación
+- [x] Base de datos
+- [x] Sistema de retos
+- [x] Avatar CALI
+- [x] Tienda y monedas
+- [x] Feed social
+- [x] Subscripciones
+- [x] Notificaciones
+
+### 🚧 Próximas Fases
+- [ ] **Fase 10:** Panel de Administración
+- [ ] **Fase 11:** PWA Avanzada (offline, installable)
+- [ ] **Fase 12:** Analytics y Métricas
+- [ ] **Fase 13:** Testing y Deploy
+
+---
+
+## 🤝 Contribución
+
+¡Las contribuciones son bienvenidas! Por favor:
+
+1. Fork el proyecto
+2. Crea una branch para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la branch (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+### Convenciones de Código
+
+- TypeScript estricto
+- ESLint + Prettier
+- Conventional Commits
+- Tests requeridos (próximamente)
+
+---
+
+## 📝 License
+
+Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
+
+---
+
+## 👥 Equipo
+
+- **Lead Developer** - [Tu Nombre](https://github.com/tu-usuario)
+- **Contributors** - Ver [CONTRIBUTORS.md](CONTRIBUTORS.md)
+
+---
+
+## 📧 Contacto
+
+- **Email:** soporte@calixo.app
+- **Website:** https://calixo.app (próximamente)
+- **GitHub:** https://github.com/tu-usuario/calixo
+
+---
+
+## 🙏 Agradecimientos
+
+- [Next.js](https://nextjs.org/) - Framework
+- [Supabase](https://supabase.com/) - Backend as a Service
+- [Stripe](https://stripe.com/) - Payment processing
+- [shadcn/ui](https://ui.shadcn.com/) - Component library
+- [Vercel](https://vercel.com/) - Hosting
+
+---
+
+## 📚 Recursos Adicionales
+
+- [Documentation Index](docs/INDEX.md) - Documentación completa
+- [Setup Guide](docs/setup/SETUP_SUMMARY.md) - Guía de instalación
+- [API Documentation](docs/backend_structure_document.md) - APIs disponibles
+- [Contributing Guidelines](CONTRIBUTING.md) - Guía de contribución
+
+---
+
+<div align="center">
+
+**Hecho con ❤️ para mejorar el bienestar digital**
+
+[Documentación](docs/INDEX.md) • [Reportar Bug](https://github.com/tu-usuario/calixo/issues) • [Solicitar Feature](https://github.com/tu-usuario/calixo/issues)
+
+</div>

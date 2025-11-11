@@ -64,9 +64,16 @@ export default function PricingPage() {
         throw new Error(data.error || 'Error al crear sesión de pago');
       }
 
-      const { sessionId } = await response.json();
+      const { sessionId, url, preMode } = await response.json();
 
-      // Redirect to Stripe Checkout
+      // Si estamos en PRE mode, redirigir directamente
+      if (preMode) {
+        console.log('🔧 PRE MODE: Redirigiendo a página de éxito');
+        window.location.href = url;
+        return;
+      }
+
+      // PRO mode: Redirect to Stripe Checkout
       const stripe = await getStripe();
       if (!stripe) {
         throw new Error('Error al cargar Stripe');
@@ -297,4 +304,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
 

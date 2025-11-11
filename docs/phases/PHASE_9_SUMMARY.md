@@ -479,3 +479,4 @@ El sistema de notificaciones está completamente funcional y mantiene a los usua
 
 **¡Los usuarios están siempre informados! 🔔✨**
 
+

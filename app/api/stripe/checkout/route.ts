@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 import { stripe } from '@/lib/stripe/server';
 import { db } from '@/db';
-import { profiles } from '@/db/schema';
+import { profiles, subscriptions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 /**
  * POST /api/stripe/checkout
  * Create a Stripe checkout session for subscription
+ * En PRE mode, activa premium directamente sin pasar por Stripe
  */
 export async function POST(request: NextRequest) {
   try {
@@ -53,6 +54,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ========================================
+    // PRE MODE: Activar premium directamente
+    // ========================================
+    const appEnv = process.env.APP_ENV || 'PRO';
+    
+    if (appEnv === 'PRE') {
+      console.log('🔧 PRE MODE: Activando premium sin Stripe');
+
+      // Activar premium en el perfil
+      await db
+        .update(profiles)
+        .set({ 
+          isPremium: true,
+          updatedAt: new Date(),
+        })
+        .where(eq(profiles.userId, user.id));
+
+      // Crear registro de subscripción simulada
+      const now = new Date();
+      const oneYearLater = new Date();
+      oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+      await db.insert(subscriptions).values({
+        userId: user.id,
+        stripeSubscriptionId: `pre_${user.id}_${Date.now()}`, // ID simulado
+        status: 'active',
+        plan: plan || 'premium',
+        currentPeriodStart: now,
+        currentPeriodEnd: oneYearLater,
+        cancelAtPeriodEnd: false,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      console.log('✅ PRE MODE: Premium activado para usuario', user.id);
+
+      // Retornar URL de éxito directamente
+      return NextResponse.json({
+        sessionId: 'pre_mode_session',
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/subscription/success?session_id=pre_mode`,
+        preMode: true,
+      });
+    }
+
+    // ========================================
+    // PRO MODE: Proceso normal con Stripe
+    // ========================================
+    console.log('💳 PRO MODE: Creando sesión de Stripe');
+
     // Get user email
     const email = user.email;
 
@@ -90,6 +140,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       sessionId: session.id,
       url: session.url,
+      preMode: false,
     });
   } catch (error) {
     console.error('Error creating checkout session:', error);
@@ -99,4 +150,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
