@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { signup, signInWithGoogle } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { AuthFormDivider } from './auth-form-divider';
 import { GoogleSignInButton } from './google-sign-in-button';
 
@@ -120,10 +121,9 @@ export function SignupForm({ onToggleForm }: SignupFormProps = {}) {
 
           {/* Password */}
           <div className="space-y-2">
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               required
               autoComplete="new-password"
               placeholder="Contraseña"
@@ -137,10 +137,9 @@ export function SignupForm({ onToggleForm }: SignupFormProps = {}) {
 
           {/* Confirm Password */}
           <div className="space-y-2">
-            <Input
+            <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
               required
               autoComplete="new-password"
               placeholder="Confirmar contraseña"
