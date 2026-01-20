@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { Spinner } from '@/components/ui/spinner';
 
 interface Comment {
   id: number;
@@ -144,8 +145,8 @@ export function FeedComments({ feedItemId, currentUserId, onCommentAdded }: Feed
       {showComments && (
         <div className="space-y-3 mt-2 max-h-96 overflow-y-auto">
           {loading ? (
-            <div className="text-center py-4 text-gray-500 text-sm">
-              Cargando comentarios...
+            <div className="text-center py-4">
+              <Spinner size="md" />
             </div>
           ) : comments.length === 0 ? (
             <div className="text-center py-4 text-gray-500 text-sm">

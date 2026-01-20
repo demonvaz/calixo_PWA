@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       let statusDate = uc.created_at;
       if (uc.status === 'completed' && uc.completed_at) {
         statusDate = uc.completed_at;
-      } else if (uc.status === 'failed' && uc.failed_at) {
+      } else if ((uc.status === 'failed' || uc.status === 'canceled') && uc.failed_at) {
         statusDate = uc.failed_at;
       } else if (uc.started_at) {
         statusDate = uc.started_at;

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AvatarPreview } from '@/components/avatar/avatar-preview';
 import { FeedPost } from '@/components/feed/feed-post';
 import { useToast } from '@/components/ui/toast';
+import { Spinner } from '@/components/ui/spinner';
 
 interface UserProfile {
   profile: {
@@ -79,10 +80,7 @@ export default function PublicProfilePage({ params }: { params: { userId: string
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">👤</div>
-          <p className="text-gray-600">Cargando perfil...</p>
-        </div>
+        <Spinner size="lg" />
       </div>
     );
   }

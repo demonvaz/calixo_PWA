@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 
 interface SubscriptionData {
   subscription: {
@@ -69,10 +70,7 @@ export default function SubscriptionPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⚙️</div>
-          <p className="text-gray-600">Cargando subscripción...</p>
-        </div>
+        <Spinner size="lg" />
       </div>
     );
   }

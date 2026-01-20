@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { NotificationItem } from '@/components/notifications/notification-item';
 import { useToast } from '@/components/ui/toast';
+import { Spinner } from '@/components/ui/spinner';
 
 interface Notification {
   id: number;
@@ -91,10 +92,7 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 pb-20 md:pb-0">
-        <div className="text-center">
-          <div className="text-3xl md:text-4xl mb-3 md:mb-4">🔔</div>
-          <p className="text-sm md:text-base text-gray-600">Cargando notificaciones...</p>
-        </div>
+        <Spinner size="lg" />
       </div>
     );
   }

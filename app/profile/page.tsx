@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 
 type Profile = {
   userId: string;
@@ -151,7 +152,7 @@ export default function ProfilePage() {
       return 'Completado el';
     } else if (challenge.status === 'failed' && challenge.failedAt) {
       return 'Fallido el';
-    } else if (challenge.status === 'canceled') {
+    } else if (challenge.status === 'canceled' && challenge.failedAt) {
       return 'Cancelado el';
     } else if (challenge.startedAt) {
       return 'Iniciado el';
@@ -161,13 +162,8 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-300 rounded w-1/3 mb-4"></div>
-            <div className="h-64 bg-gray-300 rounded"></div>
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="lg" />
       </div>
     );
   }

@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { FeedPost } from '@/components/feed/feed-post';
 import { useToast } from '@/components/ui/toast';
 import { createClient } from '@/lib/supabase/client';
+import { Spinner } from '@/components/ui/spinner';
 
 interface FeedPost {
   feedItem: {
@@ -143,10 +144,7 @@ export function FeedPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="text-4xl mb-4">📱</div>
-          <p className="text-gray-600">Cargando feed...</p>
-        </div>
+        <Spinner size="lg" />
       </div>
     );
   }

@@ -22,7 +22,7 @@ export interface Profile {
 
 // Challenge related types
 export type ChallengeType = 'daily' | 'focus' | 'social';
-export type ChallengeStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
+export type ChallengeStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'canceled';
 
 export interface Challenge {
   id: number;

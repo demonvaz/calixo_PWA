@@ -33,6 +33,12 @@ export function ChallengeTimer({
   const startTimeRef = useRef<string>(new Date().toISOString());
   const intervalRef = useRef<NodeJS.Timeout>();
   const wasHiddenRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  
+  // Keep callback ref updated
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const totalSeconds = durationMinutes * 60;
   const progress = Math.min((elapsedSeconds / totalSeconds) * 100, 100);
@@ -86,9 +92,8 @@ export function ChallengeTimer({
     }
   }, [getSessionData, onFail, isCompleted]);
 
-  // Timer effect - only runs when not paused and not completed
+  // Timer effect - simple and direct
   useEffect(() => {
-    // Don't start timer if paused or completed
     if (isPaused || isCompleted) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -97,14 +102,29 @@ export function ChallengeTimer({
       return;
     }
 
-    // Start the timer
     intervalRef.current = setInterval(() => {
       setElapsedSeconds((prev) => {
         const next = prev + 1;
         
-        // Check if challenge is complete
+        // When timer completes, defer the callback to avoid setState during render
         if (next >= totalSeconds) {
           setIsCompleted(true);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = undefined;
+          }
+          
+          // Use setTimeout to defer callback until after render
+          setTimeout(() => {
+            const sessionData: SessionData = {
+              durationSeconds: next,
+              interruptions,
+              startTime: startTimeRef.current,
+              endTime: new Date().toISOString(),
+            };
+            onCompleteRef.current(sessionData);
+          }, 0);
+          
           return next;
         }
         
@@ -112,43 +132,21 @@ export function ChallengeTimer({
       });
     }, 1000);
 
-    // Cleanup
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = undefined;
       }
     };
-  }, [isPaused, isCompleted, totalSeconds]);
+  }, [isPaused, isCompleted, totalSeconds, interruptions]);
 
-  // Visibility change listener effect
+  // Visibility change listener
   useEffect(() => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [handleVisibilityChange]);
-
-  // Handle completion when elapsedSeconds reaches totalSeconds
-  useEffect(() => {
-    if (elapsedSeconds >= totalSeconds && !isCompleted) {
-      setIsCompleted(true);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = undefined;
-      }
-      const sessionData: SessionData = {
-        durationSeconds: elapsedSeconds,
-        interruptions,
-        startTime: startTimeRef.current,
-        endTime: new Date().toISOString(),
-      };
-      // Use setTimeout to defer the callback to avoid setState during render
-      setTimeout(() => {
-        onComplete(sessionData);
-      }, 0);
-    }
-  }, [elapsedSeconds, totalSeconds, interruptions, isCompleted, onComplete]);
 
   const handleCancel = () => {
     if (intervalRef.current) {

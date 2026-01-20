@@ -72,8 +72,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // API routes - Network First (with cache fallback)
+  // API routes - Only cache GET requests, pass through POST/PUT/DELETE/etc
   if (url.pathname.startsWith('/api/')) {
+    // For non-GET requests (POST, PUT, DELETE, etc), bypass cache completely
+    if (request.method !== 'GET') {
+      event.respondWith(fetch(request));
+      return;
+    }
+    // For GET requests, use network first strategy
     event.respondWith(networkFirstStrategy(request));
     return;
   }
@@ -107,14 +113,23 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Network First Strategy - Try network, fallback to cache
+// Only works with GET requests (POST/PUT/DELETE should bypass this)
 async function networkFirstStrategy(request) {
+  // Safety check: only cache GET requests
+  if (request.method !== 'GET') {
+    return fetch(request);
+  }
+  
   try {
     const networkResponse = await fetch(request);
     
-    // Cache successful responses
-    if (networkResponse.ok) {
+    // Cache successful GET responses only
+    if (networkResponse.ok && request.method === 'GET') {
       const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+      // Only cache if the request is cacheable
+      if (request.method === 'GET') {
+        cache.put(request, networkResponse.clone());
+      }
     }
     
     return networkResponse;
@@ -136,7 +151,13 @@ async function networkFirstStrategy(request) {
 }
 
 // Cache First Strategy - Try cache first, fallback to network
+// Only works with GET requests
 async function cacheFirstStrategy(request) {
+  // Safety check: only cache GET requests
+  if (request.method !== 'GET') {
+    return fetch(request);
+  }
+  
   const cachedResponse = await caches.match(request);
   
   if (cachedResponse) {
@@ -146,7 +167,7 @@ async function cacheFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
     
-    if (networkResponse.ok) {
+    if (networkResponse.ok && request.method === 'GET') {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
     }
@@ -159,12 +180,18 @@ async function cacheFirstStrategy(request) {
 }
 
 // Navigation Strategy - Network first with offline fallback
+// Only works with GET requests (navigation is always GET)
 async function navigationStrategy(request) {
+  // Safety check: navigation requests should always be GET
+  if (request.method !== 'GET') {
+    return fetch(request);
+  }
+  
   try {
     // Try network first
     const networkResponse = await fetch(request);
     
-    if (networkResponse.ok) {
+    if (networkResponse.ok && request.method === 'GET') {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
     }

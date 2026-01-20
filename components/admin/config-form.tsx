@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ConfigValues {
   daily_free_challenges?: number;
@@ -74,7 +75,11 @@ export function ConfigForm() {
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-neutral">Cargando...</div>;
+    return (
+      <div className="text-center py-8">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
   return (

@@ -10,6 +10,7 @@ import { AvatarPreview } from '@/components/avatar/avatar-preview';
 import Link from 'next/link';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { getEnergyLevel } from '@/lib/avatar-energy';
+import { Spinner } from '@/components/ui/spinner';
 
 interface SearchResult {
   userId: string;
@@ -221,7 +222,7 @@ export default function SearchPage() {
             </svg>
             {loading && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <Spinner size="sm" />
               </div>
             )}
           </div>

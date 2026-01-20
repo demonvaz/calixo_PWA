@@ -8,6 +8,7 @@ import { StoreItemCard } from '@/components/store/store-item-card';
 import { StoreFilters } from '@/components/store/store-filters';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
+import { Spinner } from '@/components/ui/spinner';
 
 interface StoreItem {
   id: number;
@@ -101,10 +102,7 @@ export default function StorePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">🏪</div>
-          <p className="text-gray-600">Cargando tienda...</p>
-        </div>
+        <Spinner size="lg" />
       </div>
     );
   }

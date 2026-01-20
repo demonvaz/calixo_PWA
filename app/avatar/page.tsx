@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AvatarPreview } from '@/components/avatar/avatar-preview';
 import { CategorySelector } from '@/components/avatar/category-selector';
 import { useToast } from '@/components/ui/toast';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ProfileData {
   avatarEnergy: number;
@@ -182,10 +183,7 @@ export default function AvatarEditorPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">🎨</div>
-          <p className="text-gray-600">Cargando editor...</p>
-        </div>
+        <Spinner size="lg" />
       </div>
     );
   }

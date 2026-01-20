@@ -9,6 +9,7 @@ import { ChallengeCompletionForm } from '@/components/challenges/challenge-compl
 import { ChallengeSuccessModal } from '@/components/challenges/challenge-success-modal';
 import { useToast } from '@/components/ui/toast';
 import { useConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Spinner } from '@/components/ui/spinner';
 
 interface Challenge {
   id: number;
@@ -173,7 +174,10 @@ export default function FocusModePage() {
   };
 
   const handleSubmitCompletion = async (imageUrl: string, note: string) => {
-    if (!userChallengeId || !sessionData) return;
+    if (!userChallengeId || !sessionData) {
+      toast.error('Error: Datos del reto no encontrados');
+      return;
+    }
 
     try {
       const response = await fetch('/api/challenges/complete', {
@@ -188,7 +192,11 @@ export default function FocusModePage() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al completar el reto');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || 'Error al completar el reto';
+        console.error('Error completing challenge:', errorMessage);
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -203,12 +211,17 @@ export default function FocusModePage() {
       
       toast.success(`¡Reto completado! Ganaste ${data.coinsEarned} monedas`, 5000);
     } catch (err) {
+      console.error('Error in handleSubmitCompletion:', err);
+      // Re-throw to be handled by the form, but ensure error is logged
       throw err;
     }
   };
 
   const handleSkipCompletion = async () => {
-    if (!userChallengeId || !sessionData) return;
+    if (!userChallengeId || !sessionData) {
+      toast.error('Error: Datos del reto no encontrados');
+      return;
+    }
 
     try {
       const response = await fetch('/api/challenges/complete', {
@@ -221,7 +234,11 @@ export default function FocusModePage() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al completar el reto');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || 'Error al completar el reto';
+        console.error('Error completing challenge:', errorMessage);
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -236,8 +253,8 @@ export default function FocusModePage() {
       
       toast.success(`¡Reto completado! Ganaste ${data.coinsEarned} monedas`, 5000);
     } catch (err) {
-      console.error('Error:', err);
-      toast.error('Error al completar el reto');
+      console.error('Error in handleSkipCompletion:', err);
+      toast.error(err instanceof Error ? err.message : 'Error al completar el reto');
     }
   };
 
@@ -270,10 +287,7 @@ export default function FocusModePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⏳</div>
-          <p className="text-gray-600">Cargando modo enfoque...</p>
-        </div>
+        <Spinner size="lg" />
       </div>
     );
   }

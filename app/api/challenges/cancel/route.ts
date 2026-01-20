@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update user challenge to failed with cancellation reason
+    // Update user challenge to canceled with cancellation reason
     const updatedSessionData = {
       ...(userChallenge.session_data || {}),
       cancellationReason: 'Cancelado por el usuario',
@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
     const { error: updateError } = await supabase
       .from('user_challenges')
       .update({
-        status: 'failed',
-        failed_at: new Date().toISOString(),
+        status: 'canceled',
+        failed_at: new Date().toISOString(), // Using failed_at to track when it was canceled
         session_data: updatedSessionData,
       })
       .eq('id', userChallengeId);

@@ -9,6 +9,7 @@ import { ChallengeCompletionForm } from '@/components/challenges/challenge-compl
 import { ChallengeSuccessModal } from '@/components/challenges/challenge-success-modal';
 import { useToast } from '@/components/ui/toast';
 import { useConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Spinner } from '@/components/ui/spinner';
 
 interface Challenge {
   id: number;
@@ -43,7 +44,7 @@ export default function DailyChallengesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Challenge state
+  // Challenge state - simple and direct
   const [activeChallenge, setActiveChallenge] = useState<Challenge | null>(null);
   const [userChallengeId, setUserChallengeId] = useState<number | null>(null);
   const [showTimer, setShowTimer] = useState(false);
@@ -54,7 +55,7 @@ export default function DailyChallengesPage() {
     coinsEarned: number;
     feedItemId?: number;
   } | null>(null);
-
+  
   useEffect(() => {
     fetchChallenges();
   }, []);
@@ -110,13 +111,15 @@ export default function DailyChallengesPage() {
       setActiveChallenge(challenge);
       setUserChallengeId(data.userChallenge.id);
       setShowTimer(true);
+      setShowCompletion(false);
     } catch (err) {
       console.error('Error starting challenge:', err);
       setError(err instanceof Error ? err.message : 'Error al iniciar el reto');
     }
   };
 
-  const handleChallengeComplete = async (data: SessionData) => {
+  // Simple completion handler
+  const handleChallengeComplete = (data: SessionData) => {
     setSessionData(data);
     setShowTimer(false);
     setShowCompletion(true);
@@ -175,7 +178,10 @@ export default function DailyChallengesPage() {
   };
 
   const handleSubmitCompletion = async (imageUrl: string, note: string) => {
-    if (!userChallengeId || !sessionData) return;
+    if (!userChallengeId || !sessionData) {
+      toast.error('Error: Datos del reto no encontrados');
+      return;
+    }
 
     try {
       const response = await fetch('/api/challenges/complete', {
@@ -190,7 +196,11 @@ export default function DailyChallengesPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al completar el reto');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || 'Error al completar el reto';
+        console.error('Error completing challenge:', errorMessage);
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -205,12 +215,17 @@ export default function DailyChallengesPage() {
       
       toast.success(`¡Reto completado! Ganaste ${data.coinsEarned} monedas`, 5000);
     } catch (err) {
-      throw err; // Re-throw to be handled by the form
+      console.error('Error in handleSubmitCompletion:', err);
+      // Re-throw to be handled by the form, but ensure error is logged
+      throw err;
     }
   };
 
   const handleSkipCompletion = async () => {
-    if (!userChallengeId || !sessionData) return;
+    if (!userChallengeId || !sessionData) {
+      toast.error('Error: Datos del reto no encontrados');
+      return;
+    }
 
     try {
       const response = await fetch('/api/challenges/complete', {
@@ -223,7 +238,11 @@ export default function DailyChallengesPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al completar el reto');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || 'Error al completar el reto';
+        console.error('Error completing challenge:', errorMessage);
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -238,8 +257,8 @@ export default function DailyChallengesPage() {
       
       toast.success(`¡Reto completado! Ganaste ${data.coinsEarned} monedas`, 5000);
     } catch (err) {
-      console.error('Error:', err);
-      toast.error('Error al completar el reto');
+      console.error('Error in handleSkipCompletion:', err);
+      toast.error(err instanceof Error ? err.message : 'Error al completar el reto');
     }
   };
 
@@ -262,10 +281,7 @@ export default function DailyChallengesPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⏳</div>
-          <p className="text-gray-600">Cargando retos...</p>
-        </div>
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -284,7 +300,33 @@ export default function DailyChallengesPage() {
     );
   }
 
-  if (showCompletion && activeChallenge) {
+  if (showCompletion) {
+    // If activeChallenge is null, try to recover or show error
+    if (!activeChallenge) {
+      console.error('Error: showCompletion is true but activeChallenge is null');
+      return (
+        <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+          <Card className="max-w-md">
+            <CardContent className="py-12 text-center">
+              <div className="text-6xl mb-4">⚠️</div>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                Error al completar el reto
+              </h2>
+              <p className="text-gray-600 mb-4">
+                No se pudo cargar la información del reto completado.
+              </p>
+              <Button onClick={() => {
+                resetState();
+                fetchChallenges();
+              }}>
+                Volver a los retos
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+    
     return (
       <>
         {/* Success Modal - Show on top of completion form */}
