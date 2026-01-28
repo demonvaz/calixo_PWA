@@ -27,12 +27,9 @@ export function ChallengeTimer({
   onCancel,
 }: ChallengeTimerProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [interruptions, setInterruptions] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const startTimeRef = useRef<string>(new Date().toISOString());
   const intervalRef = useRef<NodeJS.Timeout>();
-  const wasHiddenRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   
   // Keep callback ref updated
@@ -58,43 +55,15 @@ export function ChallengeTimer({
   const getSessionData = useCallback((): SessionData => {
     return {
       durationSeconds: elapsedSeconds,
-      interruptions,
+      interruptions: 0, // Ya no rastreamos interrupciones en sistema de confianza
       startTime: startTimeRef.current,
       endTime: new Date().toISOString(),
     };
-  }, [elapsedSeconds, interruptions]);
+  }, [elapsedSeconds]);
 
-  const handleVisibilityChange = useCallback(() => {
-    if (document.hidden) {
-      // Tab became hidden
-      wasHiddenRef.current = true;
-      setIsPaused(true);
-      
-      // Increment interruptions
-      setInterruptions((prev) => prev + 1);
-      
-      // Show notification that challenge was interrupted
-      console.log('Challenge interrupted: tab hidden');
-    } else {
-      // Tab became visible again
-      if (wasHiddenRef.current && !isCompleted) {
-        // Challenge was interrupted, mark as failed
-        setIsCompleted(true);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-        // Use setTimeout to defer the callback to avoid setState during render
-        setTimeout(() => {
-          const sessionData = getSessionData();
-          onFail(sessionData, 'Tab fue ocultado o minimizado');
-        }, 0);
-      }
-    }
-  }, [getSessionData, onFail, isCompleted]);
-
-  // Timer effect - simple and direct
+  // Timer effect - Sistema de confianza: siempre cuenta, sin pausas
   useEffect(() => {
-    if (isPaused || isCompleted) {
+    if (isCompleted) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = undefined;
@@ -102,6 +71,7 @@ export function ChallengeTimer({
       return;
     }
 
+    // El timer siempre corre, independientemente de si la pestaña está visible o no
     intervalRef.current = setInterval(() => {
       setElapsedSeconds((prev) => {
         const next = prev + 1;
@@ -118,7 +88,7 @@ export function ChallengeTimer({
           setTimeout(() => {
             const sessionData: SessionData = {
               durationSeconds: next,
-              interruptions,
+              interruptions: 0,
               startTime: startTimeRef.current,
               endTime: new Date().toISOString(),
             };
@@ -138,15 +108,7 @@ export function ChallengeTimer({
         intervalRef.current = undefined;
       }
     };
-  }, [isPaused, isCompleted, totalSeconds, interruptions]);
-
-  // Visibility change listener
-  useEffect(() => {
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [handleVisibilityChange]);
+  }, [isCompleted, totalSeconds]);
 
   const handleCancel = () => {
     if (intervalRef.current) {
@@ -166,7 +128,7 @@ export function ChallengeTimer({
       <CardHeader>
         <CardTitle>{challengeTitle}</CardTitle>
         <CardDescription>
-          {isPaused ? '⚠️ Reto pausado - Tab oculto' : 'Mantén esta pestaña visible'}
+          Sistema de confianza activo - El tiempo sigue contando siempre
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -200,19 +162,12 @@ export function ChallengeTimer({
             <div className="text-2xl font-semibold">{Math.floor(progress)}%</div>
             <div className="text-xs text-gray-500">Progreso</div>
           </div>
-          <div>
-            <div className="text-2xl font-semibold text-red-500">{interruptions}</div>
-            <div className="text-xs text-gray-500">Interrupciones</div>
-          </div>
         </div>
 
-        {/* Warning */}
-        {interruptions > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
-            ⚠️ Has tenido {interruptions} interrupción{interruptions > 1 ? 'es' : ''}. 
-            Si ocultas la pestaña otra vez, el reto fallará automáticamente.
-          </div>
-        )}
+        {/* Info sobre sistema de confianza */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+          Sistema de confianza - El tiempo sigue contando aunque cambies de pantalla o uses otras apps
+        </div>
 
         {/* Cancel Button */}
         <Button
@@ -225,7 +180,7 @@ export function ChallengeTimer({
 
         {/* Info */}
         <p className="text-xs text-center text-gray-500">
-          💡 No minimices la ventana ni cambies de pestaña durante el reto
+          Confiamos en ti - El tiempo sigue contando siempre, incluso si usas otras apps
         </p>
       </CardContent>
     </Card>

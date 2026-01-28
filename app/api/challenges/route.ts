@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
     let userProfile = null;
     let maxDailyChallenges = 1;
     let todaysChallengesCount = 0;
+    let activeChallengeIds: number[] = [];
 
     try {
       const { data: userData } = await supabase
@@ -74,6 +75,17 @@ export async function GET(request: NextRequest) {
           .lt('created_at', tomorrow.toISOString());
 
         todaysChallengesCount = todaysChallenges?.length || 0;
+
+        // Get active challenge IDs to exclude from the list
+        const { data: activeChallenges } = await supabase
+          .from('user_challenges')
+          .select('challenge_id')
+          .eq('user_id', user.id)
+          .eq('status', 'in_progress');
+
+        if (activeChallenges && activeChallenges.length > 0) {
+          activeChallengeIds = activeChallenges.map(ac => ac.challenge_id);
+        }
       }
     } catch (profileError) {
       // Profile table might not exist yet, use defaults
@@ -81,7 +93,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Ensure we have an array
-    const challenges = Array.isArray(availableChallenges) ? availableChallenges : [];
+    let challenges = Array.isArray(availableChallenges) ? availableChallenges : [];
+    
+    // Filter out challenges that are currently active
+    if (activeChallengeIds.length > 0) {
+      challenges = challenges.filter(challenge => !activeChallengeIds.includes(challenge.id));
+      console.log(`Filtered out ${activeChallengeIds.length} active challenge(s) from list`);
+    }
     
     console.log('Processing challenges:', challenges.length);
 

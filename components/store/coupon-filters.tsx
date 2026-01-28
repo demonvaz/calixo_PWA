@@ -39,7 +39,7 @@ export function CouponFilters({
         {partners.length > 0 && (
           <div>
             <label className="block text-sm font-medium mb-2">
-              Socio
+              Empresa
             </label>
             <div className="flex flex-wrap gap-2">
               <Button

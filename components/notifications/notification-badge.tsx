@@ -17,7 +17,19 @@ export function NotificationBadge() {
       // Poll every 30 seconds
       const interval = setInterval(fetchUnseenCount, 30000);
       
-      return () => clearInterval(interval);
+      // Escuchar eventos de actualización de notificaciones
+      const handleNotificationUpdate = () => {
+        fetchUnseenCount();
+      };
+      
+      window.addEventListener('notification-updated', handleNotificationUpdate);
+      window.addEventListener('notifications-marked-read', handleNotificationUpdate);
+      
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('notification-updated', handleNotificationUpdate);
+        window.removeEventListener('notifications-marked-read', handleNotificationUpdate);
+      };
     }
   }, [pathname]);
 

@@ -3,10 +3,10 @@ import { createClient } from '@/lib/supabase/server';
 import { updateEnergyOnChallengeComplete } from '@/lib/avatar-energy';
 
 /**
- * POST /api/challenges/complete
- * Compartir un reto ya completado y obtener bonus de 2 monedas extra
- * El reto debe estar en status 'completed' (ya fue reclamado y completado)
- * Si se comparte (note o imageUrl), se otorgan 2 puntos extra además de las monedas base ya otorgadas
+ * POST /api/challenges/claim
+ * Reclama un reto finalizado y lo completa automáticamente otorgando las monedas base
+ * El reto se marca como 'completed' y se otorgan las monedas base inmediatamente
+ * Si el usuario comparte después, puede obtener 2 monedas extra mediante /api/challenges/complete
  */
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { userChallengeId, imageUrl, note, sessionData } = body;
+    const { userChallengeId } = body;
 
     if (!userChallengeId) {
       return NextResponse.json(
@@ -45,18 +45,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Solo aceptamos retos que ya están completados (reclamados)
-    if (userChallenge.status !== 'completed') {
+    if (userChallenge.status !== 'finished') {
       return NextResponse.json(
-        { error: 'Este reto no está completado. Debes reclamarlo primero.' },
-        { status: 400 }
-      );
-    }
-
-    // Verificar que el reto no haya sido compartido ya
-    if (userChallenge.shared) {
-      return NextResponse.json(
-        { error: 'Este reto ya fue compartido anteriormente' },
+        { error: 'Este reto no está finalizado. Solo puedes reclamar retos que hayan terminado.' },
         { status: 400 }
       );
     }
@@ -75,23 +66,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Determinar si se compartió (tiene note o imageUrl)
-    const shared = !!(note || imageUrl);
-    const shareBonus = shared ? 2 : 0; // 2 puntos extra por compartir
-
-    if (!shared) {
-      return NextResponse.json(
-        { error: 'Debes proporcionar una imagen o nota para compartir' },
-        { status: 400 }
-      );
-    }
-
-    // Update user challenge para marcar como compartido
+    // Completar el reto automáticamente y otorgar monedas base
+    const claimedAt = new Date().toISOString();
+    const completedAt = new Date().toISOString();
+    
+    // Update user challenge to completed (con recompensa base)
     const { error: updateChallengeError } = await supabase
       .from('user_challenges')
       .update({
-        shared: true,
-        session_data: sessionData || userChallenge.session_data,
+        status: 'completed',
+        claimed_at: claimedAt,
+        completed_at: completedAt,
+        shared: false, // Aún no se ha compartido
       })
       .eq('id', userChallengeId);
 
@@ -99,7 +85,7 @@ export async function POST(request: NextRequest) {
       throw updateChallengeError;
     }
 
-    // Get user
+    // Get user data
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('*')
@@ -113,13 +99,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Solo agregar el bonus de compartir (las monedas base ya fueron otorgadas al reclamar)
-    const newCoins = userData.coins + shareBonus;
+    // Update coins, streak, and avatar energy (solo recompensa base)
+    const baseReward = challenge.reward;
+    const newCoins = userData.coins + baseReward;
+    const newStreak = userData.streak + 1;
+    const newEnergy = updateEnergyOnChallengeComplete(
+      userData.avatar_energy,
+      challenge.type as 'daily' | 'focus' | 'social'
+    );
 
     const { error: updateUserError } = await supabase
       .from('users')
       .update({
         coins: newCoins,
+        streak: newStreak,
+        avatar_energy: newEnergy,
         updated_at: new Date().toISOString(),
       })
       .eq('id', user.id);
@@ -128,53 +122,24 @@ export async function POST(request: NextRequest) {
       throw updateUserError;
     }
 
-    // Crear transacción solo por el bonus de compartir
-    if (shareBonus > 0) {
-      await supabase.from('transactions').insert({
-        user_id: user.id,
-        amount: shareBonus,
-        type: 'earn',
-        description: `Bonus por compartir: ${challenge.title}`,
-        challenge_id: challenge.id,
-      });
-    }
+    // Create transaction record for base reward
+    await supabase.from('transactions').insert({
+      user_id: user.id,
+      amount: baseReward,
+      type: 'earn',
+      description: `Reto completado: ${challenge.title}`,
+      challenge_id: challenge.id,
+    });
 
     // Create focus session record if it's a focus challenge
-    if (challenge.type === 'focus' && sessionData) {
+    if (challenge.type === 'focus' && userChallenge.session_data) {
+      const sessionData = userChallenge.session_data;
       await supabase.from('focus_sessions').insert({
         user_challenge_id: userChallenge.id,
         duration_seconds: sessionData.durationSeconds || 0,
         interruptions: sessionData.interruptions || 0,
         completed_successfully: true,
       });
-    }
-
-    // Create feed item if se compartió (note o imageUrl)
-    let feedItem = null;
-    if (shared && (note || imageUrl)) {
-      const { data: newFeedItem, error: feedError } = await supabase
-        .from('feed_items')
-        .insert({
-          user_id: user.id,
-          user_challenge_id: userChallenge.id,
-          image_url: imageUrl || null,
-          note,
-        })
-        .select()
-        .single();
-
-      if (!feedError && newFeedItem) {
-        feedItem = {
-          id: newFeedItem.id,
-          userId: newFeedItem.user_id,
-          userChallengeId: newFeedItem.user_challenge_id,
-          imageUrl: newFeedItem.image_url,
-          note: newFeedItem.note,
-          likesCount: newFeedItem.likes_count,
-          commentsCount: newFeedItem.comments_count,
-          createdAt: newFeedItem.created_at,
-        };
-      }
     }
 
     return NextResponse.json({
@@ -185,9 +150,10 @@ export async function POST(request: NextRequest) {
         challengeId: userChallenge.challenge_id,
         status: 'completed',
         startedAt: userChallenge.started_at,
-        completedAt: new Date().toISOString(),
-        sessionData: sessionData || userChallenge.session_data,
-        createdAt: userChallenge.created_at,
+        finishedAt: userChallenge.finished_at,
+        claimedAt,
+        completedAt,
+        sessionData: userChallenge.session_data,
       },
       challenge: {
         id: challenge.id,
@@ -196,20 +162,19 @@ export async function POST(request: NextRequest) {
         description: challenge.description,
         reward: challenge.reward,
         durationMinutes: challenge.duration_minutes,
-        isActive: challenge.is_active,
-        createdAt: challenge.created_at,
       },
-      coinsEarned: shareBonus, // Solo el bonus de compartir
-      baseReward: challenge.reward, // Ya otorgado al reclamar
-      shareBonus: shareBonus,
-      shared: shared,
+      coinsEarned: baseReward,
+      baseReward: baseReward,
+      shareBonus: 0,
+      shared: false,
       newCoins,
-      feedItem,
+      newStreak,
+      newEnergy,
     });
   } catch (error) {
-    console.error('Error completing challenge:', error);
+    console.error('Error claiming challenge:', error);
     return NextResponse.json(
-      { error: 'Error al completar el reto' },
+      { error: 'Error al reclamar el reto' },
       { status: 500 }
     );
   }

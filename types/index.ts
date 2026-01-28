@@ -22,7 +22,7 @@ export interface Profile {
 
 // Challenge related types
 export type ChallengeType = 'daily' | 'focus' | 'social';
-export type ChallengeStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'canceled';
+export type ChallengeStatus = 'pending' | 'in_progress' | 'finished' | 'claimed' | 'completed' | 'failed' | 'canceled';
 
 export interface Challenge {
   id: number;
@@ -39,7 +39,10 @@ export interface UserChallenge {
   challengeId: number;
   status: ChallengeStatus;
   startedAt?: Date;
+  finishedAt?: Date;
+  claimedAt?: Date;
   completedAt?: Date;
+  shared?: boolean;
 }
 
 // Avatar related types

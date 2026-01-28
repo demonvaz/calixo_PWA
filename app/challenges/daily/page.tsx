@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChallengeTimer } from '@/components/challenges/challenge-timer';
-import { ChallengeCompletionForm } from '@/components/challenges/challenge-completion-form';
 import { ChallengeSuccessModal } from '@/components/challenges/challenge-success-modal';
+import { ActiveChallengeBanner } from '@/components/challenges/active-challenge-banner';
+import { StartChallengeModal } from '@/components/challenges/start-challenge-modal';
+import { ShareChallengeModal } from '@/components/challenges/share-challenge-modal';
 import { useToast } from '@/components/ui/toast';
 import { useConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Spinner } from '@/components/ui/spinner';
@@ -44,21 +45,50 @@ export default function DailyChallengesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Challenge state - simple and direct
-  const [activeChallenge, setActiveChallenge] = useState<Challenge | null>(null);
-  const [userChallengeId, setUserChallengeId] = useState<number | null>(null);
-  const [showTimer, setShowTimer] = useState(false);
-  const [showCompletion, setShowCompletion] = useState(false);
+  // Challenge state
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [showStartModal, setShowStartModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [completionData, setCompletionData] = useState<{
     coinsEarned: number;
     feedItemId?: number;
   } | null>(null);
+  const [activeChallengeBanner, setActiveChallengeBanner] = useState<{
+    id: number;
+    challengeId: number;
+    challengeTitle: string;
+    challengeType: string;
+    status: 'in_progress' | 'finished';
+    startedAt: string;
+    finishedAt?: string;
+    durationMinutes: number;
+    reward: number;
+  } | null>(null);
+  
+  // Estado para el formulario de compartir después de reclamar
+  const [showShareFormAfterClaim, setShowShareFormAfterClaim] = useState(false);
+  const [shareChallengeDataAfterClaim, setShareChallengeDataAfterClaim] = useState<{
+    userChallengeId: number;
+    challengeTitle: string;
+    reward: number;
+  } | null>(null);
   
   useEffect(() => {
     fetchChallenges();
+    fetchActiveChallenge();
   }, []);
+
+  const fetchActiveChallenge = async () => {
+    try {
+      const response = await fetch('/api/challenges/active');
+      if (response.ok) {
+        const data = await response.json();
+        setActiveChallengeBanner(data.activeChallenge);
+      }
+    } catch (err) {
+      console.error('Error fetching active challenge:', err);
+    }
+  };
 
   const fetchChallenges = async () => {
     try {
@@ -87,207 +117,173 @@ export default function DailyChallengesPage() {
     }
   };
 
-  const handleStartChallenge = async (challenge: Challenge) => {
+  const handleStartChallengeClick = (challenge: Challenge) => {
     if (!challenge || !challenge.id) {
       setError('Error: Reto inválido');
       return;
     }
+    setSelectedChallenge(challenge);
+    setShowStartModal(true);
+  };
+
+  const handleStartChallenge = async (customDuration?: number) => {
+    if (!selectedChallenge) return;
 
     try {
-      console.log('Starting challenge:', challenge.id);
       const response = await fetch('/api/challenges/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId: challenge.id }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: 'Error desconocido' }));
-        console.error('Error response:', data);
-        throw new Error(data.error || `Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setActiveChallenge(challenge);
-      setUserChallengeId(data.userChallenge.id);
-      setShowTimer(true);
-      setShowCompletion(false);
-    } catch (err) {
-      console.error('Error starting challenge:', err);
-      setError(err instanceof Error ? err.message : 'Error al iniciar el reto');
-    }
-  };
-
-  // Simple completion handler
-  const handleChallengeComplete = (data: SessionData) => {
-    setSessionData(data);
-    setShowTimer(false);
-    setShowCompletion(true);
-  };
-
-  const handleChallengeFail = async (data: SessionData, reason: string) => {
-    if (!userChallengeId) return;
-
-    try {
-      await fetch('/api/challenges/fail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userChallengeId,
-          reason,
-          sessionData: data,
+        body: JSON.stringify({ 
+          challengeId: selectedChallenge.id,
+          customDuration,
         }),
       });
 
-      toast.error(`Reto fallido: ${reason}`, 6000);
-      resetState();
-      fetchChallenges();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+      }
+
+      // Actualizar el banner y refrescar la lista
+      await fetchActiveChallenge();
+      await fetchChallenges();
+      
+      toast.success('Reto iniciado. El tiempo está corriendo.');
     } catch (err) {
-      console.error('Error al marcar reto como fallido:', err);
+      console.error('Error starting challenge:', err);
+      toast.error(err instanceof Error ? err.message : 'Error al iniciar el reto');
+      throw err; // Re-throw para que el modal maneje el error
     }
   };
 
-  const handleChallengeCancel = () => {
-    confirmDialog.confirm({
-      title: 'Cancelar reto',
-      message: '¿Estás seguro de que quieres cancelar este reto?',
-      confirmText: 'Sí, cancelar',
-      cancelText: 'No, continuar',
-      confirmVariant: 'destructive',
-      onConfirm: async () => {
-        if (!userChallengeId) {
-          resetState();
-          return;
-        }
-
-        try {
-          const response = await fetch('/api/challenges/cancel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userChallengeId }),
-          });
-
-          const responseData = await response.json().catch(() => ({}));
-
-          if (!response.ok) {
-            console.error('Cancel error response:', responseData);
-            const errorMessage = responseData.details 
-              ? `${responseData.error}: ${responseData.details}`
-              : responseData.error || 'Error al cancelar el reto';
-            throw new Error(errorMessage);
-          }
-
-          console.log('Challenge canceled successfully:', responseData);
-          toast.info('Reto cancelado');
-        } catch (err) {
-          console.error('Error al cancelar el reto:', err);
-          toast.error(err instanceof Error ? err.message : 'Error al cancelar el reto');
-        } finally {
-          resetState();
-        }
-      },
-    });
-  };
-
-  const handleSubmitCompletion = async (imageUrl: string, note: string) => {
-    if (!userChallengeId || !sessionData) {
-      toast.error('Error: Datos del reto no encontrados');
-      return;
-    }
+  const handleSubmitShareAfterClaim = async (imageUrl: string, note: string) => {
+    if (!shareChallengeDataAfterClaim) return;
 
     try {
       const response = await fetch('/api/challenges/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userChallengeId,
+          userChallengeId: shareChallengeDataAfterClaim.userChallengeId,
           imageUrl,
           note,
-          sessionData,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || 'Error al completar el reto';
-        console.error('Error completing challenge:', errorMessage);
-        toast.error(errorMessage);
-        throw new Error(errorMessage);
+        throw new Error(errorData.error || 'Error al completar el reto');
       }
 
       const data = await response.json();
       
-      // Hide completion form and show success modal
-      setShowCompletion(false);
+      setShowShareFormAfterClaim(false);
       setCompletionData({
         coinsEarned: data.coinsEarned,
         feedItemId: data.feedItem?.id,
       });
       setShowSuccessModal(true);
       
-      toast.success(`¡Reto completado! Ganaste ${data.coinsEarned} monedas`, 5000);
+      const bonusText = data.shareBonus > 0 ? ` (+${data.shareBonus} por compartir)` : '';
+      toast.success(`¡Reto completado! Ganaste ${data.coinsEarned} monedas${bonusText}`, 5000);
+      
+      fetchChallenges();
+      fetchActiveChallenge();
     } catch (err) {
-      console.error('Error in handleSubmitCompletion:', err);
-      // Re-throw to be handled by the form, but ensure error is logged
+      console.error('Error submitting share:', err);
+      toast.error(err instanceof Error ? err.message : 'Error al compartir');
       throw err;
     }
   };
 
-  const handleSkipCompletion = async () => {
-    if (!userChallengeId || !sessionData) {
-      toast.error('Error: Datos del reto no encontrados');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/challenges/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userChallengeId,
-          sessionData,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || 'Error al completar el reto';
-        console.error('Error completing challenge:', errorMessage);
-        toast.error(errorMessage);
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      
-      // Hide completion form and show success modal
-      setShowCompletion(false);
-      setCompletionData({
-        coinsEarned: data.coinsEarned,
-        feedItemId: data.feedItem?.id,
-      });
-      setShowSuccessModal(true);
-      
-      toast.success(`¡Reto completado! Ganaste ${data.coinsEarned} monedas`, 5000);
-    } catch (err) {
-      console.error('Error in handleSkipCompletion:', err);
-      toast.error(err instanceof Error ? err.message : 'Error al completar el reto');
-    }
+  const handleSkipShareAfterClaim = async () => {
+    // El reto ya está completado al reclamarlo, solo cerramos el modal
+    // La notificación de recordatorio se crea en el modal
+    setShowShareFormAfterClaim(false);
+    setShareChallengeDataAfterClaim(null);
+    fetchChallenges();
+    fetchActiveChallenge();
   };
 
+
   const resetState = () => {
-    setActiveChallenge(null);
-    setUserChallengeId(null);
-    setShowTimer(false);
-    setShowCompletion(false);
     setShowSuccessModal(false);
-    setSessionData(null);
     setCompletionData(null);
+    setShowShareFormAfterClaim(false);
+    setShareChallengeDataAfterClaim(null);
+  };
+
+  const handleBannerCancel = () => {
+    fetchActiveChallenge();
+    fetchChallenges();
+  };
+
+  const handleBannerClaim = async () => {
+    if (!activeChallengeBanner) return;
+
+    try {
+      // Si el reto está en 'in_progress' pero el timer terminó, primero marcarlo como finished
+      if (activeChallengeBanner.status === 'in_progress') {
+        const finishResponse = await fetch('/api/challenges/finish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userChallengeId: activeChallengeBanner.id,
+            sessionData: {
+              durationSeconds: activeChallengeBanner.durationMinutes * 60,
+              interruptions: 0,
+              startTime: activeChallengeBanner.startedAt,
+              endTime: new Date().toISOString(),
+            }
+          }),
+        });
+
+        if (!finishResponse.ok) {
+          const errorData = await finishResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Error al finalizar el reto');
+        }
+      }
+
+      // Ahora reclamar el reto
+      const claimResponse = await fetch('/api/challenges/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userChallengeId: activeChallengeBanner.id }),
+      });
+
+      if (!claimResponse.ok) {
+        const errorData = await claimResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al reclamar el reto');
+      }
+
+      const claimData = await claimResponse.json();
+      
+      // Mostrar formulario de compartir directamente
+      setShareChallengeDataAfterClaim({
+        userChallengeId: activeChallengeBanner.id,
+        challengeTitle: activeChallengeBanner.challengeTitle,
+        reward: activeChallengeBanner.reward,
+      });
+      setShowShareFormAfterClaim(true);
+      setActiveChallengeBanner(null); // Ocultar banner
+      
+      // Mostrar mensaje de éxito con las monedas ganadas
+      toast.success(`¡Reto completado! Ganaste ${claimData.coinsEarned} monedas. Comparte para ganar 2 monedas extra.`, 5000);
+      
+      // Actualizar estado
+      fetchChallenges();
+      fetchActiveChallenge();
+    } catch (err) {
+      console.error('Error claiming challenge:', err);
+      toast.error(err instanceof Error ? err.message : 'Error al reclamar el reto');
+    }
   };
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
     resetState();
     fetchChallenges();
+    fetchActiveChallenge();
   };
 
   if (loading) {
@@ -298,78 +294,42 @@ export default function DailyChallengesPage() {
     );
   }
 
-  if (showTimer && activeChallenge) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
-        <ChallengeTimer
-          durationMinutes={activeChallenge.durationMinutes}
-          challengeTitle={activeChallenge.title}
-          onComplete={handleChallengeComplete}
-          onFail={handleChallengeFail}
-          onCancel={handleChallengeCancel}
-        />
-      </div>
-    );
-  }
-
-  if (showCompletion) {
-    // If activeChallenge is null, try to recover or show error
-    if (!activeChallenge) {
-      console.error('Error: showCompletion is true but activeChallenge is null');
-      return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
-          <Card className="max-w-md">
-            <CardContent className="py-12 text-center">
-              <div className="text-6xl mb-4">⚠️</div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                Error al completar el reto
-              </h2>
-              <p className="text-gray-600 mb-4">
-                No se pudo cargar la información del reto completado.
-              </p>
-              <Button onClick={() => {
-                resetState();
-                fetchChallenges();
-              }}>
-                Volver a los retos
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      );
-    }
-    
-    return (
-      <>
-        {/* Success Modal - Show on top of completion form */}
-        {showSuccessModal && completionData && (
-          <ChallengeSuccessModal
-            isOpen={showSuccessModal}
-            challengeTitle={activeChallenge.title}
-            coinsEarned={completionData.coinsEarned}
-            feedItemId={completionData.feedItemId}
-            onClose={handleCloseSuccessModal}
-          />
-        )}
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
-          <ChallengeCompletionForm
-            challengeTitle={activeChallenge.title}
-            coinsEarned={activeChallenge.reward}
-            onSubmit={handleSubmitCompletion}
-            onSkip={handleSkipCompletion}
-          />
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
+      {/* Modal para iniciar reto */}
+      {selectedChallenge && (
+        <StartChallengeModal
+          isOpen={showStartModal}
+          challenge={selectedChallenge}
+          onStart={handleStartChallenge}
+          onClose={() => {
+            setShowStartModal(false);
+            setSelectedChallenge(null);
+          }}
+        />
+      )}
+
+      {/* Modal de compartir después de reclamar */}
+      {shareChallengeDataAfterClaim && (
+        <ShareChallengeModal
+          isOpen={showShareFormAfterClaim}
+          challengeTitle={shareChallengeDataAfterClaim.challengeTitle}
+          coinsEarned={shareChallengeDataAfterClaim.reward}
+          userChallengeId={shareChallengeDataAfterClaim.userChallengeId}
+          onSubmit={handleSubmitShareAfterClaim}
+          onSkip={handleSkipShareAfterClaim}
+          onClose={() => {
+            setShowShareFormAfterClaim(false);
+            setShareChallengeDataAfterClaim(null);
+          }}
+        />
+      )}
+
       {/* Success Modal */}
-      {showSuccessModal && activeChallenge && completionData && (
+      {showSuccessModal && completionData && (
         <ChallengeSuccessModal
           isOpen={showSuccessModal}
-          challengeTitle={activeChallenge.title}
+          challengeTitle={shareChallengeDataAfterClaim?.challengeTitle || ''}
           coinsEarned={completionData.coinsEarned}
           feedItemId={completionData.feedItemId}
           onClose={handleCloseSuccessModal}
@@ -377,11 +337,20 @@ export default function DailyChallengesPage() {
       )}
 
       {/* Main Content */}
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
+        {/* Active Challenge Banner */}
+        {activeChallengeBanner && (
+          <ActiveChallengeBanner
+            challenge={activeChallengeBanner}
+            onCancel={handleBannerCancel}
+            onClaim={handleBannerClaim}
+          />
+        )}
+
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
             Retos Diarios
           </h1>
           <p className="text-gray-600">
@@ -404,11 +373,11 @@ export default function DailyChallengesPage() {
                 <CardTitle className="flex items-center justify-between">
                   <span className="line-clamp-2">{challenge.title}</span>
                   <span className="text-yellow-600 text-sm flex-shrink-0 ml-2">
-                    🪙 {challenge.reward}
+                    {challenge.reward} monedas
                   </span>
                 </CardTitle>
                 <CardDescription>
-                  ⏱️ {challenge.durationMinutes} minutos
+                  {challenge.durationMinutes} minutos
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-grow flex flex-col">
@@ -419,7 +388,7 @@ export default function DailyChallengesPage() {
               <CardFooter className="flex-shrink-0">
                 {challenge.canStart ? (
                   <Button
-                    onClick={() => handleStartChallenge(challenge)}
+                    onClick={() => handleStartChallengeClick(challenge)}
                     className="w-full"
                   >
                     Iniciar Reto
@@ -444,7 +413,6 @@ export default function DailyChallengesPage() {
 
         {challenges.length === 0 && !loading && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">😴</div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               No hay retos disponibles
             </h2>

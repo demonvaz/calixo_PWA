@@ -148,11 +148,11 @@ export default function FeedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
             Feed Social
           </h1>
 
@@ -190,7 +190,6 @@ export default function FeedPage() {
         {!feedData || feedData.feedItems.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <div className="text-6xl mb-4">📭</div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 {feedType === 'following' 
                   ? 'No hay posts de usuarios que sigues'
@@ -203,7 +202,7 @@ export default function FeedPage() {
               </p>
               <div className="flex gap-2 justify-center">
                 <Button onClick={() => router.push('/challenges/daily')}>
-                  🎯 Hacer Retos
+                  Hacer Retos
                 </Button>
                 {feedType === 'following' && (
                   <Button 

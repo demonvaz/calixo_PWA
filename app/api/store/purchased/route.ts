@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
           description: coupon.description,
           price: coupon.price,
           validUntil: coupon.valid_until,
+          brandImage: coupon.brand_image || null,
         } : null,
         transaction: transaction ? {
           id: transaction.id,

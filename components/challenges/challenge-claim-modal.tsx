@@ -1,27 +1,27 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 
-interface ChallengeSuccessModalProps {
+interface ChallengeClaimModalProps {
   isOpen: boolean;
   challengeTitle: string;
-  coinsEarned: number;
-  feedItemId?: number;
+  reward: number;
+  onClaim: () => Promise<void>;
   onClose: () => void;
 }
 
-export function ChallengeSuccessModal({
+export function ChallengeClaimModal({
   isOpen,
   challengeTitle,
-  coinsEarned,
-  feedItemId,
+  reward,
+  onClaim,
   onClose,
-}: ChallengeSuccessModalProps) {
+}: ChallengeClaimModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   // Handle ESC key
   useEffect(() => {
@@ -52,6 +52,15 @@ export function ChallengeSuccessModal({
     }
   };
 
+  const handleClaim = async () => {
+    setIsClaiming(true);
+    try {
+      await onClaim();
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -74,58 +83,43 @@ export function ChallengeSuccessModal({
       >
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-gray-900">
-            ¡Reto Completado!
+            ¡Reto Finalizado!
           </CardTitle>
           <CardDescription className="text-base mt-2">
             Has completado: {challengeTitle}
           </CardDescription>
           <div className="flex items-center justify-center gap-2 mt-4 text-yellow-600 font-semibold text-xl">
-            <span>+{coinsEarned} monedas ganadas</span>
+            <span>+{reward} monedas esperando</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {feedItemId ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <p className="text-green-800 font-semibold mb-2">
-                Publicación compartida en el Feed
-              </p>
-              <p className="text-sm text-green-700">
-                Tu logro ya está visible para todos tus seguidores
-              </p>
-            </div>
-          ) : (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-              <p className="text-blue-800 font-semibold mb-2">
-                ¡Sigue así!
-              </p>
-              <p className="text-sm text-blue-700">
-                Puedes compartir tus logros en el Feed cuando quieras
-              </p>
-            </div>
-          )}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+            <p className="text-blue-800 font-semibold mb-2">
+              Reclama tu recompensa
+            </p>
+            <p className="text-sm text-blue-700">
+              Después podrás compartir tu logro y ganar 2 monedas extra
+            </p>
+          </div>
 
           <div className="flex flex-col gap-3">
-            {feedItemId ? (
-              <Link href="/feed" className="w-full">
-                <Button className="w-full" variant="default">
-                  Ver en el Feed →
-                </Button>
-              </Link>
-            ) : (
-              <Link href="/feed" className="w-full">
-                <Button className="w-full" variant="default">
-                  Ver Feed
-                </Button>
-              </Link>
-            )}
+            <Button
+              onClick={handleClaim}
+              disabled={isClaiming}
+              className="w-full"
+              size="lg"
+            >
+              {isClaiming ? 'Reclamando...' : 'Reclamar Recompensa'}
+            </Button>
             
             <Button
               ref={closeButtonRef}
               variant="outline"
               onClick={onClose}
               className="w-full"
+              disabled={isClaiming}
             >
-              Continuar
+              Más tarde
             </Button>
           </div>
         </CardContent>

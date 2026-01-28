@@ -15,13 +15,13 @@ interface StoreFiltersProps {
 }
 
 const categories = [
-  { id: 'all', name: 'Todos', emoji: '🎁' },
-  { id: 'color', name: 'Colores', emoji: '🎨' },
-  { id: 'shirt', name: 'Camisetas', emoji: '👕' },
-  { id: 'hat', name: 'Sombreros', emoji: '🎩' },
-  { id: 'glasses', name: 'Gafas', emoji: '👓' },
-  { id: 'background', name: 'Fondos', emoji: '🖼️' },
-  { id: 'accessories', name: 'Accesorios', emoji: '✨' },
+  { id: 'all', name: 'Todos', emoji: '' },
+  { id: 'color', name: 'Colores', emoji: '' },
+  { id: 'shirt', name: 'Camisetas', emoji: '' },
+  { id: 'hat', name: 'Sombreros', emoji: '' },
+  { id: 'glasses', name: 'Gafas', emoji: '' },
+  { id: 'background', name: 'Fondos', emoji: '' },
+  { id: 'accessories', name: 'Accesorios', emoji: '' },
 ];
 
 export function StoreFilters({
@@ -62,7 +62,7 @@ export function StoreFilters({
                 size="sm"
                 onClick={() => onCategoryChange(cat.id === 'all' ? null : cat.id)}
               >
-                {cat.emoji} {cat.name}
+                {cat.name}
               </Button>
             ))}
           </div>
@@ -93,7 +93,7 @@ export function StoreFilters({
               size="sm"
               onClick={() => onPremiumChange('true')}
             >
-              ⭐ Premium
+              Premium
             </Button>
           </div>
         </div>

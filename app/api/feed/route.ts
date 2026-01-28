@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         });
       }
     } else {
-      // Global feed - all public posts
+      // Global feed - all public posts including own posts
       const { data: publicUsers, error: publicUsersError } = await supabase
         .from('users')
         .select('id')
@@ -59,8 +59,13 @@ export async function GET(request: NextRequest) {
         throw publicUsersError;
       }
 
-      // Exclude own posts from global feed
-      userIds = (publicUsers || []).map(u => u.id).filter(id => id !== user.id);
+      // Include all public users
+      userIds = (publicUsers || []).map(u => u.id);
+      
+      // Always include own user ID in global feed, even if profile is private
+      if (!userIds.includes(user.id)) {
+        userIds.push(user.id);
+      }
 
       if (userIds.length === 0) {
         return NextResponse.json({
@@ -72,11 +77,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Get feed items (using regular client for RLS on feed_items)
-    const { data: feedItems, error: feedError } = await supabase
+    let query = supabase
       .from('feed_items')
       .select('*')
-      .in('user_id', userIds)
-      .neq('user_id', user.id) // Explicitly exclude own posts
+      .in('user_id', userIds);
+    
+    // Only exclude own posts when viewing 'following' feed
+    if (type === 'following') {
+      query = query.neq('user_id', user.id);
+    }
+    
+    const { data: feedItems, error: feedError } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -126,7 +137,26 @@ export async function GET(request: NextRequest) {
       throw userChallengesResult.error;
     }
 
-    const usersMap = new Map((usersResult.data || []).map((u: any) => [u.id, u]));
+    // Process users and get profile photo URLs
+    const usersMap = new Map();
+    (usersResult.data || []).forEach((u: any) => {
+      let profilePhotoUrl = null;
+      
+      if (u.profile_photo_path) {
+        const pathParts = u.profile_photo_path.split('/');
+        if (pathParts.length > 1) {
+          const bucket = pathParts[0];
+          const filePath = pathParts.slice(1).join('/');
+          const { data: { publicUrl } } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(filePath);
+          profilePhotoUrl = publicUrl;
+        }
+      }
+      
+      usersMap.set(u.id, { ...u, profilePhotoUrl });
+    });
+    
     const userChallengesMap = new Map((userChallengesResult.data || []).map((uc: any) => [Number(uc.id), uc]));
 
     // Get unique challenge IDs from user_challenges
@@ -179,6 +209,7 @@ export async function GET(request: NextRequest) {
           streak: user.streak,
           createdAt: user.created_at,
           updatedAt: user.updated_at,
+          profilePhotoUrl: user.profilePhotoUrl || null,
         } : null,
         userChallenge: userChallenge ? {
           id: userChallenge.id,

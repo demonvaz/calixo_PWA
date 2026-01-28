@@ -80,13 +80,7 @@ export function getEnergyColor(energyLevel: EnergyLevel): string {
  * Get emoji for energy level
  */
 export function getEnergyEmoji(energyLevel: EnergyLevel): string {
-  const emojis = {
-    alta: '😊',
-    media: '😐',
-    baja: '😴',
-  };
-  
-  return emojis[energyLevel];
+  return '';
 }
 
 /**

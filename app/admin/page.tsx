@@ -40,25 +40,25 @@ export default async function AdminDashboard() {
     {
       title: 'Retos Totales',
       value: totalChallenges[0]?.count || 0,
-      icon: '🎯',
+      icon: '',
       color: 'text-primary',
     },
     {
       title: 'Usuarios Totales',
       value: totalUsers[0]?.count || 0,
-      icon: '👥',
+      icon: '',
       color: 'text-complementary-emerald',
     },
     {
       title: 'Posts en Feed',
       value: totalFeedPosts[0]?.count || 0,
-      icon: '📱',
+      icon: '',
       color: 'text-accent-red',
     },
     {
       title: 'Reportes Pendientes',
       value: pendingReports[0]?.count || 0,
-      icon: '🛡️',
+      icon: '',
       color: 'text-orange-500',
     },
     {
@@ -111,7 +111,6 @@ export default async function AdminDashboard() {
                 href="/admin/challenges"
                 className="p-4 border border-neutral/20 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors"
               >
-                <div className="text-2xl mb-2">🎯</div>
                 <div className="font-medium text-text-dark font-serif">Crear Reto</div>
                 <div className="text-sm text-neutral">Añadir nuevo reto al catálogo</div>
               </a>
@@ -129,7 +128,6 @@ export default async function AdminDashboard() {
             href="/admin/moderation"
             className="p-4 border border-neutral/20 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors"
           >
-            <div className="text-2xl mb-2">🛡️</div>
             <div className="font-medium text-text-dark font-serif">Revisar Reportes</div>
             <div className="text-sm text-neutral">
               {pendingReports[0]?.count || 0} pendientes
@@ -139,7 +137,6 @@ export default async function AdminDashboard() {
             href="/admin/users"
             className="p-4 border border-neutral/20 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors"
           >
-            <div className="text-2xl mb-2">👥</div>
             <div className="font-medium text-text-dark font-serif">Gestionar Usuarios</div>
             <div className="text-sm text-neutral">Ver y administrar usuarios</div>
           </a>

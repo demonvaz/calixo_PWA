@@ -55,19 +55,19 @@ export default async function AdminAnalyticsPage() {
           <div>
             <div className="text-sm text-neutral-gray mb-1">Monedas Ganadas</div>
             <div className="text-3xl font-bold text-accent-green">
-              {analytics.coins?.earned?.toLocaleString() || 0} 🪙
+              {analytics.coins?.earned?.toLocaleString() || 0} monedas
             </div>
           </div>
           <div>
             <div className="text-sm text-neutral-gray mb-1">Monedas Gastadas</div>
             <div className="text-3xl font-bold text-accent-red">
-              {analytics.coins?.spent?.toLocaleString() || 0} 🪙
+              {analytics.coins?.spent?.toLocaleString() || 0} monedas
             </div>
           </div>
           <div>
             <div className="text-sm text-neutral-gray mb-1">Neto</div>
             <div className="text-3xl font-bold text-dark-navy">
-              {analytics.coins?.net?.toLocaleString() || 0} 🪙
+              {analytics.coins?.net?.toLocaleString() || 0} monedas
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default async function AdminAnalyticsPage() {
                 <span className="font-medium text-dark-navy">
                   #{index + 1} Post ID: {post.id}
                 </span>
-                <span className="text-accent-green">{post.likesCount} ❤️</span>
+                <span className="text-accent-green">{post.likesCount} likes</span>
               </div>
             ))}
           </div>

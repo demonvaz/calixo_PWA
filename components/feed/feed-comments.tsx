@@ -156,7 +156,6 @@ export function FeedComments({ feedItemId, currentUserId, onCommentAdded }: Feed
             comments.map((comment) => (
               <div key={comment.id} className="flex gap-2">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm flex-shrink-0">
-                  {comment.userId === currentUserId ? '😊' : '👤'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="bg-gray-50 rounded-2xl px-3 py-2">

@@ -239,7 +239,6 @@ export default function SearchPage() {
             {results.length === 0 && !loading ? (
               <Card>
                 <CardContent className="py-8 md:py-12 px-4 md:px-6 text-center">
-                  <div className="text-4xl md:text-6xl mb-4">🔍</div>
                   <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
                     No se encontraron resultados
                   </h2>
@@ -275,8 +274,8 @@ export default function SearchPage() {
                           </h3>
                         </Link>
                         <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-1 text-xs md:text-sm text-gray-600">
-                          <span>🔥 {user.streak} racha</span>
-                          <span>👥 {followersCounts[user.userId] !== undefined ? followersCounts[user.userId] : user.followersCount} seguidores</span>
+                          <span>{user.streak} racha</span>
+                          <span>{followersCounts[user.userId] !== undefined ? followersCounts[user.userId] : user.followersCount} seguidores</span>
                           {user.isPrivate && (
                             <span className="text-gray-400">🔒 Privado</span>
                           )}
@@ -319,7 +318,6 @@ export default function SearchPage() {
         {debouncedQuery.length < 2 && (
           <Card>
             <CardContent className="py-8 md:py-12 px-4 md:px-6 text-center">
-              <div className="text-4xl md:text-6xl mb-4">👥</div>
               <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
                 Busca personas
               </h2>

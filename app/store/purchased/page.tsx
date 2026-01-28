@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface PurchasedCoupon {
   purchase: {
@@ -20,6 +21,7 @@ interface PurchasedCoupon {
     description: string | null;
     price: number;
     validUntil: string;
+    brandImage: string | null;
   } | null;
   transaction: {
     id: number;
@@ -39,11 +41,13 @@ export default function PurchasedCouponsPage() {
   const [data, setData] = useState<PurchasedData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchPurchasedCoupons();
-  }, [selectedPartner]);
+  }, []);
 
   const fetchPurchasedCoupons = async () => {
     try {
@@ -68,13 +72,29 @@ export default function PurchasedCouponsPage() {
     });
   };
 
-  const filteredItems = selectedPartner
-    ? data?.items.filter(item => item.coupon?.partnerName === selectedPartner) || []
-    : data?.items || [];
+  // Filtrar por búsqueda
+  const filteredItems = data?.items.filter(item => {
+    if (!item.coupon) return false;
+    if (!searchQuery) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      item.coupon.partnerName?.toLowerCase().includes(query) ||
+      item.coupon.code?.toLowerCase().includes(query) ||
+      item.coupon.description?.toLowerCase().includes(query)
+    );
+  }) || [];
 
-  const partners = Array.from(
-    new Set(data?.items.map(item => item.coupon?.partnerName).filter(Boolean)) || []
-  ) as string[];
+  // Paginación
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+  // Resetear página cuando cambia la búsqueda
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   if (loading) {
     return (
@@ -88,7 +108,6 @@ export default function PurchasedCouponsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">❌</div>
           <p className="text-red-600">{error || 'Error al cargar datos'}</p>
         </div>
       </div>
@@ -96,16 +115,21 @@ export default function PurchasedCouponsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-white py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-4xl font-bold text-gray-900">
-              Mi Colección
-            </h1>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div>
+              <h1 className="text-2xl md:text-4xl font-bold text-text-dark mb-2">
+                Mi Colección
+              </h1>
+              <p className="text-neutral text-sm">
+                Tus cupones comprados y disponibles
+              </p>
+            </div>
             <Link href="/store">
-              <Button variant="outline">
+              <Button variant="outline" className="border-primary text-primary hover:bg-primary/5">
                 Ir a Tienda
               </Button>
             </Link>
@@ -114,96 +138,57 @@ export default function PurchasedCouponsPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+          <div className="mb-6 bg-accent-red/10 border border-accent-red/30 rounded-xl p-4 text-accent-red-dark">
             {error}
           </div>
         )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl">{data.total}</CardTitle>
-              <CardDescription>Cupones Comprados</CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl text-blue-600">
-                {partners.length}
-              </CardTitle>
-              <CardDescription>Socios Diferentes</CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl text-green-600">
-                {data.items.filter(item => {
-                  if (!item.coupon) return false;
-                  const validUntil = new Date(item.coupon.validUntil);
-                  return validUntil > new Date();
-                }).length}
-              </CardTitle>
-              <CardDescription>Válidos Actualmente</CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {/* Partner Filters */}
-        {partners.length > 0 && (
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={selectedPartner === null ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedPartner(null)}
-                >
-                  Todos ({data.total})
-                </Button>
-                {partners.map((partner) => {
-                  const count = data.items.filter(item => item.coupon?.partnerName === partner).length;
-                  return (
-                    <Button
-                      key={partner}
-                      variant={selectedPartner === partner ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedPartner(partner)}
-                    >
-                      {partner} ({count})
-                    </Button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Search Bar */}
+        <Card className="mb-6 border-neutral/10">
+          <CardContent className="pt-6">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por empresa, código o descripción..."
+              className="w-full px-4 py-3 border border-neutral/20 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors text-text"
+            />
+            {searchQuery && (
+              <p className="text-sm text-neutral mt-2">
+                {filteredItems.length} resultado{filteredItems.length !== 1 ? 's' : ''} encontrado{filteredItems.length !== 1 ? 's' : ''}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Purchased Coupons Grid */}
-        {filteredItems.length === 0 ? (
-          <Card>
+        {paginatedItems.length === 0 ? (
+          <Card className="border-neutral/10">
             <CardContent className="py-12 text-center">
-              <div className="text-6xl mb-4">📦</div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                {selectedPartner ? 'No hay cupones de este socio' : 'No has comprado ningún cupón'}
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-4xl">📦</span>
+              </div>
+              <h2 className="text-2xl font-semibold text-text-dark mb-2">
+                {searchQuery ? 'No se encontraron resultados' : 'No has comprado ningún cupón'}
               </h2>
-              <p className="text-gray-600 mb-4">
-                {selectedPartner 
-                  ? 'Intenta seleccionar otro socio o compra más cupones'
+              <p className="text-neutral mb-6">
+                {searchQuery 
+                  ? 'Intenta buscar con otros términos'
                   : 'Visita la tienda para comenzar a comprar cupones de descuento'}
               </p>
-              <Link href="/store">
-                <Button>
-                  Ir a Tienda
-                </Button>
-              </Link>
+              {!searchQuery && (
+                <Link href="/store">
+                  <Button className="bg-primary hover:bg-primary-dark">
+                    Ir a Tienda
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredItems.map(({ purchase, coupon, transaction }) => {
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+              {paginatedItems.map(({ purchase, coupon, transaction }) => {
               if (!coupon) return null;
               
               const isValid = new Date(coupon.validUntil) > new Date();
@@ -212,31 +197,43 @@ export default function PurchasedCouponsPage() {
                 <Card
                   key={purchase.id}
                   className={`
-                    relative transition-all hover:shadow-lg
-                    ${!isValid ? 'opacity-60 border-gray-300' : 'border-blue-200'}
+                    relative transition-all hover:shadow-lg border-neutral/10
+                    ${!isValid ? 'opacity-60 border-neutral/20' : 'border-neutral/20'}
                   `}
                 >
                   {/* Expired badge */}
                   {!isValid && (
-                    <div className="absolute top-2 right-2 bg-gray-600 text-white text-xs px-2 py-1 rounded-full">
-                      ⏰ Expirado
+                    <div className="absolute top-2 right-2 bg-neutral text-white text-xs px-2 py-1 rounded-full z-10 font-medium">
+                      Expirado
                     </div>
                   )}
 
                   {/* Discount badge */}
-                  <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-bold">
+                  <div className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-bold z-10 shadow-sm">
                     -{coupon.discountPercent}%
                   </div>
 
                   <CardHeader>
-                    <div className="text-center mb-2">
-                      <div className="text-5xl mb-2">🎟️</div>
-                    </div>
-                    <CardTitle className="text-center text-lg">
+                    {/* Imagen de la marca */}
+                    {coupon.brandImage && (
+                      <div className="flex justify-center mb-3">
+                        <div className="relative w-24 h-24 rounded-xl overflow-hidden">
+                          <Image
+                            src={coupon.brandImage}
+                            alt={coupon.partnerName}
+                            fill
+                            className="object-cover rounded-xl"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    <CardTitle className="text-center text-lg text-text-dark">
                       {coupon.partnerName}
                     </CardTitle>
-                    <div className="text-center">
-                      <p className="text-sm font-mono font-semibold text-blue-600">
+                    
+                    <div className="text-center mt-2">
+                      <p className="text-sm font-mono font-semibold text-primary bg-primary/5 px-3 py-1 rounded-lg inline-block">
                         {coupon.code}
                       </p>
                     </div>
@@ -244,38 +241,38 @@ export default function PurchasedCouponsPage() {
 
                   <CardContent>
                     {coupon.description && (
-                      <p className="text-sm text-gray-600 text-center mb-4">
+                      <p className="text-sm text-neutral text-center mb-4 leading-relaxed">
                         {coupon.description}
                       </p>
                     )}
 
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500">Descuento:</span>
-                        <span className="font-bold text-green-600">
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex items-center justify-between py-1.5 border-b border-neutral/10">
+                        <span className="text-neutral">Descuento:</span>
+                        <span className="font-bold text-complementary-emerald">
                           {coupon.discountPercent}%
                         </span>
                       </div>
 
                       {transaction && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-500">Precio pagado:</span>
-                          <span className="font-bold text-yellow-600">
-                            🪙 {Math.abs(transaction.amount)}
+                        <div className="flex items-center justify-between py-1.5 border-b border-neutral/10">
+                          <span className="text-neutral">Precio pagado:</span>
+                          <span className="font-bold text-primary">
+                            {Math.abs(transaction.amount)} monedas
                           </span>
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500">Comprado:</span>
-                        <span className="text-gray-600">
+                      <div className="flex items-center justify-between py-1.5 border-b border-neutral/10">
+                        <span className="text-neutral">Comprado:</span>
+                        <span className="text-text font-medium">
                           {formatDate(purchase.purchasedAt)}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500">Válido hasta:</span>
-                        <span className={isValid ? 'text-green-600' : 'text-red-600'}>
+                      <div className="flex items-center justify-between py-1.5">
+                        <span className="text-neutral">Válido hasta:</span>
+                        <span className={`font-medium ${isValid ? 'text-complementary-emerald' : 'text-accent-red'}`}>
                           {formatDate(coupon.validUntil)}
                         </span>
                       </div>
@@ -283,11 +280,11 @@ export default function PurchasedCouponsPage() {
                   </CardContent>
 
                   <CardContent className="pt-0">
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-xs font-semibold text-blue-800 mb-1">
-                        🎟️ Código: {coupon.code}
+                    <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                      <p className="text-xs font-semibold text-primary mb-1">
+                        Código: {coupon.code}
                       </p>
-                      <p className="text-xs text-blue-700">
+                      <p className="text-xs text-neutral leading-relaxed">
                         Usa este código en {coupon.partnerName} para obtener un {coupon.discountPercent}% de descuento
                       </p>
                     </div>
@@ -295,7 +292,60 @@ export default function PurchasedCouponsPage() {
                 </Card>
               );
             })}
-          </div>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="border-primary text-primary hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? 'default' : 'outline'}
+                          onClick={() => setCurrentPage(page)}
+                          className={
+                            currentPage === page
+                              ? 'bg-primary hover:bg-primary-dark'
+                              : 'border-primary text-primary hover:bg-primary/5'
+                          }
+                          size="sm"
+                        >
+                          {page}
+                        </Button>
+                      );
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return <span key={page} className="px-2 text-neutral">...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="border-primary text-primary hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

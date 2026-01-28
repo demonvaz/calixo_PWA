@@ -13,7 +13,6 @@ export default function OfflinePage() {
       <Card className="max-w-2xl w-full">
         <CardHeader className="text-center">
           <div className="mx-auto mb-6 text-6xl">
-            📡
           </div>
           <CardTitle className="text-3xl text-text-dark font-serif">Sin Conexión</CardTitle>
           <CardDescription className="text-lg mt-2">
@@ -25,7 +24,7 @@ export default function OfflinePage() {
           {/* What's available */}
           <div className="bg-primary/10 border border-soft-blue/20 rounded-lg p-6">
             <h3 className="font-semibold text-text-dark font-serif mb-3 flex items-center gap-2">
-              ✅ Disponible offline:
+              Disponible offline:
             </h3>
             <ul className="space-y-2 text-neutral">
               <li className="flex items-center gap-2">
@@ -54,7 +53,7 @@ export default function OfflinePage() {
           {/* What's NOT available */}
           <div className="bg-accent-red/10 border border-accent-red/20 rounded-lg p-6">
             <h3 className="font-semibold text-text-dark font-serif mb-3 flex items-center gap-2">
-              ❌ No disponible offline:
+              No disponible offline:
             </h3>
             <ul className="space-y-2 text-neutral">
               <li className="flex items-center gap-2">
@@ -83,7 +82,7 @@ export default function OfflinePage() {
           {/* Tips */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <h3 className="font-semibold text-text-dark font-serif mb-3 flex items-center gap-2">
-              💡 Consejos:
+              Consejos:
             </h3>
             <ul className="space-y-2 text-neutral text-sm">
               <li>
@@ -107,12 +106,12 @@ export default function OfflinePage() {
               onClick={() => window.location.reload()}
               className="flex-1"
             >
-              🔄 Reintentar Conexión
+              Reintentar Conexión
             </Button>
 
             <Link href="/" className="flex-1">
               <Button variant="outline" className="w-full">
-                🏠 Ir al Dashboard
+                Ir al Dashboard
               </Button>
             </Link>
           </div>
@@ -120,7 +119,7 @@ export default function OfflinePage() {
           {/* Background sync info */}
           <div className="text-center text-sm text-neutral pt-4 border-t">
             <p>
-              🔄 <strong>Sincronización automática activada:</strong>
+              <strong>Sincronización automática activada:</strong>
             </p>
             <p className="mt-1">
               Tus acciones pendientes se completarán cuando vuelvas a tener conexión

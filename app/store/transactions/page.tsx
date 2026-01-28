@@ -88,7 +88,6 @@ export default function TransactionsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">❌</div>
           <p className="text-red-600">{error || 'Error al cargar datos'}</p>
         </div>
       </div>
@@ -96,11 +95,11 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
             Historial de Transacciones
           </h1>
           <p className="text-gray-600">
@@ -120,7 +119,7 @@ export default function TransactionsPage() {
           <Card className="border-green-300 bg-green-50">
             <CardHeader>
               <CardTitle className="text-green-600">
-                +{data.totals.earned} 🪙
+                +{data.totals.earned} monedas
               </CardTitle>
               <CardDescription>Total Ganado</CardDescription>
             </CardHeader>
@@ -138,7 +137,7 @@ export default function TransactionsPage() {
           <Card className="border-blue-300 bg-blue-50">
             <CardHeader>
               <CardTitle className="text-blue-600">
-                {data.totals.net} 🪙
+                {data.totals.net} monedas
               </CardTitle>
               <CardDescription>Balance Neto</CardDescription>
             </CardHeader>
@@ -161,14 +160,14 @@ export default function TransactionsPage() {
                 size="sm"
                 onClick={() => setFilter('earn')}
               >
-                💰 Ganadas
+                Ganadas
               </Button>
               <Button
                 variant={filter === 'spend' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilter('spend')}
               >
-                💸 Gastadas
+                Gastadas
               </Button>
             </div>
           </CardContent>
@@ -178,7 +177,6 @@ export default function TransactionsPage() {
         {data.transactions.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <div className="text-6xl mb-4">📭</div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 No hay transacciones
               </h2>
@@ -187,10 +185,10 @@ export default function TransactionsPage() {
               </p>
               <div className="flex gap-2 justify-center">
                 <Button onClick={() => router.push('/challenges/daily')}>
-                  🎯 Hacer Retos
+                  Hacer Retos
                 </Button>
                 <Button variant="outline" onClick={() => router.push('/store')}>
-                  🏪 Ir a Tienda
+                  Ir a Tienda
                 </Button>
               </div>
             </CardContent>
@@ -206,7 +204,6 @@ export default function TransactionsPage() {
                         text-3xl w-12 h-12 rounded-full flex items-center justify-center
                         ${transaction.type === 'earn' ? 'bg-green-100' : 'bg-red-100'}
                       `}>
-                        {transaction.type === 'earn' ? '💰' : '💸'}
                       </div>
                       
                       <div>
@@ -237,7 +234,7 @@ export default function TransactionsPage() {
                       ${transaction.type === 'earn' ? 'text-green-600' : 'text-red-600'}
                     `}>
                       {transaction.type === 'earn' ? '+' : '-'}
-                      {Math.abs(transaction.amount)} 🪙
+                      {Math.abs(transaction.amount)} monedas
                     </div>
                   </div>
                 </CardContent>

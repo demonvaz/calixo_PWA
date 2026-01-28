@@ -19,7 +19,6 @@ export default function SubscriptionSuccessPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center py-12 px-4">
       <Card className="max-w-2xl w-full">
         <CardHeader className="text-center">
-          <div className="text-6xl mb-4">🎉</div>
           <CardTitle className="text-3xl mb-2">¡Bienvenido a Premium!</CardTitle>
           <CardDescription className="text-lg">
             Tu subscripción ha sido activada exitosamente
@@ -28,7 +27,7 @@ export default function SubscriptionSuccessPage() {
         <CardContent className="space-y-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <p className="text-green-800 font-semibold mb-2">
-              ✅ Pago procesado correctamente
+              Pago procesado correctamente
             </p>
             <p className="text-sm text-green-700">
               Recibirás un email de confirmación con los detalles de tu subscripción.
@@ -39,15 +38,12 @@ export default function SubscriptionSuccessPage() {
             <h3 className="font-semibold text-lg">Ahora puedes disfrutar de:</h3>
             <ul className="space-y-2">
               <li className="flex items-center gap-2">
-                <span className="text-2xl">🎯</span>
                 <span>Retos diarios ilimitados</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-2xl">✨</span>
                 <span>Items exclusivos de la tienda</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-2xl">🎨</span>
                 <span>Personalización avanzada del avatar</span>
               </li>
               <li className="flex items-center gap-2">
@@ -55,7 +51,6 @@ export default function SubscriptionSuccessPage() {
                 <span>Estadísticas detalladas</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-2xl">🎁</span>
                 <span>Bonos mensuales de monedas</span>
               </li>
             </ul>

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FeedComments } from './feed-comments';
+import { cn } from '@/lib/utils';
 
 interface FeedPostProps {
   post: {
@@ -22,6 +23,7 @@ interface FeedPostProps {
       displayName: string;
       avatarEnergy: number;
       isPremium: boolean;
+      profilePhotoUrl: string | null;
     } | null;
     userChallenge: {
       id: number;
@@ -54,6 +56,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
   const [isLiked, setIsLiked] = useState(false);
   const [localLikes, setLocalLikes] = useState(post.feedItem.likesCount);
   const [localCommentsCount, setLocalCommentsCount] = useState(post.feedItem.commentsCount);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const handleLike = () => {
     if (onLike) {
@@ -70,10 +73,35 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
     }
   };
 
+  // Handle ESC key to close image modal
+  useEffect(() => {
+    if (!isImageModalOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsImageModalOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isImageModalOpen]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isImageModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isImageModalOpen]);
+
   const getEnergyEmoji = (energy: number) => {
-    if (energy >= 70) return '😊';
-    if (energy >= 40) return '😐';
-    return '😴';
+    return '';
   };
 
   const formatDate = (date: Date) => {
@@ -119,16 +147,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
   };
 
   const getChallengeTypeIcon = (type: string) => {
-    switch (type) {
-      case 'daily':
-        return '📅';
-      case 'focus':
-        return '🎯';
-      case 'social':
-        return '👥';
-      default:
-        return '🏆';
-    }
+    return '';
   };
 
   const getChallengeTypeColor = (type: string) => {
@@ -150,9 +169,20 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl">
-              {post.profile ? getEnergyEmoji(post.profile.avatarEnergy) : '👤'}
-            </div>
+            {post.profile?.profilePhotoUrl ? (
+              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-neutral/10 flex items-center justify-center">
+                <Image
+                  src={post.profile.profilePhotoUrl}
+                  alt={post.profile.displayName || 'Usuario'}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
+                {post.profile?.displayName?.[0]?.toUpperCase() || 'U'}
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2">
                 <Link 
@@ -163,7 +193,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
                 </Link>
                 {post.profile?.isPremium && (
                   <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                    ⭐ Premium
+                    Premium
                   </span>
                 )}
               </div>
@@ -188,21 +218,111 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
                 <span className="text-gray-400">•</span>
               </>
             )}
-            <span className="text-xs font-medium text-yellow-600">+{post.challenge.reward} 🪙</span>
+            <span className="text-xs font-medium text-yellow-600">+{post.challenge.reward} monedas</span>
           </div>
         </div>
       )}
 
       {/* Image */}
       {post.feedItem.imageUrl && (
-        <div className="relative w-full md:max-w-md md:mx-auto aspect-square bg-gray-100">
-          <Image
-            src={post.feedItem.imageUrl}
-            alt="Post image"
-            fill
-            className="object-cover"
-          />
-        </div>
+        <>
+          <div 
+            className="relative w-full md:max-w-md md:mx-auto aspect-square bg-gray-100 cursor-pointer"
+            onClick={() => setIsImageModalOpen(true)}
+          >
+            <Image
+              src={post.feedItem.imageUrl}
+              alt="Post image"
+              fill
+              className="object-cover"
+            />
+          </div>
+
+          {/* Image Modal */}
+          {isImageModalOpen && (
+            <div
+              className={cn(
+                'fixed z-[9999] flex items-center justify-center',
+                'bg-black/90 backdrop-blur-sm',
+                'transition-opacity duration-300',
+                'opacity-100'
+              )}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: '100%',
+                height: '100%',
+              }}
+              onClick={(e) => {
+                // Cerrar solo si se hace clic directamente en el backdrop
+                if (e.target === e.currentTarget) {
+                  setIsImageModalOpen(false);
+                }
+              }}
+              onTouchStart={(e) => {
+                // En móvil, detectar si el toque es en el backdrop
+                const target = e.target as HTMLElement;
+                if (target === e.currentTarget || target.classList.contains('modal-backdrop')) {
+                  setIsImageModalOpen(false);
+                }
+              }}
+            >
+              {/* Contenedor de la imagen - no ocupa todo el espacio, solo lo necesario */}
+              <div 
+                className="relative flex items-center justify-center pointer-events-none"
+                style={{
+                  maxWidth: '90vw',
+                  maxHeight: '90vh',
+                }}
+              >
+                <div 
+                  className="relative pointer-events-auto"
+                  style={{
+                    maxWidth: '90vw',
+                    maxHeight: '90vh',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={post.feedItem.imageUrl}
+                    alt="Post image ampliada"
+                    className="object-contain"
+                    style={{
+                      maxWidth: '90vw',
+                      maxHeight: '90vh',
+                      width: 'auto',
+                      height: 'auto',
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                  />
+                </div>
+              </div>
+              
+              {/* Close Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsImageModalOpen(false);
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  setIsImageModalOpen(false);
+                }}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white border-white/20 z-10 pointer-events-auto"
+                aria-label="Cerrar imagen"
+              >
+                ✕
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Content */}
@@ -223,13 +343,13 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
             onClick={handleLike}
             className={isLiked ? 'text-red-600' : ''}
           >
-            {isLiked ? '❤️' : '🤍'} {localLikes}
+            {isLiked ? 'Me gusta' : 'Me gusta'} {localLikes}
           </Button>
           <Button
             variant="ghost"
             size="sm"
           >
-            💬 {localCommentsCount}
+            {localCommentsCount} comentarios
           </Button>
         </div>
         

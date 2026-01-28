@@ -19,25 +19,25 @@ const adminMenuItems = [
   {
     title: 'Retos',
     href: '/admin/challenges',
-    icon: '🎯',
+    icon: '',
     adminOnly: true,
   },
   {
     title: 'Usuarios',
     href: '/admin/users',
-    icon: '👥',
+    icon: '',
     adminOnly: true,
   },
   {
     title: 'Moderación',
     href: '/admin/moderation',
-    icon: '🛡️',
+    icon: '',
     adminOnly: false,
   },
   {
     title: 'Configuración',
     href: '/admin/config',
-    icon: '⚙️',
+    icon: '',
     adminOnly: true,
   },
   {

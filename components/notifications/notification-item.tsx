@@ -17,9 +17,10 @@ interface NotificationItemProps {
   };
   onMarkRead: (id: number) => void;
   onRefresh?: () => void;
+  onShareChallenge?: (notification: NotificationItemProps['notification']) => void;
 }
 
-export function NotificationItem({ notification, onMarkRead, onRefresh }: NotificationItemProps) {
+export function NotificationItem({ notification, onMarkRead, onRefresh, onShareChallenge }: NotificationItemProps) {
   const toast = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
@@ -50,7 +51,10 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
   };
 
   const handleFollowRequest = async (action: 'accept' | 'reject') => {
-    if (!payload?.requestId) return;
+    if (!payload?.requestId) {
+      toast.error('ID de solicitud no encontrado');
+      return;
+    }
     
     setIsProcessing(true);
     try {
@@ -61,16 +65,35 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
       });
 
       if (!response.ok) {
-        throw new Error('Error al procesar la solicitud');
+        // Intentar obtener el mensaje de error del servidor
+        let errorMessage = 'Error al procesar la solicitud';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // Si no se puede parsear el JSON, usar el mensaje por defecto
+          if (response.status === 404) {
+            errorMessage = 'La solicitud ya no existe';
+          } else if (response.status === 403) {
+            errorMessage = 'No tienes permiso para esta acción';
+          } else if (response.status === 400) {
+            errorMessage = 'La solicitud ya fue procesada';
+          }
+        }
+        throw new Error(errorMessage);
       }
 
-      toast.success(action === 'accept' ? 'Solicitud aceptada' : 'Solicitud rechazada');
+      const data = await response.json();
+      toast.success(data.message || (action === 'accept' ? 'Solicitud aceptada' : 'Solicitud rechazada'));
       
       // Hide notification immediately for better UX
       setIsHidden(true);
       
       // Mark as read
       onMarkRead(notification.id);
+      
+      // Disparar evento para actualizar el badge
+      window.dispatchEvent(new CustomEvent('notification-updated'));
       
       // Refresh notifications list to remove the processed notification
       if (onRefresh) {
@@ -80,8 +103,9 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
         }, 300);
       }
     } catch (error) {
-      toast.error('Error al procesar la solicitud');
-      console.error('Error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error al procesar la solicitud';
+      toast.error(errorMessage);
+      console.error('Error processing follow request:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -94,7 +118,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
         case 'follow_request':
           const requesterName = payload.requesterName || 'Alguien';
           return {
-            icon: '👤',
+            icon: '',
             title: 'Nueva solicitud de seguimiento',
             message: `${requesterName} te ha solicitado seguir, ¿deseas aceptar?`,
             link: null,
@@ -105,7 +129,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
         case 'new_follower':
           const followerName = payload.followerName || 'Alguien';
           return {
-            icon: '👤',
+            icon: '',
             title: 'Nuevo seguidor',
             message: `${followerName} comenzó a seguirte`,
             link: '/profile',
@@ -115,7 +139,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
         case 'feed_like':
           const likerName = payload.likerName || 'Alguien';
           return {
-            icon: '❤️',
+            icon: '',
             title: 'Le gustó tu post',
             message: `A ${likerName} le gustó tu reto completado`,
             link: '/feed',
@@ -126,7 +150,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
           const commenterName = payload.commenterName || 'Alguien';
           const commentText = payload.comment || '';
           return {
-            icon: '💬',
+            icon: '',
             title: 'Nuevo comentario',
             message: `${commenterName} ha comentado tu post: "${commentText.substring(0, 100)}${commentText.length > 100 ? '...' : ''}"`,
             link: '/feed',
@@ -136,7 +160,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
         case 'follow_request_accepted':
           const accepterName = payload.requestedName || 'Alguien';
           return {
-            icon: '✅',
+            icon: '',
             title: 'Solicitud aceptada',
             message: `${accepterName} aceptó tu solicitud de seguimiento`,
             link: '/profile',
@@ -149,16 +173,35 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
     if (type === 'challenge') {
       if (payload?.type === 'reminder') {
         return {
-          icon: '⏰',
+          icon: '',
           title: 'Recordatorio de reto',
           message: payload.message || 'Tienes un reto pendiente',
           link: '/challenges/daily',
           hasActions: false,
         };
       }
+      if (payload?.type === 'share_reminder') {
+        return {
+          icon: '',
+          title: notification.title || '¿Olvidaste compartir tu desconexión?',
+          message: notification.message || `Comparte "${payload.challengeTitle}" para ganar 2 monedas extra`,
+          link: null,
+          hasActions: true,
+          actionType: 'share_reminder' as const,
+        };
+      }
+      if (payload?.type === 'challenge_finished') {
+        return {
+          icon: '',
+          title: notification.title || '¡Reto finalizado!',
+          message: notification.message || `Has completado "${payload.challengeTitle}". Ve a Retos para reclamar tu recompensa.`,
+          link: '/challenges/daily',
+          hasActions: false,
+        };
+      }
       if (payload?.type === 'completed') {
         return {
-          icon: '🎉',
+          icon: '',
           title: '¡Reto completado!',
           message: `Completaste: ${payload.challengeName}. +${payload.reward} monedas`,
           link: '/',
@@ -170,7 +213,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
     // Notificaciones de tienda
     if (type === 'store' && payload?.type === 'item_purchased') {
       return {
-        icon: '🛍️',
+        icon: '',
         title: 'Compra exitosa',
         message: `Compraste: ${payload.itemName}`,
         link: '/avatar',
@@ -182,7 +225,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
     if (type === 'subscription') {
       if (payload?.type === 'activated') {
         return {
-          icon: '⭐',
+          icon: '',
           title: 'Premium activado',
           message: '¡Bienvenido a Premium! Disfruta de todas las funciones',
           link: '/subscription',
@@ -191,7 +234,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
       }
       if (payload?.type === 'expired') {
         return {
-          icon: '⚠️',
+          icon: '',
           title: 'Premium expirado',
           message: 'Tu subscripción Premium ha expirado',
           link: '/pricing',
@@ -203,7 +246,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
     // Notificaciones de logros
     if (type === 'achievement') {
       return {
-        icon: '🏆',
+        icon: '',
         title: 'Nuevo logro',
         message: payload.achievement || 'Desbloqueaste un nuevo logro',
         link: '/profile',
@@ -216,19 +259,19 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
       const getIconAndLink = () => {
         switch (type) {
           case 'challenge':
-            return { icon: '🎯', link: '/challenges/daily' };
+            return { icon: '', link: '/challenges/daily' };
           case 'social':
-            return { icon: '👥', link: '/feed' };
+            return { icon: '', link: '/feed' };
           case 'store':
-            return { icon: '🛍️', link: '/store' };
+            return { icon: '', link: '/store' };
           case 'subscription':
-            return { icon: '⭐', link: '/subscription' };
+            return { icon: '', link: '/subscription' };
           case 'achievement':
-            return { icon: '🏆', link: '/profile' };
+            return { icon: '', link: '/profile' };
           case 'reward':
-            return { icon: '💰', link: '/profile' };
+            return { icon: '', link: '/profile' };
           default:
-            return { icon: '🔔', link: '/notifications' };
+            return { icon: '', link: '/notifications' };
         }
       };
 
@@ -244,7 +287,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
 
     // Último fallback
     return {
-      icon: '🔔',
+      icon: '',
       title: 'Notificación',
       message: 'Tienes una nueva notificación',
       link: '/notifications',
@@ -267,7 +310,7 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
       `}
     >
       <div className="flex items-start gap-2 md:gap-3">
-        <div className="text-2xl md:text-3xl shrink-0">{content?.icon}</div>
+        {content?.icon && <div className="text-2xl md:text-3xl shrink-0">{content.icon}</div>}
         
         <div className="flex-1 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
@@ -328,6 +371,36 @@ export function NotificationItem({ notification, onMarkRead, onRefresh }: Notifi
               )}
             </div>
           )}
+
+          {/* Botón para compartir reto desde notificación */}
+          {content?.hasActions && content.actionType === 'share_reminder' && (
+            <div className="flex flex-col sm:flex-row gap-2 mt-3">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  // Abrir modal de compartir directamente
+                  if (onShareChallenge) {
+                    onShareChallenge(notification);
+                  }
+                }}
+                className="flex-1 text-xs md:text-sm"
+              >
+                Compartir ahora
+              </Button>
+              {!notification.seen && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onMarkRead(notification.id)}
+                  className="shrink-0 text-xs md:text-sm sm:w-auto w-full"
+                >
+                  Marcar leída
+                </Button>
+              )}
+            </div>
+          )}
+
 
           {/* Botón de ver para notificaciones sin acciones */}
           {content?.link && !content?.hasActions && (

@@ -22,12 +22,12 @@ interface StoreItemCardProps {
 }
 
 const categoryEmojis: Record<string, string> = {
-  color: '🎨',
-  shirt: '👕',
-  hat: '🎩',
-  glasses: '👓',
-  background: '🖼️',
-  accessories: '✨',
+  color: '',
+  shirt: '',
+  hat: '',
+  glasses: '',
+  background: '',
+  accessories: '',
 };
 
 export function StoreItemCard({ item, onPurchase, isPurchasing }: StoreItemCardProps) {
@@ -40,21 +40,20 @@ export function StoreItemCard({ item, onPurchase, isPurchasing }: StoreItemCardP
       {/* Premium badge */}
       {item.premiumOnly && (
         <div className="absolute top-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full">
-          ⭐ Premium
+          Premium
         </div>
       )}
 
       {/* Owned badge */}
       {item.owned && (
         <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
-          ✓ Comprado
+          Comprado
         </div>
       )}
 
       <CardHeader>
         <div className="text-center mb-2">
           <div className="text-5xl mb-2">
-            {categoryEmojis[item.category] || '✨'}
           </div>
         </div>
         <CardTitle className="text-center text-lg">
@@ -80,7 +79,7 @@ export function StoreItemCard({ item, onPurchase, isPurchasing }: StoreItemCardP
         <div className="text-center w-full">
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-2xl font-bold text-yellow-600">
-              🪙 {item.price === 0 ? 'Gratis' : item.price}
+              {item.price === 0 ? 'Gratis' : `${item.price} monedas`}
             </span>
           </div>
         </div>
@@ -88,7 +87,7 @@ export function StoreItemCard({ item, onPurchase, isPurchasing }: StoreItemCardP
         {item.owned ? (
           <div className="w-full space-y-2">
             <Button variant="outline" disabled className="w-full">
-              ✓ Ya lo tienes
+              Ya lo tienes
             </Button>
             <Link href="/store/purchased" className="block">
               <Button variant="ghost" size="sm" className="w-full text-xs">
@@ -104,12 +103,11 @@ export function StoreItemCard({ item, onPurchase, isPurchasing }: StoreItemCardP
           >
             {isPurchasing ? (
               <span className="flex items-center gap-2">
-                <span className="animate-spin">⏳</span>
                 Comprando...
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                🛒 Comprar ahora
+                Comprar ahora
               </span>
             )}
           </Button>
@@ -119,7 +117,7 @@ export function StoreItemCard({ item, onPurchase, isPurchasing }: StoreItemCardP
               No disponible
             </Button>
             <p className="text-xs text-gray-500 text-center mt-1">
-              {item.premiumOnly ? '⭐ Requiere Premium' : '💸 Monedas insuficientes'}
+              {item.premiumOnly ? 'Requiere Premium' : 'Monedas insuficientes'}
             </p>
           </div>
         )}

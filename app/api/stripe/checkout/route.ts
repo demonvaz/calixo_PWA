@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         updatedAt: now,
       });
 
-      console.log('✅ PRE MODE: Premium activado para usuario', user.id);
+      console.log('PRE MODE: Premium activado para usuario', user.id);
 
       // Retornar URL de éxito directamente
       return NextResponse.json({

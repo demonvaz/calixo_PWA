@@ -76,11 +76,11 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
             Mi Subscripción
           </h1>
           <p className="text-gray-600">
@@ -110,7 +110,6 @@ export default function SubscriptionPage() {
 
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div className="border rounded-lg p-4">
-                <div className="text-2xl mb-2">✨</div>
                 <h3 className="font-semibold mb-2">Funciones Ilimitadas</h3>
                 <p className="text-sm text-gray-600">
                   Retos diarios sin límite y modo enfoque sin restricciones
@@ -118,7 +117,6 @@ export default function SubscriptionPage() {
               </div>
 
               <div className="border rounded-lg p-4">
-                <div className="text-2xl mb-2">🎨</div>
                 <h3 className="font-semibold mb-2">Items Exclusivos</h3>
                 <p className="text-sm text-gray-600">
                   Acceso a personalización premium y items únicos
@@ -134,7 +132,6 @@ export default function SubscriptionPage() {
               </div>
 
               <div className="border rounded-lg p-4">
-                <div className="text-2xl mb-2">🎁</div>
                 <h3 className="font-semibold mb-2">Bonos Mensuales</h3>
                 <p className="text-sm text-gray-600">
                   Recibe monedas extra cada mes automáticamente

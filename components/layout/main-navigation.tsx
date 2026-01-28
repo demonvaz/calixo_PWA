@@ -8,6 +8,7 @@ import { signOut } from '@/app/auth/actions';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { NotificationBadge } from '@/components/notifications/notification-badge';
+import { ChallengeBadge } from '@/components/challenges/challenge-badge';
 
 const navigationItems = [
   { href: '/feed', label: 'Feed' },
@@ -230,6 +231,7 @@ export function MainNavigation() {
                 const isActive = pathname === item.href || 
                   (item.href !== '/feed' && pathname?.startsWith(item.href));
                 const isNotifications = item.href === '/notifications';
+                const isChallenges = item.href === '/challenges/daily';
                 
                 return (
                   <Link
@@ -254,6 +256,11 @@ export function MainNavigation() {
                     {isNotifications && (
                       <span className="absolute top-0 right-0">
                         <NotificationBadge />
+                      </span>
+                    )}
+                    {isChallenges && (
+                      <span className="absolute top-0 right-0">
+                        <ChallengeBadge />
                       </span>
                     )}
                     {isActive && (
@@ -300,6 +307,7 @@ export function MainNavigation() {
             const isActive = pathname === item.href || 
               (item.href !== '/feed' && pathname?.startsWith(item.href));
             const isNotifications = item.href === '/notifications';
+            const isChallenges = item.href === '/challenges/daily';
             
             return (
               <Link
@@ -337,6 +345,11 @@ export function MainNavigation() {
                   {isNotifications && (
                     <span className="absolute top-0 right-0">
                       <NotificationBadge />
+                    </span>
+                  )}
+                  {isChallenges && (
+                    <span className="absolute top-0 right-0">
+                      <ChallengeBadge />
                     </span>
                   )}
                 </div>

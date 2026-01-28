@@ -192,7 +192,6 @@ export default function AvatarEditorPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">❌</div>
           <p className="text-red-600">{error || 'Error al cargar datos'}</p>
         </div>
       </div>
@@ -200,11 +199,11 @@ export default function AvatarEditorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
             Editor de Avatar CALI
           </h1>
           <p className="text-gray-600">
@@ -249,7 +248,7 @@ export default function AvatarEditorPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Monedas:</span>
                   <span className="text-xl font-bold text-yellow-600">
-                    🪙 {avatarData.profile.coins}
+                    {avatarData.profile.coins} monedas
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -263,7 +262,7 @@ export default function AvatarEditorPage() {
                   <span className={`text-sm font-semibold ${
                     avatarData.profile.isPremium ? 'text-purple-600' : 'text-gray-600'
                   }`}>
-                    {avatarData.profile.isPremium ? '⭐ Premium' : 'Gratuita'}
+                    {avatarData.profile.isPremium ? 'Premium' : 'Gratuita'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -303,12 +302,6 @@ export default function AvatarEditorPage() {
                       onClick={() => setSelectedCategory(cat)}
                       className="capitalize"
                     >
-                      {cat === 'color' && '🎨'}
-                      {cat === 'shirt' && '👕'}
-                      {cat === 'hat' && '🎩'}
-                      {cat === 'glasses' && '👓'}
-                      {cat === 'background' && '🖼️'}
-                      {cat === 'accessories' && '✨'}
                       {' '}
                       {cat}
                     </Button>

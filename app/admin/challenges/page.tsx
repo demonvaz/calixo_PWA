@@ -61,7 +61,7 @@ export default async function AdminChallengesPage() {
                           {challenge.type}
                         </span>
                       </td>
-                      <td className="py-3 px-4">{challenge.reward} 🪙</td>
+                      <td className="py-3 px-4">{challenge.reward} monedas</td>
                       <td className="py-3 px-4">
                         {challenge.isActive ? (
                           <span className="px-2 py-1 bg-complementary-emerald/10 text-complementary-emerald rounded-lg text-sm">

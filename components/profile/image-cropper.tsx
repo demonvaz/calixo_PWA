@@ -163,7 +163,7 @@ export function ImageCropper({
       {/* Instructions */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <p className="text-sm text-blue-800">
-          💡 <strong>Consejo:</strong> Arrastra la imagen para moverla y usa el
+          <strong>Consejo:</strong> Arrastra la imagen para moverla y usa el
           control deslizante para hacer zoom. El área circular será tu foto de
           perfil.
         </p>

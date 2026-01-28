@@ -187,7 +187,6 @@ export function FeedPage() {
           {!feedData || feedData.feedItems.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <div className="text-6xl mb-4">📭</div>
                 <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                   {feedType === 'following' 
                     ? 'No hay posts de usuarios que sigues'
@@ -200,7 +199,7 @@ export function FeedPage() {
                 </p>
                 <div className="flex gap-2 justify-center">
                   <Button onClick={() => router.push('/challenges/daily')}>
-                    🎯 Hacer Retos
+                    Hacer Retos
                   </Button>
                   {feedType === 'following' && (
                     <Button 

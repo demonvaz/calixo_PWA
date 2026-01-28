@@ -23,9 +23,9 @@ const energyColors = {
 };
 
 const energyEmojis = {
-  alta: '😊',
-  media: '😐',
-  baja: '😴',
+  alta: '',
+  media: '',
+  baja: '',
 };
 
 export function AvatarPreview({
@@ -71,9 +71,6 @@ export function AvatarPreview({
       >
         {/* Background layer */}
         <div className="absolute inset-0 opacity-20">
-          {background === 'nature' && '🌿'}
-          {background === 'city' && '🏙️'}
-          {background === 'space' && '✨'}
         </div>
 
         {/* Avatar face */}
@@ -84,27 +81,18 @@ export function AvatarPreview({
         {/* Hat layer */}
         {hat !== 'none' && (
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl">
-            {hat === 'sport-cap' && '🧢'}
-            {hat === 'sun-hat' && '👒'}
-            {hat === 'royal-crown' && '👑'}
           </div>
         )}
 
         {/* Glasses layer */}
         {glasses !== 'none' && (
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl">
-            {glasses === 'sunglasses' && '🕶️'}
-            {glasses === 'reading-glasses' && '👓'}
-            {glasses === 'futuristic-glasses' && '🥽'}
           </div>
         )}
 
         {/* Shirt indicator (bottom corner) */}
         {shirt !== 'basic' && (
           <div className="absolute bottom-0 right-0 text-lg">
-            {shirt === 'stripes' && '👕'}
-            {shirt === 'sport' && '🏃'}
-            {shirt === 'premium' && '✨'}
           </div>
         )}
       </div>

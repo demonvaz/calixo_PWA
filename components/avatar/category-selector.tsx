@@ -33,12 +33,12 @@ interface CategorySelectorProps {
 }
 
 const categoryEmojis: Record<string, string> = {
-  color: '🎨',
-  shirt: '👕',
-  hat: '🎩',
-  glasses: '👓',
-  background: '🖼️',
-  accessories: '✨',
+  color: '',
+  shirt: '',
+  hat: '',
+  glasses: '',
+  background: '',
+  accessories: '',
 };
 
 const categoryNames: Record<string, string> = {
@@ -82,7 +82,7 @@ export function CategorySelector({
           <CardTitle className="flex items-center gap-2">
             {categoryEmojis[category]} {categoryNames[category]}
             <span className="ml-auto text-sm font-normal text-gray-500">
-              🔒 Bloqueado
+              Bloqueado
             </span>
           </CardTitle>
           <CardDescription>
@@ -97,9 +97,9 @@ export function CategorySelector({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          {categoryEmojis[category]} {categoryNames[category]}
+          {categoryNames[category]}
           <span className="ml-auto text-sm font-normal text-green-600">
-            ✓ Desbloqueado
+            Desbloqueado
           </span>
         </CardTitle>
         <CardDescription>
@@ -121,21 +121,18 @@ export function CategorySelector({
               {/* Lock overlay */}
               {!item.unlocked && (
                 <div className="absolute top-2 right-2 text-lg">
-                  🔒
                 </div>
               )}
 
               {/* Equipped indicator */}
               {item.equipped && (
                 <div className="absolute top-2 right-2 text-lg">
-                  ✓
                 </div>
               )}
 
               {/* Item preview */}
               <div className="text-center mb-2">
                 <div className="text-3xl mb-1">
-                  {categoryEmojis[category]}
                 </div>
                 <p className="text-sm font-semibold truncate">
                   {item.item.name}
@@ -164,11 +161,11 @@ export function CategorySelector({
                 ) : (
                   <div className="space-y-1">
                     <div className="text-sm font-semibold text-yellow-600">
-                      🪙 {item.item.price}
+                      {item.item.price} monedas
                     </div>
                     {item.item.premiumOnly && !isPremium && (
                       <div className="text-xs text-purple-600">
-                        ⭐ Premium
+                        Premium
                       </div>
                     )}
                     {userCoins >= item.item.price && (!item.item.premiumOnly || isPremium) ? (

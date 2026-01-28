@@ -129,11 +129,11 @@ export default function SocialChallengesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
             Retos Sociales
           </h1>
           <p className="text-gray-600">
@@ -194,7 +194,7 @@ export default function SocialChallengesPage() {
                               {challenge.description}
                             </p>
                             <p className="text-xs text-gray-500 mt-2">
-                              ⏱️ {challenge.durationMinutes} min • 🪙 {challenge.reward} monedas
+                              {challenge.durationMinutes} min • {challenge.reward} monedas
                             </p>
                           </div>
                         </div>
@@ -252,7 +252,6 @@ export default function SocialChallengesPage() {
           
           {sessions.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">👥</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 No tienes retos sociales
               </h3>
@@ -272,8 +271,8 @@ export default function SocialChallengesPage() {
                       </CardTitle>
                       <CardDescription>
                         {session.status === 'pending' && 'Esperando respuesta...'}
-                        {session.status === 'in_progress' && '🎯 En progreso'}
-                        {session.status === 'completed' && '✅ Completado'}
+                        {session.status === 'in_progress' && 'En progreso'}
+                        {session.status === 'completed' && 'Completado'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -282,7 +281,7 @@ export default function SocialChallengesPage() {
                           <span className="font-medium">Duración:</span> {challenge?.durationMinutes} minutos
                         </p>
                         <p>
-                          <span className="font-medium">Recompensa:</span> 🪙 {challenge?.reward} monedas
+                          <span className="font-medium">Recompensa:</span> {challenge?.reward} monedas
                         </p>
                         <p>
                           <span className="font-medium">Creado:</span>{' '}

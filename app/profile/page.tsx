@@ -198,12 +198,12 @@ export default function ProfilePage() {
     profile.avatarEnergy >= 40 ? 'text-yellow-600' : 'text-red-600';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Mi Perfil</h1>
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">Mi Perfil</h1>
             <p className="text-gray-600 text-lg">@{profile.displayName}</p>
           </div>
           {/* Profile Photo */}
@@ -221,7 +221,6 @@ export default function ProfilePage() {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
-                <span className="text-4xl">👤</span>
               </div>
             )}
             <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
@@ -278,7 +277,7 @@ export default function ProfilePage() {
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-purple-600">
-                  {profile.isPremium ? '✓' : '✗'}
+                  {profile.isPremium ? 'Sí' : 'No'}
                 </p>
                 <p className="text-sm text-gray-600">
                   {profile.isPremium ? 'Premium' : 'Gratuito'}

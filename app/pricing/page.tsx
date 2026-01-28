@@ -30,16 +30,16 @@ export default function PricingPage() {
   };
 
   const premiumFeatures = [
-    { icon: '🎯', text: 'Retos diarios ilimitados' },
-    { icon: '⏰', text: 'Sesiones de enfoque sin límites' },
-    { icon: '✨', text: 'Items exclusivos de la tienda' },
-    { icon: '🎨', text: 'Personalización avanzada del avatar' },
+    { icon: '', text: 'Retos diarios ilimitados' },
+    { icon: '', text: 'Sesiones de enfoque sin límites' },
+    { icon: '', text: 'Items exclusivos de la tienda' },
+    { icon: '', text: 'Personalización avanzada del avatar' },
     { icon: '📊', text: 'Estadísticas detalladas' },
-    { icon: '🏆', text: 'Insignias y logros especiales' },
-    { icon: '👥', text: 'Retos sociales prioritarios' },
-    { icon: '🔔', text: 'Notificaciones personalizadas' },
+    { icon: '', text: 'Insignias y logros especiales' },
+    { icon: '', text: 'Retos sociales prioritarios' },
+    { icon: '', text: 'Notificaciones personalizadas' },
     { icon: '💾', text: 'Backup automático de progreso' },
-    { icon: '🎁', text: 'Bonos mensuales de monedas' },
+    { icon: '', text: 'Bonos mensuales de monedas' },
   ];
 
   const handleSubscribe = async (plan: 'monthly' | 'yearly') => {
@@ -92,11 +92,11 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
             Desbloquea todo el potencial de CALI
           </h1>
           <p className="text-gray-600">
@@ -160,23 +160,23 @@ export default function PricingPage() {
               
               <ul className="space-y-3">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-green-600">Sí</span>
                   <span>3 retos diarios</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-green-600">Sí</span>
                   <span>Avatar básico de CALI</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-green-600">Sí</span>
                   <span>Modo enfoque limitado</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-green-600">Sí</span>
                   <span>Items básicos de tienda</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span>
+                  <span className="text-green-600">Sí</span>
                   <span>Feed social</span>
                 </li>
               </ul>
@@ -195,7 +195,7 @@ export default function PricingPage() {
           {/* Premium Plan */}
           <Card className="border-2 border-purple-500 shadow-lg relative">
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-              ⭐ Más Popular
+              Más Popular
             </div>
             
             <CardHeader>

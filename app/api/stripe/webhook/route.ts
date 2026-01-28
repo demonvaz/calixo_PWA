@@ -150,7 +150,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     });
   }
 
-  console.log(`✅ Subscription activated for user ${userId}`);
+  console.log(`Subscription activated for user ${userId}`);
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -184,7 +184,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     })
     .where(eq(profiles.userId, userId));
 
-  console.log(`✅ Subscription updated for user ${userId}: ${subscription.status}`);
+  console.log(`Subscription updated for user ${userId}: ${subscription.status}`);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -213,7 +213,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     })
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
 
-  console.log(`❌ Subscription canceled for user ${userId}`);
+  console.log(`Subscription canceled for user ${userId}`);
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
@@ -249,7 +249,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     return;
   }
 
-  console.log(`❌ Payment failed for user ${userId}`);
+  console.log(`Payment failed for user ${userId}`);
   // Here you could send an email notification
 }
 

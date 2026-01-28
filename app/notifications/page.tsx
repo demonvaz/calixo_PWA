@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { NotificationItem } from '@/components/notifications/notification-item';
+import { ShareChallengeModal } from '@/components/challenges/share-challenge-modal';
+import { ChallengeSuccessModal } from '@/components/challenges/challenge-success-modal';
 import { useToast } from '@/components/ui/toast';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -32,6 +34,20 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'unread' | 'read'>('unread');
+  
+  // Estado para el modal de compartir desde notificación
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareNotificationId, setShareNotificationId] = useState<number | null>(null);
+  const [shareChallengeData, setShareChallengeData] = useState<{
+    userChallengeId: number;
+    challengeTitle: string;
+    reward: number;
+  } | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [completionData, setCompletionData] = useState<{
+    coinsEarned: number;
+    feedItemId?: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchNotifications();
@@ -72,6 +88,9 @@ export default function NotificationsPage() {
 
       // Refresh notifications
       await fetchNotifications();
+      
+      // Disparar evento para actualizar el badge
+      window.dispatchEvent(new CustomEvent('notification-updated'));
     } catch (err) {
       console.error('Error marking notification:', err);
     }
@@ -89,10 +108,116 @@ export default function NotificationsPage() {
 
       toast.success('Todas las notificaciones marcadas como leídas');
       await fetchNotifications();
+      
+      // Disparar evento para actualizar el badge
+      window.dispatchEvent(new CustomEvent('notifications-marked-read'));
     } catch (err) {
       toast.error('Error al marcar notificaciones');
     }
   };
+
+  const handleShareFromNotification = async (notification: Notification) => {
+    const payload = notification.payload || {};
+    if (payload.type === 'share_reminder' && payload.userChallengeId && payload.challengeTitle) {
+      try {
+        // Obtener el reward del reto desde el userChallenge
+        const response = await fetch(`/api/challenges/active`);
+        let reward = 0;
+        if (response.ok) {
+          const challengeData = await response.json();
+          if (challengeData.activeChallenge && challengeData.activeChallenge.id === payload.userChallengeId) {
+            reward = challengeData.activeChallenge.reward || 0;
+          } else {
+            // Si no está activo, obtenerlo directamente del reto completado
+            // El reto ya está completado, así que podemos usar un valor por defecto o hacer otra consulta
+            // Por ahora usamos 0 y se mostrará correctamente en el modal
+            reward = 0;
+          }
+        }
+        
+        setShareChallengeData({
+          userChallengeId: payload.userChallengeId,
+          challengeTitle: payload.challengeTitle,
+          reward: reward,
+        });
+        setShareNotificationId(notification.id);
+        setShowShareModal(true);
+      } catch (err) {
+        console.error('Error opening share modal:', err);
+        toast.error('Error al abrir el modal de compartir');
+      }
+    }
+  };
+
+  const handleSubmitShare = async (imageUrl: string, note: string) => {
+    if (!shareChallengeData) return;
+
+    try {
+      const response = await fetch('/api/challenges/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userChallengeId: shareChallengeData.userChallengeId,
+          imageUrl,
+          note,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al compartir');
+      }
+
+      const data = await response.json();
+      
+      // Eliminar la notificación después de compartir exitosamente
+      if (shareNotificationId) {
+        try {
+          await fetch(`/api/notifications/${shareNotificationId}`, {
+            method: 'DELETE',
+          });
+        } catch (deleteErr) {
+          console.error('Error deleting notification:', deleteErr);
+          // No fallar si no se puede eliminar la notificación
+        }
+      }
+      
+      setShowShareModal(false);
+      setCompletionData({
+        coinsEarned: data.coinsEarned,
+        feedItemId: data.feedItem?.id,
+      });
+      setShowSuccessModal(true);
+      
+      const bonusText = data.shareBonus > 0 ? ` (+${data.shareBonus} por compartir)` : '';
+      toast.success(`¡Compartido! Ganaste ${data.coinsEarned} monedas extra${bonusText}`, 5000);
+      
+      // Actualizar notificaciones
+      await fetchNotifications();
+      
+      // Disparar evento para actualizar el badge
+      window.dispatchEvent(new CustomEvent('notification-updated'));
+    } catch (err) {
+      console.error('Error submitting share:', err);
+      toast.error(err instanceof Error ? err.message : 'Error al compartir');
+      throw err;
+    }
+  };
+
+  const handleSkipShare = async () => {
+    // Cerrar el modal sin compartir
+    setShowShareModal(false);
+    setShareChallengeData(null);
+    setShareNotificationId(null);
+  };
+
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+    setCompletionData(null);
+    setShareChallengeData(null);
+    setShareNotificationId(null);
+  };
+
 
   if (loading) {
     return (
@@ -103,8 +228,33 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6 pb-20 md:pb-8">
-      <div className="max-w-4xl mx-auto">
+    <>
+      {/* Modal de compartir desde notificación */}
+      {shareChallengeData && (
+        <ShareChallengeModal
+          isOpen={showShareModal}
+          challengeTitle={shareChallengeData.challengeTitle}
+          coinsEarned={shareChallengeData.reward}
+          userChallengeId={shareChallengeData.userChallengeId}
+          onSubmit={handleSubmitShare}
+          onSkip={handleSkipShare}
+          onClose={handleSkipShare}
+        />
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && completionData && shareChallengeData && (
+        <ChallengeSuccessModal
+          isOpen={showSuccessModal}
+          challengeTitle={shareChallengeData.challengeTitle}
+          coinsEarned={completionData.coinsEarned}
+          feedItemId={completionData.feedItemId}
+          onClose={handleCloseSuccessModal}
+        />
+      )}
+
+      <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6 pb-20 md:pb-8">
+        <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-4 md:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -164,7 +314,6 @@ export default function NotificationsPage() {
         {!data || data.notifications.length === 0 ? (
           <Card>
             <CardContent className="py-8 md:py-12 px-4 md:px-6 text-center">
-              <div className="text-4xl md:text-6xl mb-3 md:mb-4">📭</div>
               <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
                 {filter === 'unread' 
                   ? 'No tienes notificaciones nuevas'
@@ -177,7 +326,7 @@ export default function NotificationsPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Button onClick={() => router.push('/challenges/daily')} className="w-full sm:w-auto">
-                  🎯 Hacer Retos
+                  Hacer Retos
                 </Button>
                 {filter === 'read' && (
                   <Button 
@@ -199,12 +348,14 @@ export default function NotificationsPage() {
                 notification={notification}
                 onMarkRead={handleMarkRead}
                 onRefresh={fetchNotifications}
+                onShareChallenge={handleShareFromNotification}
               />
             ))}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -109,14 +109,14 @@ function ToastItem({
   const getToastStyles = () => {
     switch (toast.type) {
       case 'success':
-        return 'bg-complementary-emerald/10 border-complementary-emerald/30 text-complementary-emerald-dark';
+        return 'bg-complementary-emerald/20 md:bg-complementary-emerald/10 border-complementary-emerald/40 md:border-complementary-emerald/30 text-complementary-emerald-dark';
       case 'error':
-        return 'bg-primary/10 border-primary/30 text-primary-dark';
+        return 'bg-primary/20 md:bg-primary/10 border-primary/40 md:border-primary/30 text-primary-dark';
       case 'warning':
-        return 'bg-accent-yellow/10 border-accent-yellow/30 text-accent-yellow-dark';
+        return 'bg-accent-yellow/20 md:bg-accent-yellow/10 border-accent-yellow/40 md:border-accent-yellow/30 text-accent-yellow-dark';
       case 'info':
       default:
-        return 'bg-primary/10 border-primary/30 text-primary-dark';
+        return 'bg-primary/20 md:bg-primary/10 border-primary/40 md:border-primary/30 text-primary-dark';
     }
   };
 
@@ -161,7 +161,7 @@ function ToastItem({
       className={cn(
         'pointer-events-auto relative flex items-start gap-3 rounded-xl border p-4 shadow-lg',
         'animate-fade-in-up',
-        'backdrop-blur-sm',
+        'backdrop-blur-none md:backdrop-blur-sm',
         getToastStyles()
       )}
       role="alert"

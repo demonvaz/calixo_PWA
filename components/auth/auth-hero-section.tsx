@@ -3,7 +3,7 @@
 import Image from 'next/image';
 
 // Emojis que flotarán alrededor de la imagen
-const emojis = ['🧘', '🌱', '✨', '💚'];
+const emojis: string[] = [];
 
 export function AuthHeroSection() {
   return (

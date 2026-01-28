@@ -105,7 +105,7 @@ export function UserTable() {
                   <td className="py-3 px-4">
                     {user.isPremium ? (
                       <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
-                        ✓ Premium
+                        Premium
                       </span>
                     ) : (
                       <span className="px-2 py-1 bg-neutral/10 text-neutral rounded-lg text-sm">
@@ -113,8 +113,8 @@ export function UserTable() {
                       </span>
                     )}
                   </td>
-                  <td className="py-3 px-4">{user.coins} 🪙</td>
-                  <td className="py-3 px-4">{user.streak} 🔥</td>
+                  <td className="py-3 px-4">{user.coins} monedas</td>
+                  <td className="py-3 px-4">{user.streak} racha</td>
                   <td className="py-3 px-4">
                     <Button
                       size="sm"

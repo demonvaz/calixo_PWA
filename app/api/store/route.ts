@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Obtener cupones activos y válidos
+    // No filtrar por agotado aquí, lo haremos después para mostrar visualmente
     let query = supabase
       .from('coupons')
       .select('*')
@@ -74,20 +75,31 @@ export async function GET(request: NextRequest) {
     const purchasedCouponIds = new Set((purchasedCoupons || []).map(pc => pc.coupon_id));
 
     // Agregar estado de propiedad a los cupones
-    const couponsWithStatus = filteredCoupons.map(coupon => ({
-      id: coupon.id,
-      code: coupon.code,
-      discountPercent: coupon.discount_percent,
-      partnerName: coupon.partner_name,
-      description: coupon.description,
-      price: coupon.price,
-      validUntil: coupon.valid_until,
-      isActive: coupon.is_active,
-      createdAt: coupon.created_at,
-      owned: purchasedCouponIds.has(coupon.id),
-      canPurchase: !purchasedCouponIds.has(coupon.id) &&
-                   userData.coins >= coupon.price,
-    }));
+    const couponsWithStatus = filteredCoupons.map(coupon => {
+      // Verificar si está agotado (si tiene max_uses y current_uses >= max_uses)
+      const isOutOfStock = coupon.max_uses !== null && coupon.max_uses > 0 && 
+                          coupon.current_uses >= coupon.max_uses;
+      
+      return {
+        id: coupon.id,
+        code: coupon.code,
+        discountPercent: coupon.discount_percent,
+        partnerName: coupon.partner_name,
+        description: coupon.description,
+        price: coupon.price,
+        validUntil: coupon.valid_until,
+        brandImage: coupon.brand_image || null,
+        maxUses: coupon.max_uses,
+        currentUses: coupon.current_uses || 0,
+        isActive: coupon.is_active,
+        createdAt: coupon.created_at,
+        owned: purchasedCouponIds.has(coupon.id),
+        isOutOfStock: isOutOfStock,
+        canPurchase: !purchasedCouponIds.has(coupon.id) &&
+                     userData.coins >= coupon.price &&
+                     !isOutOfStock,
+      };
+    });
 
     // Ordenar: no comprados primero, luego por precio
     couponsWithStatus.sort((a, b) => {
