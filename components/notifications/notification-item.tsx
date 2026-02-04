@@ -15,12 +15,11 @@ interface NotificationItemProps {
     seen: boolean;
     createdAt: Date | string;
   };
-  onMarkRead: (id: number) => void;
   onRefresh?: () => void;
   onShareChallenge?: (notification: NotificationItemProps['notification']) => void;
 }
 
-export function NotificationItem({ notification, onMarkRead, onRefresh, onShareChallenge }: NotificationItemProps) {
+export function NotificationItem({ notification, onRefresh, onShareChallenge }: NotificationItemProps) {
   const toast = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
@@ -88,9 +87,6 @@ export function NotificationItem({ notification, onMarkRead, onRefresh, onShareC
       
       // Hide notification immediately for better UX
       setIsHidden(true);
-      
-      // Mark as read
-      onMarkRead(notification.id);
       
       // Disparar evento para actualizar el badge
       window.dispatchEvent(new CustomEvent('notification-updated'));
@@ -325,17 +321,6 @@ export function NotificationItem({ notification, onMarkRead, onRefresh, onShareC
                 {formatDate(notification.createdAt)}
               </p>
             </div>
-
-            {!notification.seen && !content?.hasActions && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onMarkRead(notification.id)}
-                className="shrink-0 self-start sm:self-auto text-xs"
-              >
-                Marcar leída
-              </Button>
-            )}
           </div>
 
           {/* Botones de acción para solicitudes de seguimiento */}
@@ -359,16 +344,6 @@ export function NotificationItem({ notification, onMarkRead, onRefresh, onShareC
               >
                 Rechazar
               </Button>
-              {!notification.seen && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onMarkRead(notification.id)}
-                  className="shrink-0 text-xs md:text-sm sm:w-auto w-full"
-                >
-                  Marcar leída
-                </Button>
-              )}
             </div>
           )}
 
@@ -388,16 +363,6 @@ export function NotificationItem({ notification, onMarkRead, onRefresh, onShareC
               >
                 Compartir ahora
               </Button>
-              {!notification.seen && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onMarkRead(notification.id)}
-                  className="shrink-0 text-xs md:text-sm sm:w-auto w-full"
-                >
-                  Marcar leída
-                </Button>
-              )}
             </div>
           )}
 

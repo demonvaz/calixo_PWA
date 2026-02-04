@@ -25,15 +25,21 @@ interface NotificationsData {
   unseenCount: number;
   readCount?: number;
   total: number;
+  hasMore?: boolean;
+  totalCount?: number;
 }
 
 export default function NotificationsPage() {
   const router = useRouter();
   const toast = useToast();
-  const [data, setData] = useState<NotificationsData | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState<'unread' | 'read'>('unread');
+  const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const NOTIFICATIONS_PER_PAGE = 10;
   
   // Estado para el modal de compartir desde notificación
   const [showShareModal, setShowShareModal] = useState(false);
@@ -49,18 +55,13 @@ export default function NotificationsPage() {
     feedItemId?: number;
   } | null>(null);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [filter]);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (reset = false) => {
     try {
-      const params = new URLSearchParams();
-      if (filter === 'unread') {
-        params.append('unseenOnly', 'true');
-      } else if (filter === 'read') {
-        params.append('seenOnly', 'true');
-      }
+      const currentOffset = reset ? 0 : offset;
+      const params = new URLSearchParams({
+        limit: NOTIFICATIONS_PER_PAGE.toString(),
+        offset: currentOffset.toString(),
+      });
       
       const response = await fetch(`/api/notifications?${params}`);
       if (!response.ok) {
@@ -68,53 +69,55 @@ export default function NotificationsPage() {
       }
       
       const notificationsData = await response.json();
-      setData(notificationsData);
+      
+      if (reset) {
+        setNotifications(notificationsData.notifications || []);
+        setOffset(NOTIFICATIONS_PER_PAGE);
+      } else {
+        setNotifications(prev => [...prev, ...(notificationsData.notifications || [])]);
+        setOffset(prev => prev + NOTIFICATIONS_PER_PAGE);
+      }
+      
+      setHasMore(notificationsData.hasMore || false);
+      setTotalCount(notificationsData.totalCount || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const handleMarkRead = async (id: number) => {
-    try {
-      const response = await fetch(`/api/notifications/${id}/read`, {
-        method: 'POST',
-      });
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    await fetchNotifications(false);
+  };
 
-      if (!response.ok) {
-        throw new Error('Error al marcar notificación');
+  // Marcar automáticamente todas las notificaciones como leídas al entrar a la página
+  useEffect(() => {
+    const markAllAsRead = async () => {
+      try {
+        const response = await fetch('/api/notifications/read-all', {
+          method: 'POST',
+        });
+
+        if (response.ok) {
+          // Disparar evento para actualizar el badge
+          window.dispatchEvent(new CustomEvent('notifications-marked-read'));
+        }
+        // Refrescar las notificaciones después de marcarlas como leídas (o si falla)
+        await fetchNotifications(true);
+      } catch (err) {
+        console.error('Error al marcar notificaciones como leídas:', err);
+        // Aún así cargar las notificaciones aunque falle el marcado
+        await fetchNotifications(true);
       }
+    };
 
-      // Refresh notifications
-      await fetchNotifications();
-      
-      // Disparar evento para actualizar el badge
-      window.dispatchEvent(new CustomEvent('notification-updated'));
-    } catch (err) {
-      console.error('Error marking notification:', err);
-    }
-  };
+    markAllAsRead();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Solo se ejecuta una vez al montar el componente
 
-  const handleMarkAllRead = async () => {
-    try {
-      const response = await fetch('/api/notifications/read-all', {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al marcar todas');
-      }
-
-      toast.success('Todas las notificaciones marcadas como leídas');
-      await fetchNotifications();
-      
-      // Disparar evento para actualizar el badge
-      window.dispatchEvent(new CustomEvent('notifications-marked-read'));
-    } catch (err) {
-      toast.error('Error al marcar notificaciones');
-    }
-  };
 
   const handleShareFromNotification = async (notification: Notification) => {
     const payload = notification.payload || {};
@@ -193,7 +196,7 @@ export default function NotificationsPage() {
       toast.success(`¡Compartido! Ganaste ${data.coinsEarned} monedas extra${bonusText}`, 5000);
       
       // Actualizar notificaciones
-      await fetchNotifications();
+      await fetchNotifications(true);
       
       // Disparar evento para actualizar el badge
       window.dispatchEvent(new CustomEvent('notification-updated'));
@@ -263,19 +266,9 @@ export default function NotificationsPage() {
                 Notificaciones
               </h1>
               <p className="text-sm md:text-base text-gray-600">
-                {data?.unseenCount ? `${data.unseenCount} sin leer` : 'Al día con todo'}
+                {totalCount > 0 ? `${totalCount} notificaciones` : 'No hay notificaciones'}
               </p>
             </div>
-            {data && data.unseenCount > 0 && (
-              <Button
-                variant="outline"
-                onClick={handleMarkAllRead}
-                size="sm"
-                className="w-full sm:w-auto shrink-0"
-              >
-                Marcar todas leídas
-              </Button>
-            )}
           </div>
         </div>
 
@@ -286,72 +279,68 @@ export default function NotificationsPage() {
           </div>
         )}
 
-        {/* Filters */}
-        <Card className="mb-4 md:mb-6">
-          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
-            <div className="flex gap-2 overflow-x-auto">
-              <Button
-                variant={filter === 'unread' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('unread')}
-                className="whitespace-nowrap shrink-0"
-              >
-                Nuevas ({data?.unseenCount || 0})
-              </Button>
-              <Button
-                variant={filter === 'read' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('read')}
-                className="whitespace-nowrap shrink-0"
-              >
-                Leídas ({filter === 'read' ? (data?.total || 0) : (data?.readCount || 0)})
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Notifications List */}
-        {!data || data.notifications.length === 0 ? (
+        {notifications.length === 0 ? (
           <Card>
             <CardContent className="py-8 md:py-12 px-4 md:px-6 text-center">
               <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
-                {filter === 'unread' 
-                  ? 'No tienes notificaciones nuevas'
-                  : 'No tienes notificaciones leídas'}
+                No tienes notificaciones
               </h2>
               <p className="text-sm md:text-base text-gray-600 mb-4">
-                {filter === 'unread'
-                  ? '¡Estás al día con todo!'
-                  : 'Las notificaciones leídas aparecerán aquí'}
+                ¡Estás al día con todo!
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Button onClick={() => router.push('/challenges/daily')} className="w-full sm:w-auto">
                   Hacer Retos
                 </Button>
-                {filter === 'read' && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => setFilter('unread')}
-                    className="w-full sm:w-auto"
-                  >
-                    Ver Nuevas
-                  </Button>
-                )}
               </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-2 md:space-y-3">
-            {data.notifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                onMarkRead={handleMarkRead}
-                onRefresh={fetchNotifications}
-                onShareChallenge={handleShareFromNotification}
-              />
-            ))}
-          </div>
+          <>
+            <div className="space-y-2 md:space-y-3">
+              {notifications.map((notification) => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  onRefresh={() => fetchNotifications(true)}
+                  onShareChallenge={handleShareFromNotification}
+                />
+              ))}
+            </div>
+            
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  {loadingMore ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Cargando...
+                    </>
+                  ) : (
+                    'Cargar más'
+                  )}
+                </Button>
+              </div>
+            )}
+            
+            {/* End of notifications banner */}
+            {!hasMore && notifications.length > 0 && (
+              <Card className="mt-6">
+                <CardContent className="py-4 px-4 md:px-6 text-center">
+                  <p className="text-sm md:text-base text-gray-600">
+                    Has visto todas las notificaciones
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
         </div>
       </div>

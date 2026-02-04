@@ -20,15 +20,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const unseenOnly = searchParams.get('unseenOnly') === 'true';
     const seenOnly = searchParams.get('seenOnly') === 'true';
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     // Build query
     let query = supabase
       .from('notifications')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(limit);
+      .range(offset, offset + limit - 1);
 
     if (unseenOnly) {
       query = query.eq('seen', false);
@@ -36,11 +37,15 @@ export async function GET(request: NextRequest) {
       query = query.eq('seen', true);
     }
 
-    const { data: results, error: queryError } = await query;
+    const { data: results, error: queryError, count } = await query;
 
     if (queryError) {
       throw queryError;
     }
+
+    // Check if there are more notifications
+    const totalCount = count || 0;
+    const hasMore = offset + limit < totalCount;
 
     // Count unseen and read from current results
     const unseenCount = (results || []).filter(n => !n.seen).length;
@@ -131,6 +136,8 @@ export async function GET(request: NextRequest) {
       unseenCount,
       readCount: finalReadCount,
       total: formattedResults.length,
+      hasMore,
+      totalCount,
     });
   } catch (error) {
     console.error('Error fetching notifications:', error);
