@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { ProfilePhotoModal } from '@/components/profile/profile-photo-modal';
+import { ProfileSettingsModal } from '@/components/profile/profile-settings-modal';
 import Image from 'next/image';
 
 type Profile = {
@@ -20,6 +21,9 @@ type Profile = {
   updatedAt: Date;
   profilePhotoUrl?: string | null;
   profilePhotoPath?: string | null;
+  email?: string | null;
+  gender?: string | null;
+  birthDate?: string | null;
 };
 
 type UserChallenge = {
@@ -44,6 +48,7 @@ export default function ProfilePage() {
   const [loadingChallenges, setLoadingChallenges] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 5,
@@ -202,8 +207,36 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">Mi Perfil</h1>
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900">Mi Perfil</h1>
+              <button
+                onClick={() => setIsSettingsModalOpen(true)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                aria-label="Ajustes del perfil"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-primary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </button>
+            </div>
             <p className="text-gray-600 text-lg">@{profile.displayName}</p>
           </div>
           {/* Profile Photo */}
@@ -236,9 +269,31 @@ export default function ProfilePage() {
           isOpen={isPhotoModalOpen}
           currentPhotoUrl={profile.profilePhotoUrl || null}
           onClose={() => setIsPhotoModalOpen(false)}
-          onPhotoUpdated={() => {
+          onPhotoUpdated={(newPhotoUrl) => {
+            // Update profile immediately if URL is provided
+            if (newPhotoUrl !== undefined) {
+              setProfile(prev => prev ? { ...prev, profilePhotoUrl: newPhotoUrl || null } : null);
+            }
+            // Always refresh profile to get latest data
             fetchProfile();
             setIsPhotoModalOpen(false);
+          }}
+        />
+
+        {/* Profile Settings Modal */}
+        <ProfileSettingsModal
+          isOpen={isSettingsModalOpen}
+          currentProfile={{
+            displayName: profile.displayName,
+            email: profile.email || null,
+            gender: profile.gender || null,
+            birthDate: profile.birthDate || null,
+            isPrivate: profile.isPrivate,
+          }}
+          onClose={() => setIsSettingsModalOpen(false)}
+          onProfileUpdated={() => {
+            fetchProfile();
+            setIsSettingsModalOpen(false);
           }}
         />
 

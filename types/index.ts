@@ -18,6 +18,9 @@ export interface Profile {
   isPrivate: boolean;
   isPremium: boolean;
   createdAt: Date;
+  email?: string | null;
+  gender?: 'femenino' | 'masculino' | 'no_responder' | null;
+  birthDate?: string | null;
 }
 
 // Challenge related types

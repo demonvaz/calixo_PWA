@@ -15,7 +15,8 @@ export const loginSchema = z.object({
     .min(8, 'La contraseña debe tener al menos 8 caracteres'),
 });
 
-export const signupSchema = z
+// Schema for step 1 (credentials)
+export const signupCredentialsSchema = z
   .object({
     email: z
       .string()
@@ -34,9 +35,9 @@ export const signupSchema = z
       .min(1, 'Por favor confirma tu contraseña'),
     displayName: z
       .string()
-      .min(3, 'El nombre debe tener al menos 3 caracteres')
+      .min(2, 'El nombre debe tener al menos 2 caracteres')
       .max(50, 'El nombre no puede tener más de 50 caracteres')
-      .regex(/^\S+$/, 'El nombre de usuario no puede contener espacios'),
+      .regex(/^[a-zA-Z0-9_]+$/, 'El nombre solo puede contener letras, números y guiones bajos'),
     acceptTerms: z
       .boolean()
       .refine((val) => val === true, {
@@ -44,6 +45,70 @@ export const signupSchema = z
       }),
   })
   .refine((data) => data.password === data.confirmPassword, {
+    message: 'Las contraseñas no coinciden',
+    path: ['confirmPassword'],
+  });
+
+// Schema for step 2 (profile)
+export const signupProfileSchema = z.object({
+  displayName: z
+    .string()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .max(50, 'El nombre no puede tener más de 50 caracteres')
+    .regex(/^[a-zA-Z0-9_]+$/, 'El nombre solo puede contener letras, números y guiones bajos'),
+  gender: z.enum(['femenino', 'masculino', 'no_responder']).optional().nullable(),
+  birthDate: z
+    .string()
+    .optional()
+    .nullable()
+    .refine(
+      (val) => !val || val === '' || /^\d{4}-\d{2}-\d{2}$/.test(val),
+      'La fecha debe estar en formato YYYY-MM-DD'
+    ),
+  isPrivate: z.boolean().optional(),
+});
+
+// Combined schema for backward compatibility
+export const signupSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, 'El correo electrónico es requerido')
+      .email('Correo electrónico inválido')
+      .optional(),
+    password: z
+      .string()
+      .optional(),
+    confirmPassword: z
+      .string()
+      .optional(),
+    displayName: z
+      .string()
+      .min(2, 'El nombre debe tener al menos 2 caracteres')
+      .max(50, 'El nombre no puede tener más de 50 caracteres')
+      .regex(/^[a-zA-Z0-9_]+$/, 'El nombre solo puede contener letras, números y guiones bajos'),
+    acceptTerms: z
+      .boolean()
+      .optional(),
+    gender: z.enum(['femenino', 'masculino', 'no_responder']).optional().nullable(),
+    birthDate: z
+      .string()
+      .optional()
+      .nullable()
+      .refine(
+        (val) => !val || val === '' || /^\d{4}-\d{2}-\d{2}$/.test(val),
+        'La fecha debe estar en formato YYYY-MM-DD'
+      ),
+    isPrivate: z.boolean().optional(),
+    step: z.enum(['credentials', 'profile', 'photo']).optional(),
+  })
+  .refine((data) => {
+    // Only validate password match if passwords are provided
+    if (data.password && data.confirmPassword) {
+      return data.password === data.confirmPassword;
+    }
+    return true;
+  }, {
     message: 'Las contraseñas no coinciden',
     path: ['confirmPassword'],
   });

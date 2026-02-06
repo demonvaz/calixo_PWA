@@ -13,7 +13,15 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data } = await supabase.auth.exchangeCodeForSession(code);
+    
+    // Check if email is verified
+    const isEmailVerified = data.user?.email_confirmed_at !== null && data.user?.email_confirmed_at !== undefined;
+    
+    if (!isEmailVerified && data.user?.email) {
+      // Redirect to verification page if email not verified
+      return NextResponse.redirect(`${origin}/auth/verify-email?email=${encodeURIComponent(data.user.email)}`);
+    }
   }
 
   // Redirect to home (feed) after successful auth

@@ -6,6 +6,9 @@ import { z } from 'zod';
 const updateProfileSchema = z.object({
   displayName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(50, 'El nombre no puede exceder 50 caracteres').optional(),
   isPrivate: z.boolean().optional(),
+  gender: z.enum(['femenino', 'masculino', 'no_responder']).optional().nullable(),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha debe estar en formato YYYY-MM-DD').optional().nullable(),
+  email: z.string().email('El email no es válido').optional(),
 });
 
 /**
@@ -93,6 +96,9 @@ export async function GET() {
         updatedAt: userData.updated_at,
         profilePhotoUrl: profilePhotoUrl,
         profilePhotoPath: userData.profile_photo_path || null,
+        email: user.email || null,
+        gender: userData.gender || null,
+        birthDate: userData.birth_date || null,
       }
     });
   } catch (error) {
@@ -132,12 +138,58 @@ export async function PATCH(request: NextRequest) {
 
     const updateData: Record<string, any> = {};
     if (validatedFields.data.displayName !== undefined) {
-      updateData.display_name = validatedFields.data.displayName;
+      const newDisplayName = validatedFields.data.displayName.trim();
+      
+      // Check if display name is being changed
+      const { data: currentUser } = await supabase
+        .from('users')
+        .select('display_name')
+        .eq('id', user.id)
+        .single();
+
+      if (currentUser?.display_name !== newDisplayName) {
+        // Check if new display name is already taken
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('display_name', newDisplayName)
+          .neq('id', user.id)
+          .single();
+
+        if (existingUser) {
+          return NextResponse.json(
+            { error: 'Este nombre de usuario ya está en uso' },
+            { status: 400 }
+          );
+        }
+      }
+
+      updateData.display_name = newDisplayName;
     }
     if (validatedFields.data.isPrivate !== undefined) {
       updateData.is_private = validatedFields.data.isPrivate;
     }
+    if (validatedFields.data.gender !== undefined) {
+      updateData.gender = validatedFields.data.gender;
+    }
+    if (validatedFields.data.birthDate !== undefined) {
+      updateData.birth_date = validatedFields.data.birthDate || null;
+    }
     updateData.updated_at = new Date().toISOString();
+
+    // Si se quiere cambiar el email, actualizar en Supabase Auth
+    if (validatedFields.data.email && validatedFields.data.email !== user.email) {
+      const { error: emailError } = await supabase.auth.updateUser({
+        email: validatedFields.data.email,
+      });
+      
+      if (emailError) {
+        return NextResponse.json(
+          { error: 'Error al actualizar el email: ' + emailError.message },
+          { status: 400 }
+        );
+      }
+    }
 
     // Update user using Supabase
     const { data: updatedUser, error: updateError } = await supabase
@@ -154,6 +206,21 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // Update display_name in auth metadata to keep it in sync
+    if (validatedFields.data.displayName !== undefined) {
+      const { error: authUpdateError } = await supabase.auth.updateUser({
+        data: {
+          display_name: validatedFields.data.displayName.trim(),
+        },
+      });
+
+      if (authUpdateError) {
+        console.error('Error updating auth metadata:', authUpdateError);
+        // Don't fail the request if auth metadata update fails, but log it
+        // The users table update was successful, which is the most important
+      }
+    }
+
     // Get profile photo URL if exists
     let profilePhotoUrl: string | null = null;
     if (updatedUser.profile_photo_path) {
@@ -168,6 +235,9 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    // Get updated user from auth to get latest email
+    const { data: { user: updatedAuthUser } } = await supabase.auth.getUser();
+
     return NextResponse.json({
       message: 'Perfil actualizado exitosamente',
       profile: {
@@ -181,6 +251,9 @@ export async function PATCH(request: NextRequest) {
         updatedAt: updatedUser.updated_at,
         profilePhotoUrl: profilePhotoUrl,
         profilePhotoPath: updatedUser.profile_photo_path || null,
+        email: updatedAuthUser?.email || user.email || null,
+        gender: updatedUser.gender || null,
+        birthDate: updatedUser.birth_date || null,
       }
     });
   } catch (error) {

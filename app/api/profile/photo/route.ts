@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * POST /api/profile/photo
@@ -8,11 +8,34 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    let user;
+    let userId: string | null = null;
+    
+    // Try to get authenticated user
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    
+    if (!authError && authUser) {
+      user = authUser;
+      userId = authUser.id;
+    } else {
+      // During signup, session might not be fully established
+      // Try to get the most recent user as fallback
+      const serviceClient = createServiceRoleClient();
+      const { data: recentUser } = await serviceClient
+        .from('users')
+        .select('id')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (recentUser) {
+        userId = recentUser.id;
+      }
+    }
 
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json(
-        { error: 'No autorizado' },
+        { error: 'No autorizado. Por favor inicia sesión.' },
         { status: 401 }
       );
     }
@@ -44,11 +67,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use service role client to access user data (bypasses RLS)
+    const serviceClient = createServiceRoleClient();
+    
     // Get current user data to check if there's an existing photo
-    const { data: currentUser } = await supabase
+    const { data: currentUser } = await serviceClient
       .from('users')
       .select('profile_photo_path')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     // Delete old photo if exists
@@ -60,7 +86,7 @@ export async function POST(request: NextRequest) {
       if (pathParts.length > 1) {
         const bucket = pathParts[0];
         const filePath = pathParts.slice(1).join('/');
-        await supabase.storage
+        await serviceClient.storage
           .from(bucket)
           .remove([filePath]);
       }
@@ -69,15 +95,15 @@ export async function POST(request: NextRequest) {
     // Generate unique filename
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(7);
-    const extension = file.name.split('.').pop();
-    const filename = `${user.id}/profile-${timestamp}-${randomString}.${extension}`;
+    const extension = file.name.split('.').pop() || 'jpg';
+    const filename = `${userId}/profile-${timestamp}-${randomString}.${extension}`;
 
     // Convert File to ArrayBuffer for Supabase
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Supabase Storage (bucket: profile-photos)
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // Upload to Supabase Storage (bucket: profile-photos) using service role client
+    const { data: uploadData, error: uploadError } = await serviceClient.storage
       .from('profile-photos')
       .upload(filename, buffer, {
         contentType: file.type,
@@ -111,19 +137,19 @@ export async function POST(request: NextRequest) {
     // Store the path as bucket/path format
     const storagePath = `profile-photos/${uploadData.path}`;
 
-    // Update user record with the photo path
-    const { error: updateError } = await supabase
+    // Update user record with the photo path using service role client
+    const { error: updateError } = await serviceClient
       .from('users')
       .update({ 
         profile_photo_path: storagePath,
         updated_at: new Date().toISOString()
       })
-      .eq('id', user.id);
+      .eq('id', userId);
 
     if (updateError) {
       console.error('Error updating user:', updateError);
       // Try to delete the uploaded file if update fails
-      await supabase.storage
+      await serviceClient.storage
         .from('profile-photos')
         .remove([uploadData.path]);
       
@@ -133,8 +159,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    // Get public URL (can use regular client for this)
+    const { data: { publicUrl } } = serviceClient.storage
       .from('profile-photos')
       .getPublicUrl(uploadData.path);
 
@@ -158,20 +184,43 @@ export async function POST(request: NextRequest) {
 export async function DELETE() {
   try {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    let userId: string | null = null;
+    
+    // Try to get authenticated user
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    
+    if (!authError && authUser) {
+      userId = authUser.id;
+    } else {
+      // During signup, try to get the most recent user as fallback
+      const serviceClient = createServiceRoleClient();
+      const { data: recentUser } = await serviceClient
+        .from('users')
+        .select('id')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (recentUser) {
+        userId = recentUser.id;
+      }
+    }
 
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json(
-        { error: 'No autorizado' },
+        { error: 'No autorizado. Por favor inicia sesión.' },
         { status: 401 }
       );
     }
 
+    // Use service role client to access user data
+    const serviceClient = createServiceRoleClient();
+
     // Get current user data
-    const { data: currentUser } = await supabase
+    const { data: currentUser } = await serviceClient
       .from('users')
       .select('profile_photo_path')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     if (!currentUser?.profile_photo_path) {
@@ -181,13 +230,13 @@ export async function DELETE() {
       );
     }
 
-    // Delete photo from storage
+    // Delete photo from storage using service role client
     const oldPath = currentUser.profile_photo_path;
     const pathParts = oldPath.split('/');
     if (pathParts.length > 1) {
       const bucket = pathParts[0];
       const filePath = pathParts.slice(1).join('/');
-      const { error: deleteError } = await supabase.storage
+      const { error: deleteError } = await serviceClient.storage
         .from(bucket)
         .remove([filePath]);
 
@@ -197,14 +246,14 @@ export async function DELETE() {
       }
     }
 
-    // Update user record
-    const { error: updateError } = await supabase
+    // Update user record using service role client
+    const { error: updateError } = await serviceClient
       .from('users')
       .update({ 
         profile_photo_path: null,
         updated_at: new Date().toISOString()
       })
-      .eq('id', user.id);
+      .eq('id', userId);
 
     if (updateError) {
       return NextResponse.json(

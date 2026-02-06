@@ -45,10 +45,19 @@ export async function updateSession(request: NextRequest) {
 
   // Protect routes that require authentication
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
+  const isVerifyEmailPage = request.nextUrl.pathname === '/auth/verify-email';
   const isProtectedRoute = 
     request.nextUrl.pathname.startsWith('/profile') ||
     request.nextUrl.pathname.startsWith('/challenges') ||
-    request.nextUrl.pathname.startsWith('/admin');
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/feed') ||
+    request.nextUrl.pathname.startsWith('/notifications') ||
+    request.nextUrl.pathname.startsWith('/store') ||
+    request.nextUrl.pathname.startsWith('/subscription') ||
+    (request.nextUrl.pathname === '/' && user); // Home page requires auth if user exists
+
+  // Check if user email is verified
+  const isEmailVerified = user?.email_confirmed_at !== null && user?.email_confirmed_at !== undefined;
 
   if (!user && isProtectedRoute) {
     // Redirect to login if trying to access protected route without auth
@@ -58,8 +67,20 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && isAuthPage) {
-    // Redirect to home (feed) if already authenticated and trying to access auth pages
+  // If user is authenticated but email is not verified, redirect to verification page
+  // (except if they're already on the verification page or on auth pages like login/signup)
+  if (user && !isEmailVerified && !isVerifyEmailPage && !request.nextUrl.pathname.startsWith('/auth/login') && !request.nextUrl.pathname.startsWith('/auth/signup')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/verify-email';
+    if (user.email) {
+      url.searchParams.set('email', user.email);
+    }
+    return NextResponse.redirect(url);
+  }
+
+  // If user is authenticated and email is verified, redirect away from auth pages (except verify-email)
+  if (user && isEmailVerified && isAuthPage && !isVerifyEmailPage) {
+    // Allow access to verify-email page even if verified (for checking status)
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);

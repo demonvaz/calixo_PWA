@@ -13,7 +13,7 @@ interface ProfilePhotoModalProps {
   isOpen: boolean;
   currentPhotoUrl: string | null;
   onClose: () => void;
-  onPhotoUpdated: () => void;
+  onPhotoUpdated: (photoUrl?: string) => void;
 }
 
 type ModalStep = 'select' | 'crop' | 'preview';
@@ -155,8 +155,11 @@ export function ProfilePhotoModal({
         throw new Error(data.error || 'Error al subir la foto');
       }
 
+      const uploadData = await uploadResponse.json();
+      const photoUrl = uploadData.url || null;
+
       showToast('Foto de perfil actualizada exitosamente', 'success');
-      onPhotoUpdated();
+      onPhotoUpdated(photoUrl);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al subir la foto');
@@ -182,7 +185,7 @@ export function ProfilePhotoModal({
       }
 
       showToast('Foto de perfil eliminada exitosamente', 'success');
-      onPhotoUpdated();
+      onPhotoUpdated(null);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar la foto');

@@ -1,12 +1,12 @@
 'use client';
 
 import { AuthLayout } from '@/components/auth/auth-layout';
-import { SignupForm } from '@/components/auth/signup-form';
+import { SignupFormMultistep } from '@/components/auth/signup-form-multistep';
 
 export default function SignupPage() {
   return (
     <AuthLayout>
-      <SignupForm />
+      <SignupFormMultistep />
     </AuthLayout>
   );
 }
