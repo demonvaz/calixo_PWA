@@ -60,10 +60,24 @@ export default function FeedPage() {
   const [error, setError] = useState('');
   const [feedType, setFeedType] = useState<'following' | 'global'>('following');
   const [offset, setOffset] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchFeed();
   }, [feedType]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch('/api/profile');
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUserId(data.profile?.userId);
+      }
+    } catch (err) {
+      console.error('Error fetching current user:', err);
+    }
+  };
 
   const fetchFeed = async (loadMore = false) => {
     try {
@@ -116,27 +130,8 @@ export default function FeedPage() {
     }
   };
 
-  const handleComment = async (feedItemId: number) => {
-    const comment = prompt('Escribe tu comentario:');
-    if (!comment) return;
-
-    try {
-      const response = await fetch(`/api/feed/${feedItemId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comment }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al comentar');
-      }
-
-      toast.success('Comentario agregado');
-      await fetchFeed();
-    } catch (err) {
-      console.error('Error commenting:', err);
-      toast.error('Error al comentar');
-    }
+  const handleCommentAdded = () => {
+    fetchFeed();
   };
 
   if (loading) {
@@ -221,8 +216,9 @@ export default function FeedPage() {
               <FeedPost
                 key={post.feedItem.id}
                 post={post}
+                currentUserId={currentUserId}
                 onLike={handleLike}
-                onComment={handleComment}
+                onCommentAdded={handleCommentAdded}
               />
             ))}
 

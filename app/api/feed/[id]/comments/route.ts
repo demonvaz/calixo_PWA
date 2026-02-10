@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getMentionedUsernames } from '@/lib/utils/mentions';
 
 /**
  * GET /api/feed/[id]/comments
@@ -144,13 +145,30 @@ export async function POST(
       // Don't fail the request if count update fails
     }
 
-    // Create notification for post owner (if not own post)
-    if (feedItem.user_id !== user.id) {
+    // Detect mentions in comment
+    const mentionedUsernames = getMentionedUsernames(comment);
+    const mentionedUserIds: string[] = [];
+
+    if (mentionedUsernames.length > 0) {
+      // Find users by display_name (case-insensitive)
+      // Note: In a real app, you might want to use a username field instead
+      const { data: mentionedUsers } = await supabase
+        .from('users')
+        .select('id, display_name')
+        .in('display_name', mentionedUsernames.map(u => u.charAt(0).toUpperCase() + u.slice(1)));
+
+      if (mentionedUsers) {
+        mentionedUserIds.push(...mentionedUsers.map(u => u.id));
+      }
+    }
+
+    // Create notification for post owner (if not own post and not mentioned)
+    if (feedItem.user_id !== user.id && !mentionedUserIds.includes(feedItem.user_id)) {
       await supabase.from('notifications').insert({
         user_id: feedItem.user_id,
         type: 'social',
         title: 'Nuevo comentario',
-        message: 'Alguien comentó en tu post',
+        message: `${userData?.display_name || 'Alguien'} comentó en tu publicación`,
         payload: {
           type: 'feed_comment',
           feedItemId: feedItem.id,
@@ -159,6 +177,27 @@ export async function POST(
         },
         seen: false,
       });
+    }
+
+    // Create notifications for mentioned users
+    for (const mentionedUserId of mentionedUserIds) {
+      // Don't notify if it's the commenter or post owner (already notified above)
+      if (mentionedUserId !== user.id && mentionedUserId !== feedItem.user_id) {
+        await supabase.from('notifications').insert({
+          user_id: mentionedUserId,
+          type: 'social',
+          title: 'Te mencionaron',
+          message: `${userData?.display_name || 'Alguien'} te mencionó en un comentario`,
+          payload: {
+            type: 'feed_mention',
+            feedItemId: feedItem.id,
+            commentId: newComment.id,
+            commenterId: user.id,
+            comment: comment.substring(0, 100), // Preview
+          },
+          seen: false,
+        });
+      }
     }
 
     // Format the new comment

@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FeedComments } from './feed-comments';
+import { SharePostModal } from './share-post-modal';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
 
 interface FeedPostProps {
   post: {
@@ -53,16 +56,71 @@ interface FeedPostProps {
 }
 
 export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPostProps) {
+  const router = useRouter();
+  const toast = useToast();
   const [isLiked, setIsLiked] = useState(false);
   const [localLikes, setLocalLikes] = useState(post.feedItem.likesCount);
   const [localCommentsCount, setLocalCommentsCount] = useState(post.feedItem.commentsCount);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [checkingLikeStatus, setCheckingLikeStatus] = useState(true);
 
-  const handleLike = () => {
-    if (onLike) {
-      onLike(post.feedItem.id);
-      setIsLiked(!isLiked);
-      setLocalLikes(prev => isLiked ? prev - 1 : prev + 1);
+  // Check like status on mount
+  useEffect(() => {
+    if (currentUserId) {
+      checkLikeStatus();
+    } else {
+      setCheckingLikeStatus(false);
+    }
+  }, [currentUserId, post.feedItem.id]);
+
+  const checkLikeStatus = async () => {
+    try {
+      const response = await fetch(`/api/feed/${post.feedItem.id}/like`);
+      if (response.ok) {
+        const data = await response.json();
+        setIsLiked(data.isLiked || false);
+      }
+    } catch (error) {
+      console.error('Error checking like status:', error);
+    } finally {
+      setCheckingLikeStatus(false);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!currentUserId) {
+      toast.error('Debes iniciar sesión para dar like');
+      return;
+    }
+
+    // Optimistic update
+    const previousLiked = isLiked;
+    const previousLikes = localLikes;
+    setIsLiked(!previousLiked);
+    setLocalLikes(prev => previousLiked ? prev - 1 : prev + 1);
+
+    try {
+      const response = await fetch(`/api/feed/${post.feedItem.id}/like`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al dar like');
+      }
+
+      const data = await response.json();
+      setIsLiked(data.isLiked);
+      setLocalLikes(data.likesCount);
+
+      if (onLike) {
+        onLike(post.feedItem.id);
+      }
+    } catch (error) {
+      // Revert optimistic update
+      setIsLiked(previousLiked);
+      setLocalLikes(previousLikes);
+      toast.error('Error al dar like');
     }
   };
 
@@ -71,6 +129,35 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
     if (onCommentAdded) {
       onCommentAdded();
     }
+  };
+
+  const handlePostClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('a') ||
+      target.closest('[data-no-navigate]')
+    ) {
+      return;
+    }
+    router.push(`/feed/${post.feedItem.id}`);
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsShareModalOpen(true);
+  };
+
+  const getPostUrl = () => {
+    return `${window.location.origin}/feed/${post.feedItem.id}`;
+  };
+
+  const getPostTitle = () => {
+    if (post.challenge) {
+      return `${post.profile?.displayName || 'Usuario'} completó: ${post.challenge.title}`;
+    }
+    return `${post.profile?.displayName || 'Usuario'} compartió una publicación`;
   };
 
   // Handle ESC key to close image modal
@@ -164,9 +251,9 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow" onClick={handlePostClick}>
       {/* Header */}
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3" data-no-navigate>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {post.profile?.profilePhotoUrl ? (
@@ -207,7 +294,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
 
       {/* Challenge Info - Minimalist */}
       {post.challenge && (
-        <div className="px-6 pt-2 pb-3 border-b border-gray-100">
+        <div className="px-6 pt-2 pb-3 border-b border-gray-100" data-no-navigate>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="text-base">{getChallengeTypeIcon(post.challenge.type)}</span>
             <span className="font-medium text-gray-900">{post.challenge.title}</span>
@@ -228,7 +315,11 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
         <>
           <div 
             className="relative w-full md:max-w-md md:mx-auto aspect-square bg-gray-100 cursor-pointer"
-            onClick={() => setIsImageModalOpen(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsImageModalOpen(true);
+            }}
+            data-no-navigate
           >
             <Image
               src={post.feedItem.imageUrl}
@@ -335,32 +426,41 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
       </CardContent>
 
       {/* Footer */}
-      <CardFooter className="flex justify-between border-t pt-3">
+      <CardFooter className="flex justify-between border-t pt-3" data-no-navigate>
         <div className="flex gap-4">
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleLike}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleLike();
+            }}
+            disabled={checkingLikeStatus}
             className={isLiked ? 'text-red-600' : ''}
           >
-            {isLiked ? 'Me gusta' : 'Me gusta'} {localLikes}
+            {isLiked ? '❤️' : '🤍'} {localLikes}
           </Button>
           <Button
             variant="ghost"
             size="sm"
+            onClick={(e) => e.stopPropagation()}
           >
             {localCommentsCount} comentarios
           </Button>
         </div>
         
-        <Button variant="ghost" size="sm">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={handleShare}
+        >
           🔗 Compartir
         </Button>
       </CardFooter>
 
       {/* Comments Section */}
       {currentUserId && (
-        <div className="px-6 pb-4">
+        <div className="px-6 pb-4" data-no-navigate>
           <FeedComments
             feedItemId={post.feedItem.id}
             currentUserId={currentUserId}
@@ -368,6 +468,15 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
           />
         </div>
       )}
+
+      {/* Share Modal */}
+      <SharePostModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        postUrl={getPostUrl()}
+        postTitle={getPostTitle()}
+        postImage={post.feedItem.imageUrl}
+      />
     </Card>
   );
 }

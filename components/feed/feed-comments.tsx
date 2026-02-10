@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Spinner } from '@/components/ui/spinner';
+import { formatMentions } from '@/lib/utils/mentions';
 
 interface Comment {
   id: number;
@@ -171,7 +172,21 @@ export function FeedComments({ feedItemId, currentUserId, onCommentAdded }: Feed
                       </span>
                     </div>
                     <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
-                      {comment.comment}
+                      {formatMentions(comment.comment).map((part, idx) => {
+                        if (typeof part === 'string') {
+                          return <span key={idx}>{part}</span>;
+                        }
+                        return (
+                          <Link
+                            key={idx}
+                            href={`/profile/${part.username}`}
+                            className="text-blue-600 hover:underline font-medium"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            @{part.username}
+                          </Link>
+                        );
+                      })}
                     </p>
                   </div>
                 </div>
