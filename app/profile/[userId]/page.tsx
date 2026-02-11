@@ -17,7 +17,6 @@ interface UserProfile {
     avatarEnergy: number;
     isPrivate: boolean;
     isPremium: boolean;
-    streak: number;
     createdAt: Date;
     profilePhotoUrl: string | null;
   };
@@ -295,10 +294,6 @@ export default function PublicProfilePage({ params }: { params: { userId: string
                     <div>
                       <span className="font-semibold text-gray-900">{profileData.stats.followingCount}</span>
                       <span className="text-gray-600 ml-1">Siguiendo</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold text-gray-900">🔥 {profileData.profile.streak}</span>
-                      <span className="text-gray-600 ml-1">Racha</span>
                     </div>
                   </div>
                 </div>

@@ -16,7 +16,6 @@ type Profile = {
   isPrivate: boolean;
   isPremium: boolean;
   coins: number;
-  streak: number;
   createdAt: Date;
   updatedAt: Date;
   profilePhotoUrl?: string | null;
@@ -315,14 +314,10 @@ export default function ProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-600">{profile.coins}</p>
                 <p className="text-sm text-gray-600">Monedas</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-orange-600">{profile.streak}</p>
-                <p className="text-sm text-gray-600">Racha (días)</p>
               </div>
               <div className="text-center">
                 <p className={`text-2xl font-bold ${energyColor}`}>
