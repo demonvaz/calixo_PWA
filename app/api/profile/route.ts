@@ -83,6 +83,23 @@ export async function GET() {
       }
     }
 
+    // Get stats
+    const { count: challengesCompleted } = await supabase
+      .from('user_challenges')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'completed');
+
+    const { count: followersCount } = await supabase
+      .from('followers')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', user.id);
+
+    const { count: followingCount } = await supabase
+      .from('followers')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', user.id);
+
     return NextResponse.json({
       profile: {
         userId: userData.id,
@@ -99,7 +116,12 @@ export async function GET() {
         email: user.email || null,
         gender: userData.gender || null,
         birthDate: userData.birth_date || null,
-      }
+      },
+      stats: {
+        challengesCompleted: challengesCompleted || 0,
+        followersCount: followersCount || 0,
+        followingCount: followingCount || 0,
+      },
     });
   } catch (error) {
     console.error('Error fetching profile:', error);

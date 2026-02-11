@@ -8,6 +8,7 @@ import { AvatarPreview } from '@/components/avatar/avatar-preview';
 import { FeedPost } from '@/components/feed/feed-post';
 import { useToast } from '@/components/ui/toast';
 import { Spinner } from '@/components/ui/spinner';
+import { FollowersModal } from '@/components/profile/followers-modal';
 import Image from 'next/image';
 
 interface UserProfile {
@@ -78,6 +79,8 @@ export default function PublicProfilePage({ params }: { params: { userId: string
   const [error, setError] = useState('');
   const [isFollowing, setIsFollowing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
 
   useEffect(() => {
     fetchCurrentUser();
@@ -287,14 +290,26 @@ export default function PublicProfilePage({ params }: { params: { userId: string
                       <span className="font-semibold text-gray-900">{profileData.stats.challengesCompleted}</span>
                       <span className="text-gray-600 ml-1">Retos</span>
                     </div>
-                    <div>
+                    <button
+                      onClick={() => {
+                        setFollowersModalType('followers');
+                        setFollowersModalOpen(true);
+                      }}
+                      className="hover:opacity-80 transition-opacity text-left"
+                    >
                       <span className="font-semibold text-gray-900">{profileData.stats.followersCount}</span>
                       <span className="text-gray-600 ml-1">Seguidores</span>
-                    </div>
-                    <div>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setFollowersModalType('following');
+                        setFollowersModalOpen(true);
+                      }}
+                      className="hover:opacity-80 transition-opacity text-left"
+                    >
                       <span className="font-semibold text-gray-900">{profileData.stats.followingCount}</span>
                       <span className="text-gray-600 ml-1">Siguiendo</span>
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -321,6 +336,13 @@ export default function PublicProfilePage({ params }: { params: { userId: string
             </div>
           </CardHeader>
         </Card>
+
+        <FollowersModal
+          isOpen={followersModalOpen}
+          type={followersModalType}
+          userId={params.userId}
+          onClose={() => setFollowersModalOpen(false)}
+        />
 
         {/* Feed Posts - Estilo Twitter */}
         {loadingFeed ? (

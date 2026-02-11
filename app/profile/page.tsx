@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Spinner } from '@/components/ui/spinner';
 import { ProfilePhotoModal } from '@/components/profile/profile-photo-modal';
 import { ProfileSettingsModal } from '@/components/profile/profile-settings-modal';
+import { FollowersModal } from '@/components/profile/followers-modal';
 import Image from 'next/image';
 
 type Profile = {
@@ -25,6 +26,12 @@ type Profile = {
   birthDate?: string | null;
 };
 
+type ProfileStats = {
+  challengesCompleted: number;
+  followersCount: number;
+  followingCount: number;
+};
+
 type UserChallenge = {
   id: number;
   challengeId: number;
@@ -41,6 +48,7 @@ type UserChallenge = {
 export default function ProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [stats, setStats] = useState<ProfileStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
@@ -48,6 +56,8 @@ export default function ProfilePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 5,
@@ -80,6 +90,7 @@ export default function ProfilePage() {
 
       const data = await response.json();
       setProfile(data.profile);
+      setStats(data.stats || null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -237,6 +248,40 @@ export default function ProfilePage() {
               </button>
             </div>
             <p className="text-gray-600 text-lg">@{profile.displayName}</p>
+
+            {/* Stats: Retos, Seguidores, Siguiendo */}
+            <div className="flex gap-4 md:gap-6 mt-3 text-sm">
+              <div>
+                <span className="font-semibold text-gray-900">
+                  {stats?.challengesCompleted ?? 0}
+                </span>
+                <span className="text-gray-600 ml-1">Retos</span>
+              </div>
+              <button
+                onClick={() => {
+                  setFollowersModalType('followers');
+                  setFollowersModalOpen(true);
+                }}
+                className="hover:opacity-80 transition-opacity text-left"
+              >
+                <span className="font-semibold text-gray-900">
+                  {stats?.followersCount ?? 0}
+                </span>
+                <span className="text-gray-600 ml-1">Seguidores</span>
+              </button>
+              <button
+                onClick={() => {
+                  setFollowersModalType('following');
+                  setFollowersModalOpen(true);
+                }}
+                className="hover:opacity-80 transition-opacity text-left"
+              >
+                <span className="font-semibold text-gray-900">
+                  {stats?.followingCount ?? 0}
+                </span>
+                <span className="text-gray-600 ml-1">Siguiendo</span>
+              </button>
+            </div>
           </div>
           {/* Profile Photo */}
           <button
@@ -294,6 +339,12 @@ export default function ProfilePage() {
             fetchProfile();
             setIsSettingsModalOpen(false);
           }}
+        />
+
+        <FollowersModal
+          isOpen={followersModalOpen}
+          type={followersModalType}
+          onClose={() => setFollowersModalOpen(false)}
         />
 
         {/* Error Message */}
