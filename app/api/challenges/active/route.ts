@@ -58,10 +58,15 @@ export async function GET(request: NextRequest) {
 
     // Get duration from session_data if available (for custom focus challenges)
     let durationMinutes = challenge.duration_minutes || 60;
+    let reward = challenge.reward;
     if (activeChallenge.session_data && typeof activeChallenge.session_data === 'object') {
-      const sessionData = activeChallenge.session_data as any;
+      const sessionData = activeChallenge.session_data as { durationMinutes?: number };
       if (sessionData.durationMinutes) {
         durationMinutes = sessionData.durationMinutes;
+        // Para focus: 1 moneda por hora
+        if (challenge.type === 'focus') {
+          reward = Math.floor(durationMinutes / 60);
+        }
       }
     }
 
@@ -75,7 +80,7 @@ export async function GET(request: NextRequest) {
         startedAt: activeChallenge.started_at,
         finishedAt: activeChallenge.finished_at,
         durationMinutes,
-        reward: challenge.reward,
+        reward,
       },
     });
   } catch (error) {

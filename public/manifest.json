@@ -63,7 +63,7 @@
       "name": "Retos Diarios",
       "short_name": "Retos",
       "description": "Ver los retos diarios disponibles",
-      "url": "/challenges/daily",
+      "url": "/challenges",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {

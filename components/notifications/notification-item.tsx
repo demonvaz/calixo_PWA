@@ -172,7 +172,7 @@ export function NotificationItem({ notification, onRefresh, onShareChallenge }: 
           icon: '',
           title: 'Recordatorio de reto',
           message: payload.message || 'Tienes un reto pendiente',
-          link: '/challenges/daily',
+          link: '/challenges',
           hasActions: false,
         };
       }
@@ -191,7 +191,7 @@ export function NotificationItem({ notification, onRefresh, onShareChallenge }: 
           icon: '',
           title: notification.title || '¡Reto finalizado!',
           message: notification.message || `Has completado "${payload.challengeTitle}". Ve a Retos para reclamar tu recompensa.`,
-          link: '/challenges/daily',
+          link: '/challenges',
           hasActions: false,
         };
       }
@@ -255,7 +255,7 @@ export function NotificationItem({ notification, onRefresh, onShareChallenge }: 
       const getIconAndLink = () => {
         switch (type) {
           case 'challenge':
-            return { icon: '', link: '/challenges/daily' };
+            return { icon: '', link: '/challenges' };
           case 'social':
             return { icon: '', link: '/feed' };
           case 'store':

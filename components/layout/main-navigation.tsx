@@ -13,7 +13,7 @@ import { ChallengeBadge } from '@/components/challenges/challenge-badge';
 const navigationItems = [
   { href: '/feed', label: 'Feed' },
   { href: '/search', label: 'Búsqueda' },
-  { href: '/challenges/daily', label: 'Retos' },
+  { href: '/challenges', label: 'Retos' },
   { href: '/store', label: 'Tienda' },
   { href: '/profile', label: 'Perfil' },
   { href: '/notifications', label: 'Notificaciones' },
@@ -42,7 +42,7 @@ const mobileNavigationItems = [
     )
   },
   { 
-    href: '/challenges/daily', 
+    href: '/challenges', 
     label: 'Retos',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -231,7 +231,7 @@ export function MainNavigation() {
                 const isActive = pathname === item.href || 
                   (item.href !== '/feed' && pathname?.startsWith(item.href));
                 const isNotifications = item.href === '/notifications';
-                const isChallenges = item.href === '/challenges/daily';
+                const isChallenges = item.href === '/challenges';
                 
                 return (
                   <Link
@@ -307,7 +307,7 @@ export function MainNavigation() {
             const isActive = pathname === item.href || 
               (item.href !== '/feed' && pathname?.startsWith(item.href));
             const isNotifications = item.href === '/notifications';
-            const isChallenges = item.href === '/challenges/daily';
+            const isChallenges = item.href === '/challenges';
             
             return (
               <Link

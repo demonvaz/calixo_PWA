@@ -103,24 +103,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For focus challenges, validate custom duration
+    // For focus challenges: solo premium, validar duración (max 5 horas)
     let duration = challenge.duration_minutes;
-    if (challenge.type === 'focus' && customDuration !== undefined && customDuration !== null) {
+    if (challenge.type === 'focus') {
+      // Verificar que el usuario sea premium
+      const { data: userData } = await supabase
+        .from('users')
+        .select('is_premium')
+        .eq('id', user.id)
+        .single();
+
+      if (!userData?.is_premium) {
+        return NextResponse.json(
+          { error: 'El Modo Focus es exclusivo para usuarios Premium. Actualiza tu suscripción para acceder.' },
+          { status: 403 }
+        );
+      }
+
+      if (customDuration === undefined || customDuration === null) {
+        return NextResponse.json(
+          { error: 'Debes especificar la duración para el Modo Focus' },
+          { status: 400 }
+        );
+      }
       if (typeof customDuration !== 'number' || isNaN(customDuration)) {
         return NextResponse.json(
           { error: 'La duración personalizada debe ser un número válido' },
           { status: 400 }
         );
       }
-      if (customDuration < 1) {
+      if (customDuration < 15) {
         return NextResponse.json(
-          { error: 'La duración mínima es de 1 minuto' },
+          { error: 'La duración mínima es de 15 minutos' },
           { status: 400 }
         );
       }
-      if (customDuration > 23 * 60) {
+      if (customDuration > 5 * 60) {
         return NextResponse.json(
-          { error: 'La duración máxima es de 23 horas' },
+          { error: 'La duración máxima es de 5 horas' },
           { status: 400 }
         );
       }

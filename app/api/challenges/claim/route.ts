@@ -99,8 +99,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update coins, streak, and avatar energy (solo recompensa base)
-    const baseReward = challenge.reward;
+    // Para retos focus: 1 moneda por hora (calculado desde session_data)
+    let baseReward = challenge.reward;
+    if (challenge.type === 'focus' && userChallenge.session_data) {
+      const sessionData = userChallenge.session_data as { durationMinutes?: number };
+      const durationMinutes = sessionData.durationMinutes || 60;
+      baseReward = Math.floor(durationMinutes / 60); // 1 moneda por hora
+    }
     const newCoins = userData.coins + baseReward;
     const newStreak = userData.streak + 1;
     const newEnergy = updateEnergyOnChallengeComplete(

@@ -184,7 +184,7 @@ export default function TransactionsPage() {
                 Completa retos para ganar monedas o compra items en la tienda
               </p>
               <div className="flex gap-2 justify-center">
-                <Button onClick={() => router.push('/challenges/daily')}>
+                <Button onClick={() => router.push('/challenges')}>
                   Hacer Retos
                 </Button>
                 <Button variant="outline" onClick={() => router.push('/store')}>

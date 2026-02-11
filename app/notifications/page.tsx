@@ -290,7 +290,7 @@ export default function NotificationsPage() {
                 ¡Estás al día con todo!
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Button onClick={() => router.push('/challenges/daily')} className="w-full sm:w-auto">
+                <Button onClick={() => router.push('/challenges')} className="w-full sm:w-auto">
                   Hacer Retos
                 </Button>
               </div>

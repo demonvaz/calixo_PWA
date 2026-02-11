@@ -95,13 +95,27 @@ export async function GET(request: NextRequest) {
     // Ensure we have an array
     let challenges = Array.isArray(availableChallenges) ? availableChallenges : [];
     
-    // Filter out challenges that are currently active
-    if (activeChallengeIds.length > 0) {
+    // Filter out challenges that are currently active (solo para el tipo solicitado)
+    if (type === 'daily' && activeChallengeIds.length > 0) {
       challenges = challenges.filter(challenge => !activeChallengeIds.includes(challenge.id));
       console.log(`Filtered out ${activeChallengeIds.length} active challenge(s) from list`);
+    } else if (type !== 'daily' && activeChallengeIds.length > 0) {
+      challenges = challenges.filter(challenge => !activeChallengeIds.includes(challenge.id));
     }
     
     console.log('Processing challenges:', challenges.length);
+
+    // Para type=daily, obtener también el primer reto focus (para el banner Modo Focus)
+    let focusChallenge = null;
+    if (type === 'daily') {
+      const { data: focusChallenges } = await supabase
+        .from('challenges')
+        .select('id, title, description, type')
+        .eq('type', 'focus')
+        .eq('is_active', true)
+        .limit(1);
+      focusChallenge = focusChallenges?.[0] || null;
+    }
 
     // Add metadata to challenges
     const challengesWithMetadata = challenges.map((challenge) => {
@@ -139,6 +153,7 @@ export async function GET(request: NextRequest) {
         maxDailyChallenges,
         todaysChallengesCount,
       },
+      focusChallenge: type === 'daily' ? focusChallenge : undefined,
     };
 
     console.log('Sending response with', challengesWithMetadata.length, 'challenges');

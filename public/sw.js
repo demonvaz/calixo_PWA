@@ -8,8 +8,7 @@ const OFFLINE_URL = '/offline';
 const PRECACHE_ASSETS = [
   '/',
   '/offline',
-  '/challenges/daily',
-  '/challenges/focus',
+  '/challenges',
   '/challenges/social',
   '/feed',
   '/store',

@@ -196,7 +196,7 @@ export default function FeedPage() {
                   : 'Completa retos y comparte tus logros'}
               </p>
               <div className="flex gap-2 justify-center">
-                <Button onClick={() => router.push('/challenges/daily')}>
+                <Button onClick={() => router.push('/challenges')}>
                   Hacer Retos
                 </Button>
                 {feedType === 'following' && (
