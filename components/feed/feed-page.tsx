@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FeedPost } from '@/components/feed/feed-post';
+import { CalixoFeedCard } from '@/components/feed/calixo-feed-card';
 import { useToast } from '@/components/ui/toast';
 import { createClient } from '@/lib/supabase/client';
 import { Spinner } from '@/components/ui/spinner';
@@ -214,15 +215,24 @@ export function FeedPage() {
             </Card>
           ) : (
             <div className="space-y-6">
-              {feedData.feedItems.map((post) => (
-                <FeedPost
-                  key={post.feedItem.id}
-                  post={post}
-                  currentUserId={currentUserId || undefined}
-                  onLike={handleLike}
-                  onCommentAdded={handleCommentAdded}
-                />
-              ))}
+              {feedData.feedItems.flatMap((post, index) => {
+                const items: React.ReactNode[] = [];
+                if (index > 0 && index % 10 === 0) {
+                  items.push(
+                    <CalixoFeedCard key={`calixo-${index}`} />
+                  );
+                }
+                items.push(
+                  <FeedPost
+                    key={post.feedItem.id}
+                    post={post}
+                    currentUserId={currentUserId || undefined}
+                    onLike={handleLike}
+                    onCommentAdded={handleCommentAdded}
+                  />
+                );
+                return items;
+              })}
 
               {/* Load More */}
               {feedData.hasMore && (
