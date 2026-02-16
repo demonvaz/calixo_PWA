@@ -77,8 +77,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
   const toast = useToast();
   const [profileData, setProfileData] = useState<UserProfile | null>(null);
   const [feedItems, setFeedItems] = useState<FeedPostData[]>([]);
+  const [totalPosts, setTotalPosts] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingFeed, setLoadingFeed] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [isFollowing, setIsFollowing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
@@ -131,28 +134,57 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
     }
   };
 
-  const fetchFeed = async () => {
+  const PAGE_SIZE = 10;
+
+  const fetchFeed = async (offset = 0, append = false) => {
     try {
-      setLoadingFeed(true);
-      
-      const response = await fetch(`/api/profile/${userId}/feed?limit=20&offset=0`);
-      
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoadingFeed(true);
+      }
+      const response = await fetch(
+        `/api/profile/${userId}/feed?limit=${PAGE_SIZE}&offset=${offset}`
+      );
       if (!response.ok) {
         if (response.status === 403) {
-          // Profile is private, don't show error for feed
           setFeedItems([]);
           return;
         }
         throw new Error('Error al cargar las publicaciones');
       }
-      
+      const data = await response.json();
+      const items = data.feedItems || [];
+      if (append) {
+        setFeedItems((prev) => [...prev, ...items]);
+      } else {
+        setFeedItems(items);
+      }
+      if (data.total !== undefined) setTotalPosts(data.total);
+      setHasMore(data.hasMore ?? false);
+    } catch (err) {
+      console.error('Error fetching feed:', err);
+      if (!append) setFeedItems([]);
+    } finally {
+      setLoadingFeed(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMore = () => fetchFeed(feedItems.length, true);
+
+  const refreshLoadedPosts = async () => {
+    if (feedItems.length === 0) return;
+    const limit = Math.max(PAGE_SIZE, feedItems.length);
+    try {
+      const response = await fetch(
+        `/api/profile/${userId}/feed?limit=${limit}&offset=0`
+      );
+      if (!response.ok) return;
       const data = await response.json();
       setFeedItems(data.feedItems || []);
     } catch (err) {
-      console.error('Error fetching feed:', err);
-      setFeedItems([]);
-    } finally {
-      setLoadingFeed(false);
+      console.error('Error refreshing feed:', err);
     }
   };
 
@@ -192,8 +224,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
         throw new Error('Error al dar like');
       }
 
-      // Refresh feed to show updated like count
-      await fetchFeed();
+      await refreshLoadedPosts();
     } catch (err) {
       console.error('Error liking post:', err);
       toast.error('Error al dar like');
@@ -201,7 +232,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
   };
 
   const handleCommentAdded = () => {
-    fetchFeed();
+    refreshLoadedPosts();
   };
 
   if (loading) {
@@ -357,24 +388,45 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-gray-600">
-                {error === 'Este perfil es privado' 
+                {error === 'Este perfil es privado'
                   ? 'Este perfil es privado. Sigue al usuario para ver sus publicaciones.'
                   : 'Este usuario aún no ha compartido ninguna publicación'}
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
-            {feedItems.map((post) => (
-              <FeedPost
-                key={post.feedItem.id}
-                post={post}
-                currentUserId={currentUserId}
-                onLike={handleLike}
-                onCommentAdded={handleCommentAdded}
-              />
-            ))}
-          </div>
+          <>
+            {totalPosts !== null && (
+              <p className="text-sm text-neutral-500 mb-2">
+                {totalPosts === 1
+                  ? '1 publicación'
+                  : `${totalPosts} publicaciones`}
+              </p>
+            )}
+            <div className="space-y-6">
+              {feedItems.map((post) => (
+                <FeedPost
+                  key={post.feedItem.id}
+                  post={post}
+                  currentUserId={currentUserId}
+                  onLike={handleLike}
+                  onCommentAdded={handleCommentAdded}
+                />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center pt-6">
+                <Button
+                  variant="outline"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="min-w-[140px]"
+                >
+                  {loadingMore ? <Spinner size="sm" /> : 'Cargar más'}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

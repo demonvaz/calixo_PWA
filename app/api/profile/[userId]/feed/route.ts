@@ -57,6 +57,16 @@ export async function GET(
       }
     }
 
+    // Get total count (solo en primera carga para ahorrar peticiones)
+    let total = 0;
+    if (offset === 0) {
+      const { count } = await supabase
+        .from('feed_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+      total = count ?? 0;
+    }
+
     // Get feed items for this user
     const { data: feedItems, error: feedError } = await supabase
       .from('feed_items')
@@ -74,7 +84,7 @@ export async function GET(
       return NextResponse.json({
         feedItems: [],
         hasMore: false,
-        total: 0,
+        total: offset === 0 ? total : undefined,
       });
     }
 
@@ -210,7 +220,7 @@ export async function GET(
     return NextResponse.json({
       feedItems: formattedResults,
       hasMore,
-      total: formattedResults.length,
+      total: offset === 0 ? total : undefined,
     });
   } catch (error: any) {
     console.error('Error fetching user feed:', error);

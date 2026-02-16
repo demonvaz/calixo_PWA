@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { ProfilePhotoModal } from '@/components/profile/profile-photo-modal';
 import { ProfileSettingsModal } from '@/components/profile/profile-settings-modal';
 import { FollowersModal } from '@/components/profile/followers-modal';
 import { EnergyBanner } from '@/components/profile/energy-banner';
 import { PremiumBadge } from '@/components/profile/premium-badge';
+import { FeedPost } from '@/components/feed/feed-post';
 import Image from 'next/image';
 
 type Profile = {
@@ -34,17 +35,43 @@ type ProfileStats = {
   followingCount: number;
 };
 
-type UserChallenge = {
-  id: number;
-  challengeId: number;
-  challengeTitle: string;
-  challengeType: string;
-  reward: number;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'canceled';
-  statusDate: string;
-  startedAt?: string;
-  completedAt?: string;
-  failedAt?: string;
+type FeedPostData = {
+  feedItem: {
+    id: number;
+    imageUrl: string | null;
+    note: string | null;
+    likesCount: number;
+    commentsCount: number;
+    createdAt: Date;
+  };
+  profile: {
+    userId: string;
+    displayName: string;
+    avatarEnergy: number;
+    isPremium: boolean;
+    profilePhotoUrl: string | null;
+  } | null;
+  userChallenge: {
+    id: number;
+    userId: string;
+    challengeId: number;
+    status: string;
+    startedAt: string | null;
+    completedAt: string | null;
+    failedAt: string | null;
+    sessionData: unknown;
+    createdAt: string;
+  } | null;
+  challenge: {
+    id: number;
+    type: string;
+    title: string;
+    description: string;
+    reward: number;
+    durationMinutes: number;
+    isActive: boolean;
+    createdAt: string;
+  } | null;
 };
 
 export default function ProfilePage() {
@@ -53,29 +80,25 @@ export default function ProfilePage() {
   const [stats, setStats] = useState<ProfileStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
-  const [loadingChallenges, setLoadingChallenges] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [feedItems, setFeedItems] = useState<FeedPostData[]>([]);
+  const [totalPosts, setTotalPosts] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingFeed, setLoadingFeed] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 5,
-    total: 0,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
 
   useEffect(() => {
     fetchProfile();
   }, []);
 
   useEffect(() => {
-    fetchUserChallenges();
-  }, [currentPage]);
+    if (profile?.userId) {
+      fetchFeed();
+    }
+  }, [profile?.userId]);
 
   const fetchProfile = async () => {
     try {
@@ -100,86 +123,75 @@ export default function ProfilePage() {
     }
   };
 
-  const fetchUserChallenges = async () => {
+  const PAGE_SIZE = 10;
+
+  const fetchFeed = async (offset = 0, append = false) => {
+    if (!profile?.userId) return;
     try {
-      setLoadingChallenges(true);
-      const response = await fetch(`/api/profile/challenges?page=${currentPage}&limit=5`);
-      
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoadingFeed(true);
+      }
+      const response = await fetch(
+        `/api/profile/${profile.userId}/feed?limit=${PAGE_SIZE}&offset=${offset}`
+      );
+
       if (!response.ok) {
-        if (response.status === 401) {
-          return;
-        }
-        throw new Error('Error al cargar los retos');
+        if (response.status === 401) return;
+        throw new Error('Error al cargar las publicaciones');
       }
 
       const data = await response.json();
-      setUserChallenges(data.challenges || []);
-      setPagination(data.pagination || {
-        page: 1,
-        limit: 5,
-        total: 0,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPrevPage: false,
-      });
+      const items = data.feedItems || [];
+
+      if (append) {
+        setFeedItems((prev) => [...prev, ...items]);
+      } else {
+        setFeedItems(items);
+      }
+      if (data.total !== undefined) setTotalPosts(data.total);
+      setHasMore(data.hasMore ?? false);
     } catch (err) {
-      console.error('Error fetching challenges:', err);
+      console.error('Error fetching feed:', err);
+      if (!append) setFeedItems([]);
     } finally {
-      setLoadingChallenges(false);
+      setLoadingFeed(false);
+      setLoadingMore(false);
     }
   };
 
-  const getChallengeTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      daily: 'Diario',
-      focus: 'Enfoque',
-      social: 'Social',
-    };
-    return labels[type] || type;
+  const loadMore = () => {
+    fetchFeed(feedItems.length, true);
   };
 
-  const getChallengeTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      daily: 'bg-blue-100 text-blue-800',
-      focus: 'bg-purple-100 text-purple-800',
-      social: 'bg-green-100 text-green-800',
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      pending: 'Pendiente',
-      in_progress: 'En Progreso',
-      completed: 'Completado',
-      failed: 'Fallido',
-      canceled: 'Cancelado',
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-gray-100 text-gray-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      completed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      canceled: 'bg-orange-100 text-orange-800',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getStatusDateLabel = (challenge: UserChallenge) => {
-    if (challenge.status === 'completed' && challenge.completedAt) {
-      return 'Completado el';
-    } else if (challenge.status === 'failed' && challenge.failedAt) {
-      return 'Fallido el';
-    } else if (challenge.status === 'canceled' && challenge.failedAt) {
-      return 'Cancelado el';
-    } else if (challenge.startedAt) {
-      return 'Iniciado el';
+  const refreshLoadedPosts = async () => {
+    if (feedItems.length === 0) return;
+    const limit = Math.max(PAGE_SIZE, feedItems.length);
+    try {
+      const response = await fetch(
+        `/api/profile/${profile!.userId}/feed?limit=${limit}&offset=0`
+      );
+      if (!response.ok) return;
+      const data = await response.json();
+      setFeedItems(data.feedItems || []);
+    } catch (err) {
+      console.error('Error refreshing feed:', err);
     }
-    return 'Creado el';
+  };
+
+  const handleLike = async (feedItemId: number) => {
+    try {
+      const response = await fetch(`/api/feed/${feedItemId}/like`, { method: 'POST' });
+      if (!response.ok) throw new Error('Error al dar like');
+      await refreshLoadedPosts();
+    } catch (err) {
+      console.error('Error liking post:', err);
+    }
+  };
+
+  const handleCommentAdded = () => {
+    refreshLoadedPosts();
   };
 
   if (loading) {
@@ -393,101 +405,63 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Mis Retos</CardTitle>
-            <CardDescription>
-              Historial de todos tus retos
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loadingChallenges ? (
-              <div className="text-center py-8">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto mb-2"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2 mx-auto"></div>
-                </div>
-              </div>
-            ) : userChallenges.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No has iniciado ningún reto aún.</p>
-                <p className="text-sm mt-2">¡Comienza un reto para verlo aquí!</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  {userChallenges.map((challenge) => (
-                    <div
-                      key={challenge.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${getChallengeTypeColor(challenge.challengeType)}`}>
-                            {getChallengeTypeLabel(challenge.challengeType)}
-                          </span>
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(challenge.status)}`}>
-                            {getStatusLabel(challenge.status)}
-                          </span>
-                          <h3 className="font-semibold text-gray-900">
-                            {challenge.challengeTitle}
-                          </h3>
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {getStatusDateLabel(challenge)} {new Date(challenge.statusDate).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </div>
-                      {challenge.status === 'completed' && (
-                        <div className="ml-4 text-right">
-                          <p className="text-lg font-bold text-green-600">
-                            +{challenge.reward}
-                          </p>
-                          <p className="text-xs text-gray-500">monedas</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Paginación */}
-                {pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                    <div className="text-sm text-gray-600">
-                      Mostrando {((currentPage - 1) * pagination.limit) + 1} - {Math.min(currentPage * pagination.limit, pagination.total)} de {pagination.total} retos
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={!pagination.hasPrevPage || loadingChallenges}
-                      >
-                        Anterior
-                      </Button>
-                      <span className="text-sm text-gray-600 px-2">
-                        Página {currentPage} de {pagination.totalPages}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(prev => prev + 1)}
-                        disabled={!pagination.hasNextPage || loadingChallenges}
-                      >
-                        Siguiente
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
+        {/* Timeline de publicaciones - estilo Twitter */}
+        {loadingFeed ? (
+          <div className="flex justify-center py-12">
+            <Spinner size="lg" />
+          </div>
+        ) : feedItems.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-gray-600">
+                Aún no has compartido ninguna publicación.
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Completa retos y comparte tus logros para ver aquí tu timeline.
+              </p>
+              <Button asChild className="mt-4">
+                <a href="/challenges">Ir a retos</a>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {totalPosts !== null && (
+              <p className="text-sm text-neutral-500 mb-2">
+                {totalPosts === 1
+                  ? '1 publicación'
+                  : `${totalPosts} publicaciones`}
+              </p>
             )}
-          </CardContent>
-        </Card>
+            <div className="space-y-6">
+              {feedItems.map((post) => (
+                <FeedPost
+                  key={post.feedItem.id}
+                  post={post}
+                  currentUserId={profile.userId}
+                  onLike={handleLike}
+                  onCommentAdded={handleCommentAdded}
+                />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center pt-6">
+                <Button
+                  variant="outline"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="min-w-[140px]"
+                >
+                  {loadingMore ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    'Cargar más'
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

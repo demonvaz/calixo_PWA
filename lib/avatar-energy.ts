@@ -88,9 +88,9 @@ export function getEnergyEmoji(energyLevel: EnergyLevel): string {
  */
 export function getEnergyMessage(energyLevel: EnergyLevel): string {
   const messages = {
-    alta: '¡Tu CALI está lleno de energía! Sigue así.',
-    media: 'Tu CALI necesita más descanso digital.',
-    baja: 'Tu CALI está cansado. ¡Completa algunos retos!',
+    alta: '¡Vas genial con la desconexión! Sigue así.',
+    media: 'Puedes mejorar tu descanso digital.',
+    baja: 'Debes desconectar más. ¡Ánimo!',
   };
   
   return messages[energyLevel];
