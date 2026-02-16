@@ -10,7 +10,7 @@ export interface AdminPermission {
 
 /**
  * Check if the current user has admin permissions
- * Returns the role if admin, null otherwise
+ * Solo accesible a usuarios con is_admin = true en la tabla users
  */
 export async function checkAdminPermissions(): Promise<AdminPermission> {
   try {
@@ -23,21 +23,24 @@ export async function checkAdminPermissions(): Promise<AdminPermission> {
       return { isAdmin: false, isModerator: false, role: null };
     }
 
-    const { data: adminUser } = await supabase
-      .from('admin_users')
-      .select('*')
-      .eq('user_id', user.id)
+    // Verificar is_admin en la tabla users (único criterio de acceso al admin)
+    // Requiere que la columna is_admin exista - ejecutar migración en supabase/migrations
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', user.id)
       .single();
 
-    if (!adminUser) {
+    if (error) {
+      console.warn('Error checking is_admin (¿columna existe?):', error.message);
       return { isAdmin: false, isModerator: false, role: null };
     }
 
-    const role = adminUser.role as AdminRole;
+    const isAdmin = userData?.is_admin === true;
     return {
-      isAdmin: role === 'admin',
-      isModerator: role === 'moderator' || role === 'admin',
-      role,
+      isAdmin,
+      isModerator: isAdmin, // Solo admins tienen acceso
+      role: isAdmin ? 'admin' : null,
     };
   } catch (error) {
     console.error('Error checking admin permissions:', error);

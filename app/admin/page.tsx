@@ -1,7 +1,5 @@
 import { checkAdminPermissions } from '@/lib/permissions';
-import { db } from '@/db';
-import { challenges, userChallenges, users, profiles, feedItems, reports, subscriptions } from '@/db/schema';
-import { count, eq, sql, and, gte } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/card';
 
 export default async function AdminDashboard() {
@@ -11,67 +9,61 @@ export default async function AdminDashboard() {
     return null;
   }
 
-  // Get statistics
-  const [
-    totalChallenges,
-    totalUsers,
-    totalFeedPosts,
-    pendingReports,
-    activeSubscriptions,
-    challengesCompletedToday,
-  ] = await Promise.all([
-    db.select({ count: count() }).from(challenges),
-    db.select({ count: count() }).from(users),
-    db.select({ count: count() }).from(feedItems),
-    db.select({ count: count() }).from(reports).where(eq(reports.status, 'pending')),
-    db.select({ count: count() }).from(subscriptions).where(eq(subscriptions.status, 'active')),
-    db
-      .select({ count: count() })
-      .from(userChallenges)
-      .where(
-        and(
-          eq(userChallenges.status, 'completed'),
-          gte(userChallenges.completedAt, sql`CURRENT_DATE`)
-        )
-      ),
+  const supabase = createServiceRoleClient();
+
+  // Obtener estadísticas con Supabase
+  const [usersRes, premiumRes, challengesRes, feedRes, reportsRes, subsRes] = await Promise.all([
+    supabase.from('users').select('*', { count: 'exact', head: true }),
+    supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_premium', true),
+    supabase.from('challenges').select('*', { count: 'exact', head: true }),
+    supabase.from('feed_items').select('*', { count: 'exact', head: true }),
+    supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
   ]);
+
+  const totalUsers = usersRes.count ?? 0;
+  const premiumUsers = premiumRes.count ?? 0;
+  const totalChallenges = challengesRes.count ?? 0;
+  const totalFeedPosts = feedRes.count ?? 0;
+  const pendingReports = reportsRes.count ?? 0;
+  const activeSubscriptions = subsRes.count ?? 0;
 
   const stats = [
     {
-      title: 'Retos Totales',
-      value: totalChallenges[0]?.count || 0,
-      icon: '',
-      color: 'text-primary',
-    },
-    {
       title: 'Usuarios Totales',
-      value: totalUsers[0]?.count || 0,
-      icon: '',
+      value: totalUsers,
+      icon: '👥',
       color: 'text-complementary-emerald',
     },
     {
+      title: 'Usuarios Premium',
+      value: premiumUsers,
+      icon: '⭐',
+      color: 'text-primary',
+    },
+    {
+      title: 'Retos Totales',
+      value: totalChallenges,
+      icon: '🎯',
+      color: 'text-primary',
+    },
+    {
       title: 'Posts en Feed',
-      value: totalFeedPosts[0]?.count || 0,
-      icon: '',
+      value: totalFeedPosts,
+      icon: '📝',
       color: 'text-accent-red',
     },
     {
       title: 'Reportes Pendientes',
-      value: pendingReports[0]?.count || 0,
-      icon: '',
+      value: pendingReports,
+      icon: '⚠️',
       color: 'text-orange-500',
     },
     {
       title: 'Subscripciones Activas',
-      value: activeSubscriptions[0]?.count || 0,
+      value: activeSubscriptions,
       icon: '💳',
       color: 'text-purple-500',
-    },
-    {
-      title: 'Retos Completados Hoy',
-      value: challengesCompletedToday[0]?.count || 0,
-      icon: '✅',
-      color: 'text-complementary-emerald',
     },
   ];
 
@@ -130,7 +122,7 @@ export default async function AdminDashboard() {
           >
             <div className="font-medium text-text-dark font-serif">Revisar Reportes</div>
             <div className="text-sm text-neutral">
-              {pendingReports[0]?.count || 0} pendientes
+              {pendingReports} pendientes
             </div>
           </a>
           <a

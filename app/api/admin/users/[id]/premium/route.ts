@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { profiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * PUT /api/admin/users/[id]/premium
- * Toggle premium status for a user (admin only)
+ * Activa o desactiva el estado Premium de un usuario (solo is_admin)
+ * IMPORTANTE: Si se activa Premium, permanece activo hasta que se desactive manualmente.
  */
 export async function PUT(
   request: NextRequest,
@@ -15,7 +14,7 @@ export async function PUT(
   try {
     const isAdmin = await requireAdmin();
     if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
     const { id } = await params;
@@ -23,26 +22,48 @@ export async function PUT(
     const body = await request.json();
     const { isPremium } = body;
 
-    const [updatedProfile] = await db
-      .update(profiles)
-      .set({ isPremium })
-      .where(eq(profiles.userId, userId))
-      .returning();
+    if (typeof isPremium !== 'boolean') {
+      return NextResponse.json(
+        { error: 'isPremium debe ser un booleano' },
+        { status: 400 }
+      );
+    }
 
-    if (!updatedProfile) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const supabase = createServiceRoleClient();
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        is_premium: isPremium,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating premium status:', error);
+      return NextResponse.json(
+        { error: 'Error al actualizar estado Premium' },
+        { status: 500 }
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      profile: updatedProfile,
+      user: {
+        id: data.id,
+        isPremium: data.is_premium,
+      },
     });
   } catch (error) {
     console.error('Error updating premium status:', error);
     return NextResponse.json(
-      { error: 'Failed to update premium status' },
+      { error: 'Error al actualizar estado Premium' },
       { status: 500 }
     );
   }
 }
-

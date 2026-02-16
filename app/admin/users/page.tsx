@@ -5,15 +5,17 @@ import { UserTable } from '@/components/admin/user-table';
 export default async function AdminUsersPage() {
   const isAdmin = await requireAdmin();
   if (!isAdmin) {
-    redirect('/admin');
+    redirect('/');
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-dark-navy mb-2">Gestión de Usuarios</h2>
-        <p className="text-neutral-gray">
-          Administra usuarios, permisos y estados
+        <h2 className="text-2xl md:text-3xl font-bold text-text-dark font-serif mb-2">
+          Gestión de Usuarios y Premium
+        </h2>
+        <p className="text-neutral">
+          Administra usuarios y otorga o revoca el estado Premium. El Premium permanece activo hasta que lo desactives.
         </p>
       </div>
       <UserTable />
