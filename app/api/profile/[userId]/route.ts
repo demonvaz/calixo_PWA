@@ -41,10 +41,10 @@ export async function GET(
       // Check if current user follows the profile user
       const { data: followData } = await supabase
         .from('followers')
-        .select('id')
+        .select('follower_id')
         .eq('follower_id', user.id)
         .eq('following_id', userId)
-        .single();
+        .maybeSingle();
 
       if (!followData) {
         return NextResponse.json(
@@ -91,10 +91,10 @@ export async function GET(
     // Check if current user follows this profile
     const { data: followData } = await supabase
       .from('followers')
-      .select('id')
+      .select('follower_id')
       .eq('follower_id', user.id)
       .eq('following_id', userId)
-      .single();
+      .maybeSingle();
 
     const isFollowing = !!followData;
 
@@ -106,7 +106,6 @@ export async function GET(
         isPrivate: profileUser.is_private,
         isPremium: profileUser.is_premium,
         streak: profileUser.streak,
-        coins: profileUser.coins,
         createdAt: profileUser.created_at,
         profilePhotoUrl: profilePhotoUrl || null,
       },

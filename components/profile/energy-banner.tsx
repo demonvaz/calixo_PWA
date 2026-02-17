@@ -5,11 +5,12 @@ import { getEnergyLevel, getEnergyMessage } from '@/lib/avatar-energy';
 
 interface EnergyBannerProps {
   energy: number;
+  /** Si false, solo muestra la barra de energía (sin mensaje ni CTA). Para perfiles ajenos. */
+  showChallengesCta?: boolean;
 }
 
-export function EnergyBanner({ energy }: EnergyBannerProps) {
+export function EnergyBanner({ energy, showChallengesCta = true }: EnergyBannerProps) {
   const level = getEnergyLevel(energy);
-  const message = getEnergyMessage(level);
 
   const bannerStyles = {
     alta: {
@@ -52,7 +53,7 @@ export function EnergyBanner({ energy }: EnergyBannerProps) {
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3">
             <div
               className={`h-2 flex-1 max-w-[120px] rounded-full ${style.barBg} overflow-hidden`}
               role="progressbar"
@@ -69,14 +70,18 @@ export function EnergyBanner({ energy }: EnergyBannerProps) {
               {energy}% energía
             </span>
           </div>
-          <p className="text-gray-700 text-sm md:text-base">{message}</p>
+          {showChallengesCta && (
+            <p className="text-gray-700 text-sm md:text-base mt-2">{getEnergyMessage(level)}</p>
+          )}
         </div>
-        <Link
-          href="/challenges"
-          className={`inline-flex items-center justify-center px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors flex-shrink-0 ${style.cta}`}
-        >
-          {ctaText}
-        </Link>
+        {showChallengesCta && (
+          <Link
+            href="/challenges"
+            className={`inline-flex items-center justify-center px-4 py-2 rounded-xl text-white text-sm font-medium transition-colors flex-shrink-0 ${style.cta}`}
+          >
+            {ctaText}
+          </Link>
+        )}
       </div>
     </div>
   );

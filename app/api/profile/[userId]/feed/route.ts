@@ -44,7 +44,7 @@ export async function GET(
       // Check if current user follows the profile user
       const { data: followData } = await supabase
         .from('followers')
-        .select('id')
+        .select('follower_id')
         .eq('follower_id', user.id)
         .eq('following_id', userId)
         .single();
@@ -185,7 +185,6 @@ export async function GET(
           avatarEnergy: userData.avatar_energy,
           isPrivate: userData.is_private,
           isPremium: userData.is_premium,
-          coins: userData.coins,
           streak: userData.streak,
           createdAt: userData.created_at,
           updatedAt: userData.updated_at,

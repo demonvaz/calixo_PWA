@@ -39,7 +39,7 @@ export async function GET(
     if (profileUser.is_private && userId !== user.id) {
       const { data: followData } = await supabase
         .from('followers')
-        .select('id')
+        .select('follower_id')
         .eq('follower_id', user.id)
         .eq('following_id', userId)
         .single();

@@ -114,25 +114,13 @@ export default function FeedPage() {
     }
   };
 
-  const handleLike = async (feedItemId: number) => {
-    try {
-      const response = await fetch(`/api/feed/${feedItemId}/like`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al dar like');
-      }
-
-      // Refresh feed to show updated like count
-      await fetchFeed();
-    } catch (err) {
-      console.error('Error liking post:', err);
-    }
+  const handleLike = async (_feedItemId: number) => {
+    // No recargar: FeedPost ya actualiza su estado con la respuesta del API
+    // Recargar aquí causaba que el like desapareciera y mala UX
   };
 
   const handleCommentAdded = () => {
-    fetchFeed();
+    // No recargar: FeedPost ya actualiza el contador localmente
   };
 
   if (loading) {

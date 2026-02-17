@@ -101,26 +101,13 @@ export default function PostPage() {
     }
   };
 
-  const handleLike = async (feedItemId: number) => {
-    try {
-      const response = await fetch(`/api/feed/${feedItemId}/like`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al dar like');
-      }
-
-      // Refresh post to show updated like count
-      await fetchPost();
-    } catch (err) {
-      console.error('Error liking post:', err);
-      toast.error('Error al dar like');
-    }
+  const handleLike = async (_feedItemId: number) => {
+    // No recargar: FeedPost ya actualiza su estado con la respuesta del API
+    // Recargar aquí causaba que el like desapareciera y mala UX
   };
 
   const handleCommentAdded = () => {
-    fetchPost();
+    // No recargar: FeedPost ya actualiza el contador localmente
   };
 
   const handleShare = () => {
@@ -156,13 +143,24 @@ export default function PostPage() {
                 {error || 'No se pudo cargar la publicación'}
               </p>
               <div className="flex gap-2">
-                <Button onClick={() => router.push('/feed')}>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => router.push('/feed')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
                   Volver al Feed
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
+                  className="gap-2"
                   onClick={() => router.back()}
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
                   Volver
                 </Button>
               </div>
@@ -180,7 +178,8 @@ export default function PostPage() {
         <div className="mb-6">
           <Button
             onClick={() => router.back()}
-            className="mb-4 bg-primary hover:bg-primary-dark text-white rounded-xl px-4 py-2.5 font-medium shadow-sm border-0 gap-2 transition-colors"
+            variant="outline"
+            className="mb-2 gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -198,6 +197,7 @@ export default function PostPage() {
           currentUserId={currentUserId}
           onLike={handleLike}
           onCommentAdded={handleCommentAdded}
+          standalone
         />
 
         {/* Share button */}

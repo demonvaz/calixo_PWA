@@ -229,8 +229,9 @@ export function MainNavigation() {
             <nav className="flex items-center gap-1">
               {navigationItems.map((item) => {
                 const isActive = pathname === item.href || 
-                  (item.href !== '/feed' && pathname?.startsWith(item.href)) ||
-                  (item.href === '/challenges' && (pathname === '/challenges' || pathname?.startsWith('/challenges/')));
+                  (item.href !== '/feed' && item.href !== '/profile' && pathname?.startsWith(item.href)) ||
+                  (item.href === '/challenges' && (pathname === '/challenges' || pathname?.startsWith('/challenges/'))) ||
+                  (item.href === '/profile' && pathname === '/profile');
                 const isNotifications = item.href === '/notifications';
                 const isChallenges = item.href === '/challenges';
                 
@@ -306,8 +307,9 @@ export function MainNavigation() {
         <div className="flex items-center justify-around h-16 px-1">
           {mobileNavigationItems.map((item) => {
             const isActive = pathname === item.href || 
-              (item.href !== '/feed' && pathname?.startsWith(item.href)) ||
-              (item.href === '/challenges' && (pathname === '/challenges' || pathname?.startsWith('/challenges/')));
+              (item.href !== '/feed' && item.href !== '/profile' && pathname?.startsWith(item.href)) ||
+              (item.href === '/challenges' && (pathname === '/challenges' || pathname?.startsWith('/challenges/'))) ||
+              (item.href === '/profile' && pathname === '/profile');
             const isNotifications = item.href === '/notifications';
             const isChallenges = item.href === '/challenges';
             

@@ -377,6 +377,7 @@ export default function ProfilePage() {
         )}
 
         {/* Timeline de publicaciones - grid simple */}
+        <div className="mt-8 sm:mt-10">
         {loadingFeed ? (
           <div className="flex justify-center py-12">
             <Spinner size="lg" />
@@ -431,6 +432,7 @@ export default function ProfilePage() {
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   );

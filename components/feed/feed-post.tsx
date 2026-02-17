@@ -53,9 +53,11 @@ interface FeedPostProps {
   currentUserId?: string;
   onLike?: (feedItemId: number) => void;
   onCommentAdded?: () => void;
+  /** Si true, la publicación no es clickeable (ej. en la página de detalle feed/[id]) */
+  standalone?: boolean;
 }
 
-export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPostProps) {
+export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalone = false }: FeedPostProps) {
   const router = useRouter();
   const toast = useToast();
   const [isLiked, setIsLiked] = useState(false);
@@ -133,6 +135,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
   };
 
   const handlePostClick = (e: React.MouseEvent) => {
+    if (standalone) return;
     // Don't navigate if clicking on interactive elements
     const target = e.target as HTMLElement;
     if (
@@ -252,7 +255,13 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
   };
 
   return (
-    <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow" onClick={handlePostClick}>
+    <Card
+      className={cn(
+        'overflow-hidden transition-shadow',
+        !standalone && 'cursor-pointer hover:shadow-lg'
+      )}
+      {...(!standalone && { onClick: handlePostClick })}
+    >
       {/* Header */}
       <CardHeader className="pb-3" data-no-navigate>
         <div className="flex items-center justify-between">

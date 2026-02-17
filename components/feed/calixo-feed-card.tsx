@@ -8,15 +8,16 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 const CALIXO_PHRASES = [
-  'Quizás sea mejor que dejes de scrollear, y salgas a acumular momentos 😊',
-  'Tienes muchos retos por hacer, desconecta un poco 📱➡️🌳',
-  '¡Ey! La vida está ahí fuera esperándote 👀✨',
-  'Tu dedo merece un descanso, ¿qué tal un reto? 🤔💪',
-  'Menos scroll = más momentos memorables, ¿eh? 😉',
+  'Quizás sea mejor que dejes de scrollear, y salgas a acumular momentos',
+  'Tienes muchos retos por hacer, desconecta un poco',
+  'La vida está ahí fuera esperándote',
+  'Tu dedo merece un descanso, ¿qué tal un reto?',
+  'Menos scroll, más momentos memorables',
 ];
 
 function getRandomPhrase() {
-  return CALIXO_PHRASES[Math.floor(Math.random() * CALIXO_PHRASES.length)];
+  const phrase = CALIXO_PHRASES[Math.floor(Math.random() * CALIXO_PHRASES.length)];
+  return phrase.toUpperCase();
 }
 
 export function CalixoFeedCard() {
@@ -84,23 +85,30 @@ export function CalixoFeedCard() {
         </div>
       </CardHeader>
 
-      {/* Image - back.PNG como fondo del contenido */}
+      {/* Image - back.PNG con blur, overlay oscuro y texto estilizado */}
       <div className="relative w-full md:max-w-md md:mx-auto aspect-square bg-white/10 overflow-hidden">
         <Image
           src="/photos/back.PNG"
           alt="Desconecta y vive"
           fill
-          className="object-cover opacity-90"
+          className="object-cover scale-105"
+          style={{ filter: 'blur(2px) brightness(0.85)' }}
           priority
         />
-        {/* Overlay para legibilidad del texto */}
+        {/* Overlay oscurecido para legibilidad + gradiente suave */}
         <div
-          className="absolute inset-0 flex items-center justify-center p-6"
+          className="absolute inset-0 flex items-center justify-center p-8"
           style={{
-            background: 'linear-gradient(to bottom, transparent 0%, rgba(254, 75, 91, 0.3) 100%)',
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.75) 100%)',
           }}
         >
-          <p className="text-white text-center text-lg font-medium drop-shadow-lg whitespace-pre-wrap z-10">
+          <p
+            className="text-white text-center text-base sm:text-lg font-semibold tracking-wide whitespace-pre-wrap z-10 max-w-[90%]"
+            style={{
+              fontFamily: "'Libre Caslon Text', Georgia, serif",
+              textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.4)',
+            }}
+          >
             {phrase}
           </p>
         </div>
@@ -112,7 +120,7 @@ export function CalixoFeedCard() {
         style={{ backgroundColor: '#fe4b5b' }}
       >
         <p className="text-white/95 text-center text-sm">
-          ¡Completa retos y gana recompensas! 🏆
+          ¡Completa retos y gana recompensas!
         </p>
       </CardContent>
 
