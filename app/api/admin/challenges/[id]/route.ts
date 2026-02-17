@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { challenges } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const challengeUpdateSchema = z.object({
@@ -37,13 +35,23 @@ export async function PUT(
     const body = await request.json();
     const validatedData = challengeUpdateSchema.parse(body);
 
-    const [updatedChallenge] = await db
-      .update(challenges)
-      .set(validatedData)
-      .where(eq(challenges.id, challengeId))
-      .returning();
+    const updateData: Record<string, unknown> = {};
+    if (validatedData.type !== undefined) updateData.type = validatedData.type;
+    if (validatedData.title !== undefined) updateData.title = validatedData.title;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.reward !== undefined) updateData.reward = validatedData.reward;
+    if (validatedData.durationMinutes !== undefined) updateData.duration_minutes = validatedData.durationMinutes;
+    if (validatedData.isActive !== undefined) updateData.is_active = validatedData.isActive;
 
-    if (!updatedChallenge) {
+    const supabase = createServiceRoleClient();
+    const { data: updatedChallenge, error } = await supabase
+      .from('challenges')
+      .update(updateData)
+      .eq('id', challengeId)
+      .select()
+      .single();
+
+    if (error || !updatedChallenge) {
       return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
     }
 
@@ -65,7 +73,7 @@ export async function PUT(
 
 /**
  * DELETE /api/admin/challenges/[id]
- * Delete a challenge (admin only)
+ * Delete a challenge (admin only) - marks as inactive
  */
 export async function DELETE(
   request: NextRequest,
@@ -83,22 +91,21 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid challenge ID' }, { status: 400 });
     }
 
-    // Check if challenge exists
-    const [challenge] = await db
-      .select()
-      .from(challenges)
-      .where(eq(challenges.id, challengeId))
-      .limit(1);
+    const supabase = createServiceRoleClient();
+    const { data: challenge, error: fetchError } = await supabase
+      .from('challenges')
+      .select('id')
+      .eq('id', challengeId)
+      .single();
 
-    if (!challenge) {
+    if (fetchError || !challenge) {
       return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
     }
 
-    // Instead of deleting, mark as inactive (safer)
-    await db
-      .update(challenges)
-      .set({ isActive: false })
-      .where(eq(challenges.id, challengeId));
+    await supabase
+      .from('challenges')
+      .update({ is_active: false })
+      .eq('id', challengeId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -109,4 +116,3 @@ export async function DELETE(
     );
   }
 }
-

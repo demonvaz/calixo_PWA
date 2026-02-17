@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AvatarPreview } from '@/components/avatar/avatar-preview';
-import { FeedPost } from '@/components/feed/feed-post';
+import { ProfilePostCard } from '@/components/profile/profile-post-card';
 import { useToast } from '@/components/ui/toast';
 import { Spinner } from '@/components/ui/spinner';
 import { FollowersModal } from '@/components/profile/followers-modal';
@@ -173,21 +173,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
 
   const loadMore = () => fetchFeed(feedItems.length, true);
 
-  const refreshLoadedPosts = async () => {
-    if (feedItems.length === 0) return;
-    const limit = Math.max(PAGE_SIZE, feedItems.length);
-    try {
-      const response = await fetch(
-        `/api/profile/${userId}/feed?limit=${limit}&offset=0`
-      );
-      if (!response.ok) return;
-      const data = await response.json();
-      setFeedItems(data.feedItems || []);
-    } catch (err) {
-      console.error('Error refreshing feed:', err);
-    }
-  };
-
   const handleFollow = async () => {
     try {
       const response = await fetch('/api/follow', {
@@ -212,27 +197,6 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error al seguir');
     }
-  };
-
-  const handleLike = async (feedItemId: number) => {
-    try {
-      const response = await fetch(`/api/feed/${feedItemId}/like`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al dar like');
-      }
-
-      await refreshLoadedPosts();
-    } catch (err) {
-      console.error('Error liking post:', err);
-      toast.error('Error al dar like');
-    }
-  };
-
-  const handleCommentAdded = () => {
-    refreshLoadedPosts();
   };
 
   if (loading) {
@@ -379,7 +343,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
           onClose={() => setFollowersModalOpen(false)}
         />
 
-        {/* Feed Posts - Estilo Twitter */}
+        {/* Timeline de publicaciones - grid simple */}
         {loadingFeed ? (
           <div className="flex justify-center py-8">
             <Spinner />
@@ -397,20 +361,18 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
         ) : (
           <>
             {totalPosts !== null && (
-              <p className="text-sm text-neutral-500 mb-2">
+              <p className="text-sm text-neutral-500 mb-3">
                 {totalPosts === 1
                   ? '1 publicación'
                   : `${totalPosts} publicaciones`}
               </p>
             )}
-            <div className="space-y-6">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
               {feedItems.map((post) => (
-                <FeedPost
+                <ProfilePostCard
                   key={post.feedItem.id}
-                  post={post}
-                  currentUserId={currentUserId}
-                  onLike={handleLike}
-                  onCommentAdded={handleCommentAdded}
+                  feedItem={post.feedItem}
+                  challenge={post.challenge}
                 />
               ))}
             </div>

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireModerator } from '@/lib/permissions';
-import { db } from '@/db';
-import { reports, users, feedItems } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/admin/moderation/queue
@@ -15,22 +13,41 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const pendingReports = await db
-      .select({
-        id: reports.id,
-        reporterId: reports.reporterId,
-        reportedUserId: reports.reportedUserId,
-        feedItemId: reports.feedItemId,
-        reason: reports.reason,
-        description: reports.description,
-        status: reports.status,
-        createdAt: reports.createdAt,
-        reporterEmail: users.email,
-      })
-      .from(reports)
-      .leftJoin(users, eq(reports.reporterId, users.id))
-      .where(eq(reports.status, 'pending'))
-      .orderBy(reports.createdAt);
+    const supabase = createServiceRoleClient();
+    const { data: reports, error } = await supabase
+      .from('reports')
+      .select('id, reporter_id, reported_user_id, feed_item_id, reason, description, status, created_at')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    // Get display_name for reporters from users table
+    const reporterIds = [...new Set((reports || []).map((r) => r.reporter_id).filter(Boolean))];
+    const reporterNames: Record<string, string> = {};
+    if (reporterIds.length > 0) {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, display_name')
+        .in('id', reporterIds);
+      (users || []).forEach((u) => {
+        reporterNames[u.id] = u.display_name || u.id;
+      });
+    }
+
+    const pendingReports = (reports || []).map((r) => ({
+      id: r.id,
+      reporterId: r.reporter_id,
+      reportedUserId: r.reported_user_id,
+      feedItemId: r.feed_item_id,
+      reason: r.reason,
+      description: r.description,
+      status: r.status,
+      createdAt: r.created_at,
+      reporterEmail: reporterNames[r.reporter_id] || r.reporter_id,
+    }));
 
     return NextResponse.json(pendingReports);
   } catch (error) {
@@ -41,4 +58,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

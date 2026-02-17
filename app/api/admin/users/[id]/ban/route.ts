@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { profiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 
 /**
  * PUT /api/admin/users/[id]/ban

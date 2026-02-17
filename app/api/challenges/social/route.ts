@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { db } from '@/db';
-import { socialSessions, profiles, notifications } from '@/db/schema';
-import { eq, and, or } from 'drizzle-orm';
+import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/challenges/social
@@ -10,7 +8,7 @@ import { eq, and, or } from 'drizzle-orm';
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -20,18 +18,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get social sessions where user is inviter or invitee
-    const sessions = await db
-      .select()
-      .from(socialSessions)
-      .where(
-        or(
-          eq(socialSessions.inviterId, user.id),
-          eq(socialSessions.inviteeId, user.id)
-        )
-      );
+    const adminSupabase = createServiceRoleClient();
+    const { data: sessions, error } = await adminSupabase
+      .from('social_sessions')
+      .select('*')
+      .or(`inviter_id.eq.${user.id},invitee_id.eq.${user.id}`);
 
-    return NextResponse.json({ sessions });
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({ sessions: sessions || [] });
   } catch (error) {
     console.error('Error fetching social challenges:', error);
     return NextResponse.json(
@@ -47,7 +44,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -67,36 +64,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if invitee exists
-    const [invitee] = await db
-      .select()
-      .from(profiles)
-      .where(eq(profiles.userId, inviteeId))
-      .limit(1);
+    const adminSupabase = createServiceRoleClient();
 
-    if (!invitee) {
+    // Check if invitee exists in users table
+    const { data: invitee, error: inviteeError } = await adminSupabase
+      .from('users')
+      .select('id')
+      .eq('id', inviteeId)
+      .single();
+
+    if (inviteeError || !invitee) {
       return NextResponse.json(
         { error: 'Usuario invitado no encontrado' },
         { status: 404 }
       );
     }
 
-    // Create social session
-    const [session] = await db
-      .insert(socialSessions)
-      .values({
-        inviterId: user.id,
-        inviteeId,
-        challengeId,
+    const { data: session, error } = await adminSupabase
+      .from('social_sessions')
+      .insert({
+        inviter_id: user.id,
+        invitee_id: inviteeId,
+        challenge_id: challengeId,
         status: 'pending',
-        createdAt: new Date(),
       })
-      .returning();
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
 
     // Create notification for invitee
-    await db.insert(notifications).values({
-      userId: inviteeId,
+    await adminSupabase.from('notifications').insert({
+      user_id: inviteeId,
       type: 'social',
+      title: 'Invitación a reto social',
+      message: 'Te han invitado a un reto social',
       payload: {
         type: 'social_challenge_invite',
         inviterId: user.id,
@@ -104,7 +108,6 @@ export async function POST(request: NextRequest) {
         sessionId: session.id,
       },
       seen: false,
-      createdAt: new Date(),
     });
 
     return NextResponse.json({
@@ -119,9 +122,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-
-
-
-
-

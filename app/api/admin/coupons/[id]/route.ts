@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { coupons } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const couponUpdateSchema = z.object({
@@ -36,20 +34,22 @@ export async function PUT(
     const body = await request.json();
     const validatedData = couponUpdateSchema.parse(body);
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (validatedData.code) updateData.code = validatedData.code.toUpperCase();
-    if (validatedData.discountPercent !== undefined) updateData.discountPercent = validatedData.discountPercent;
-    if (validatedData.maxUses !== undefined) updateData.maxUses = validatedData.maxUses;
-    if (validatedData.validUntil) updateData.validUntil = new Date(validatedData.validUntil);
-    if (validatedData.isActive !== undefined) updateData.isActive = validatedData.isActive;
+    if (validatedData.discountPercent !== undefined) updateData.discount_percent = validatedData.discountPercent;
+    if (validatedData.maxUses !== undefined) updateData.max_uses = validatedData.maxUses;
+    if (validatedData.validUntil) updateData.valid_until = validatedData.validUntil;
+    if (validatedData.isActive !== undefined) updateData.is_active = validatedData.isActive;
 
-    const [updatedCoupon] = await db
-      .update(coupons)
-      .set(updateData)
-      .where(eq(coupons.id, couponId))
-      .returning();
+    const supabase = createServiceRoleClient();
+    const { data: updatedCoupon, error } = await supabase
+      .from('coupons')
+      .update(updateData)
+      .eq('id', couponId)
+      .select()
+      .single();
 
-    if (!updatedCoupon) {
+    if (error || !updatedCoupon) {
       return NextResponse.json({ error: 'Coupon not found' }, { status: 404 });
     }
 
@@ -71,7 +71,7 @@ export async function PUT(
 
 /**
  * DELETE /api/admin/coupons/[id]
- * Delete/expire a coupon (admin only)
+ * Delete/expire a coupon (admin only) - marks as inactive
  */
 export async function DELETE(
   request: NextRequest,
@@ -89,11 +89,15 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid coupon ID' }, { status: 400 });
     }
 
-    // Mark as inactive instead of deleting
-    await db
-      .update(coupons)
-      .set({ isActive: false })
-      .where(eq(coupons.id, couponId));
+    const supabase = createServiceRoleClient();
+    const { error } = await supabase
+      .from('coupons')
+      .update({ is_active: false })
+      .eq('id', couponId);
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -104,4 +108,3 @@ export async function DELETE(
     );
   }
 }
-

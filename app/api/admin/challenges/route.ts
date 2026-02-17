@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { challenges } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const challengeSchema = z.object({
@@ -25,18 +23,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const supabase = createServiceRoleClient();
     const searchParams = request.nextUrl.searchParams;
     const isActive = searchParams.get('isActive');
 
-    let query = db.select().from(challenges);
+    let query = supabase.from('challenges').select('*').order('created_at', { ascending: true });
 
-    if (isActive !== null) {
-      query = query.where(eq(challenges.isActive, isActive === 'true'));
+    if (isActive !== null && isActive !== undefined) {
+      query = query.eq('is_active', isActive === 'true');
     }
 
-    const allChallenges = await query.orderBy(challenges.createdAt);
+    const { data: allChallenges, error } = await query;
 
-    return NextResponse.json(allChallenges);
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json(allChallenges || []);
   } catch (error) {
     console.error('Error fetching challenges:', error);
     return NextResponse.json(
@@ -60,10 +63,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = challengeSchema.parse(body);
 
-    const [newChallenge] = await db
-      .insert(challenges)
-      .values(validatedData)
-      .returning();
+    const supabase = createServiceRoleClient();
+    const { data: newChallenge, error } = await supabase
+      .from('challenges')
+      .insert({
+        type: validatedData.type,
+        title: validatedData.title,
+        description: validatedData.description || null,
+        reward: validatedData.reward,
+        duration_minutes: validatedData.durationMinutes ?? null,
+        is_active: validatedData.isActive,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json(newChallenge, { status: 201 });
   } catch (error) {
@@ -80,4 +96,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

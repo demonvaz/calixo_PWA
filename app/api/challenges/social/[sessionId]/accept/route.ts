@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { db } from '@/db';
-import { socialSessions, notifications } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * POST /api/challenges/social/[sessionId]/accept
@@ -13,7 +11,7 @@ export async function POST(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -26,19 +24,15 @@ export async function POST(
     const { sessionId: sessionIdParam } = await params;
     const sessionId = parseInt(sessionIdParam);
 
-    // Get the social session
-    const [session] = await db
-      .select()
-      .from(socialSessions)
-      .where(
-        and(
-          eq(socialSessions.id, sessionId),
-          eq(socialSessions.inviteeId, user.id)
-        )
-      )
-      .limit(1);
+    const adminSupabase = createServiceRoleClient();
+    const { data: session, error: fetchError } = await adminSupabase
+      .from('social_sessions')
+      .select('*')
+      .eq('id', sessionId)
+      .eq('invitee_id', user.id)
+      .single();
 
-    if (!session) {
+    if (fetchError || !session) {
       return NextResponse.json(
         { error: 'Invitación no encontrada' },
         { status: 404 }
@@ -52,26 +46,26 @@ export async function POST(
       );
     }
 
-    // Accept the invitation
-    await db
-      .update(socialSessions)
-      .set({
+    await adminSupabase
+      .from('social_sessions')
+      .update({
         status: 'in_progress',
-        acceptedAt: new Date(),
+        accepted_at: new Date().toISOString(),
       })
-      .where(eq(socialSessions.id, sessionId));
+      .eq('id', sessionId);
 
     // Notify the inviter
-    await db.insert(notifications).values({
-      userId: session.inviterId,
+    await adminSupabase.from('notifications').insert({
+      user_id: session.inviter_id,
       type: 'social',
+      title: 'Reto aceptado',
+      message: 'Tu invitación a reto social fue aceptada',
       payload: {
         type: 'social_challenge_accepted',
         inviteeId: user.id,
         sessionId: session.id,
       },
       seen: false,
-      createdAt: new Date(),
     });
 
     return NextResponse.json({
@@ -86,9 +80,3 @@ export async function POST(
     );
   }
 }
-
-
-
-
-
-

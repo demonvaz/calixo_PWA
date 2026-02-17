@@ -1,8 +1,6 @@
 import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { subscriptions, profiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/card';
 
 export default async function AdminSubscriptionsPage() {
@@ -12,28 +10,41 @@ export default async function AdminSubscriptionsPage() {
   }
 
   // Fetch stats
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/subscriptions/stats`, {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const response = await fetch(`${baseUrl}/api/admin/subscriptions/stats`, {
     cache: 'no-store',
   });
   const stats = response.ok ? await response.json() : {};
 
-  // Fetch all subscriptions
-  const allSubscriptions = await db
-    .select({
-      id: subscriptions.id,
-      userId: subscriptions.userId,
-      status: subscriptions.status,
-      plan: subscriptions.plan,
-      currentPeriodStart: subscriptions.currentPeriodStart,
-      currentPeriodEnd: subscriptions.currentPeriodEnd,
-      canceledAt: subscriptions.canceledAt,
-      createdAt: subscriptions.createdAt,
-      displayName: profiles.displayName,
-      email: profiles.userId, // We'll need to join with users table for email
-    })
-    .from(subscriptions)
-    .leftJoin(profiles, eq(subscriptions.userId, profiles.userId))
-    .orderBy(subscriptions.createdAt);
+  // Fetch all subscriptions with user display_name
+  const supabase = createServiceRoleClient();
+  const { data: subscriptions } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  const userIds = [...new Set((subscriptions || []).map((s) => s.user_id).filter(Boolean))];
+  const userNames: Record<string, string> = {};
+  if (userIds.length > 0) {
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, display_name')
+      .in('id', userIds);
+    (users || []).forEach((u) => {
+      userNames[u.id] = u.display_name || u.id;
+    });
+  }
+
+  const allSubscriptions = (subscriptions || []).map((sub) => ({
+    id: sub.id,
+    userId: sub.user_id,
+    status: sub.status,
+    plan: sub.plan,
+    currentPeriodStart: sub.current_period_start,
+    currentPeriodEnd: sub.current_period_end,
+    createdAt: sub.created_at,
+    displayName: userNames[sub.user_id] || sub.user_id,
+  }));
 
   return (
     <div className="space-y-6">
@@ -127,4 +138,3 @@ export default async function AdminSubscriptionsPage() {
     </div>
   );
 }
-

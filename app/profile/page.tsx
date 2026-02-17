@@ -10,7 +10,7 @@ import { ProfileSettingsModal } from '@/components/profile/profile-settings-moda
 import { FollowersModal } from '@/components/profile/followers-modal';
 import { EnergyBanner } from '@/components/profile/energy-banner';
 import { PremiumBadge } from '@/components/profile/premium-badge';
-import { FeedPost } from '@/components/feed/feed-post';
+import { ProfilePostCard } from '@/components/profile/profile-post-card';
 import Image from 'next/image';
 
 type Profile = {
@@ -163,35 +163,6 @@ export default function ProfilePage() {
 
   const loadMore = () => {
     fetchFeed(feedItems.length, true);
-  };
-
-  const refreshLoadedPosts = async () => {
-    if (feedItems.length === 0) return;
-    const limit = Math.max(PAGE_SIZE, feedItems.length);
-    try {
-      const response = await fetch(
-        `/api/profile/${profile!.userId}/feed?limit=${limit}&offset=0`
-      );
-      if (!response.ok) return;
-      const data = await response.json();
-      setFeedItems(data.feedItems || []);
-    } catch (err) {
-      console.error('Error refreshing feed:', err);
-    }
-  };
-
-  const handleLike = async (feedItemId: number) => {
-    try {
-      const response = await fetch(`/api/feed/${feedItemId}/like`, { method: 'POST' });
-      if (!response.ok) throw new Error('Error al dar like');
-      await refreshLoadedPosts();
-    } catch (err) {
-      console.error('Error liking post:', err);
-    }
-  };
-
-  const handleCommentAdded = () => {
-    refreshLoadedPosts();
   };
 
   if (loading) {
@@ -405,7 +376,7 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        {/* Timeline de publicaciones - estilo Twitter */}
+        {/* Timeline de publicaciones - grid simple */}
         {loadingFeed ? (
           <div className="flex justify-center py-12">
             <Spinner size="lg" />
@@ -427,20 +398,18 @@ export default function ProfilePage() {
         ) : (
           <>
             {totalPosts !== null && (
-              <p className="text-sm text-neutral-500 mb-2">
+              <p className="text-sm text-neutral-500 mb-3">
                 {totalPosts === 1
                   ? '1 publicación'
                   : `${totalPosts} publicaciones`}
               </p>
             )}
-            <div className="space-y-6">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
               {feedItems.map((post) => (
-                <FeedPost
+                <ProfilePostCard
                   key={post.feedItem.id}
-                  post={post}
-                  currentUserId={profile.userId}
-                  onLike={handleLike}
-                  onCommentAdded={handleCommentAdded}
+                  feedItem={post.feedItem}
+                  challenge={post.challenge}
                 />
               ))}
             </div>

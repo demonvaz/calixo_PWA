@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { subscriptions } from '@/db/schema';
-import { eq, count, sql } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/admin/subscriptions/stats
@@ -15,53 +13,40 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const supabase = createServiceRoleClient();
+
     const [
+      totalActiveRes,
+      totalCanceledRes,
+      monthlyRes,
+      annualRes,
+      activeSubsRes,
+    ] = await Promise.all([
+      supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+      supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'canceled'),
+      supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active').eq('plan', 'monthly'),
+      supabase.from('subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active').eq('plan', 'annual'),
+      supabase.from('subscriptions').select('plan').eq('status', 'active'),
+    ]);
+
+    const totalActive = totalActiveRes.count ?? 0;
+    const totalCanceled = totalCanceledRes.count ?? 0;
+    const monthlySubs = monthlyRes.count ?? 0;
+    const annualSubs = annualRes.count ?? 0;
+
+    let mrr = 0;
+    (activeSubsRes.data || []).forEach((s) => {
+      if (s.plan === 'monthly') mrr += 4.99;
+      else if (s.plan === 'annual') mrr += 49.99 / 12;
+    });
+
+    const stats = {
       totalActive,
       totalCanceled,
       monthlySubs,
       annualSubs,
       mrr,
-    ] = await Promise.all([
-      db
-        .select({ count: count() })
-        .from(subscriptions)
-        .where(eq(subscriptions.status, 'active')),
-      db
-        .select({ count: count() })
-        .from(subscriptions)
-        .where(eq(subscriptions.status, 'canceled')),
-      db
-        .select({ count: count() })
-        .from(subscriptions)
-        .where(
-          sql`${subscriptions.status} = 'active' AND ${subscriptions.plan} = 'monthly'`
-        ),
-      db
-        .select({ count: count() })
-        .from(subscriptions)
-        .where(
-          sql`${subscriptions.status} = 'active' AND ${subscriptions.plan} = 'annual'`
-        ),
-      // Calculate MRR (Monthly Recurring Revenue)
-      db
-        .select({
-          mrr: sql<number>`SUM(CASE 
-            WHEN ${subscriptions.plan} = 'monthly' THEN 4.99
-            WHEN ${subscriptions.plan} = 'annual' THEN 49.99 / 12
-            ELSE 0
-          END)`,
-        })
-        .from(subscriptions)
-        .where(eq(subscriptions.status, 'active')),
-    ]);
-
-    const stats = {
-      totalActive: totalActive[0]?.count || 0,
-      totalCanceled: totalCanceled[0]?.count || 0,
-      monthlySubs: monthlySubs[0]?.count || 0,
-      annualSubs: annualSubs[0]?.count || 0,
-      mrr: parseFloat(mrr[0]?.mrr || '0'),
-      arr: parseFloat(mrr[0]?.mrr || '0') * 12,
+      arr: mrr * 12,
     };
 
     return NextResponse.json(stats);
@@ -73,4 +58,3 @@ export async function GET() {
     );
   }
 }
-

@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { coupons } from '@/db/schema';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -12,7 +11,11 @@ export default async function AdminCouponsPage() {
     redirect('/admin');
   }
 
-  const allCoupons = await db.select().from(coupons).orderBy(coupons.createdAt);
+  const supabase = createServiceRoleClient();
+  const { data: allCoupons } = await supabase
+    .from('coupons')
+    .select('*')
+    .order('created_at', { ascending: true });
 
   return (
     <div className="space-y-6">
@@ -30,7 +33,7 @@ export default async function AdminCouponsPage() {
 
       <Card className="p-6">
         <div className="space-y-4">
-          {allCoupons.length === 0 ? (
+          {(!allCoupons || allCoupons.length === 0) ? (
             <p className="text-neutral text-center py-8">
               No hay cupones. Crea el primero.
             </p>
@@ -53,18 +56,18 @@ export default async function AdminCouponsPage() {
                       <td className="py-3 px-4 font-mono font-medium text-text-dark font-serif">
                         {coupon.code}
                       </td>
-                      <td className="py-3 px-4">{coupon.discountPercent}%</td>
+                      <td className="py-3 px-4">{coupon.discount_percent}%</td>
                       <td className="py-3 px-4">
-                        {coupon.maxUses
-                          ? `${coupon.usedCount}/${coupon.maxUses}`
-                          : `${coupon.usedCount} (ilimitado)`}
+                        {coupon.max_uses
+                          ? `${coupon.current_uses ?? 0}/${coupon.max_uses}`
+                          : `${coupon.current_uses ?? 0} (ilimitado)`}
                       </td>
                       <td className="py-3 px-4 text-neutral">
-                        {new Date(coupon.validUntil).toLocaleDateString('es-ES')}
+                        {new Date(coupon.valid_until).toLocaleDateString('es-ES')}
                       </td>
                       <td className="py-3 px-4">
-                        {coupon.isActive &&
-                        new Date(coupon.validUntil) > new Date() ? (
+                        {coupon.is_active &&
+                        new Date(coupon.valid_until) > new Date() ? (
                           <span className="px-2 py-1 bg-complementary-emerald/10 text-complementary-emerald rounded-lg text-sm">
                             Activo
                           </span>
@@ -93,4 +96,3 @@ export default async function AdminCouponsPage() {
     </div>
   );
 }
-

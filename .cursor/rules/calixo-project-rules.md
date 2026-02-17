@@ -5,7 +5,7 @@ This is the Calixo PWA - a social platform for digital detox in Spanish. Users c
 
 ## Tech Stack
 - Frontend: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, shadcn/ui
-- Backend: Supabase (Auth, DB, Storage), Drizzle ORM, PostgreSQL
+- Backend: Supabase (Auth, DB, Storage), PostgreSQL
 - Payments: Stripe
 - PWA: Workbox, Service Worker, manifest.json
 
@@ -38,10 +38,10 @@ This is the Calixo PWA - a social platform for digital detox in Spanish. Users c
 - Mobile-first responsive design
 
 ### Database
-- Schema defined in `/db/schema.ts` with Drizzle ORM
-- Use transactions for operations that modify multiple tables
-- Always handle errors from database operations
-- Use RLS (Row-Level Security) for access control
+- Todo por Supabase: Auth, Database, Storage
+- Usar cliente Supabase (`createClient`, `createServiceRoleClient`) para todas las operaciones de BD
+- Migraciones en Supabase (SQL)
+- RLS (Row-Level Security) para control de acceso
 
 ### API Routes
 - Place in `/app/api/` directory
@@ -69,7 +69,7 @@ This is the Calixo PWA - a social platform for digital detox in Spanish. Users c
 app/          - Next.js App Router pages
 components/   - React components
 lib/          - Utility functions
-db/           - Database schema and client
+lib/supabase/ - Cliente Supabase y helpers
 types/        - TypeScript type definitions
 public/       - Static assets
 docs/         - Project documentation

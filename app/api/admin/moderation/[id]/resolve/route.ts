@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireModerator } from '@/lib/permissions';
-import { db } from '@/db';
-import { reports, feedItems } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const resolveSchema = z.object({
@@ -33,30 +31,41 @@ export async function PUT(
     const body = await request.json();
     const validatedData = resolveSchema.parse(body);
 
-    // Get the report
-    const [report] = await db
-      .select()
-      .from(reports)
-      .where(eq(reports.id, reportId))
-      .limit(1);
+    const supabase = createServiceRoleClient();
 
-    if (!report) {
+    const { data: report, error: fetchError } = await supabase
+      .from('reports')
+      .select('*')
+      .eq('id', reportId)
+      .single();
+
+    if (fetchError || !report) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
-    // If action is delete and there's a feedItemId, delete the feed item
-    if (validatedData.action === 'delete' && report.feedItemId) {
-      await db
-        .delete(feedItems)
-        .where(eq(feedItems.id, report.feedItemId));
+    // If action is delete and there's a feed_item_id, delete the feed item
+    if (validatedData.action === 'delete' && report.feed_item_id) {
+      await supabase.from('feed_items').delete().eq('id', report.feed_item_id);
     }
 
-    // Update report status
-    const [updatedReport] = await db
-      .update(reports)
-      .set({ status: validatedData.status })
-      .where(eq(reports.id, reportId))
-      .returning();
+    // Map status: approve -> resolved, reject -> dismissed
+    const newStatus =
+      validatedData.action === 'approve'
+        ? 'resolved'
+        : validatedData.action === 'reject'
+          ? 'dismissed'
+          : 'resolved';
+
+    const { data: updatedReport, error: updateError } = await supabase
+      .from('reports')
+      .update({ status: newStatus })
+      .eq('id', reportId)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
 
     return NextResponse.json({
       success: true,
@@ -76,4 +85,3 @@ export async function PUT(
     );
   }
 }
-

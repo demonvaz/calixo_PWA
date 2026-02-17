@@ -1,34 +1,44 @@
 import { redirect, notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { challenges } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { ChallengeForm } from '@/components/admin/challenge-form';
 
 export default async function EditChallengePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const isAdmin = await requireAdmin();
   if (!isAdmin) {
     redirect('/admin');
   }
 
-  const challengeId = parseInt(params.id);
+  const { id } = await params;
+  const challengeId = parseInt(id);
   if (isNaN(challengeId)) {
     notFound();
   }
 
-  const [challenge] = await db
-    .select()
-    .from(challenges)
-    .where(eq(challenges.id, challengeId))
-    .limit(1);
+  const supabase = createServiceRoleClient();
+  const { data: challenge, error } = await supabase
+    .from('challenges')
+    .select('*')
+    .eq('id', challengeId)
+    .single();
 
-  if (!challenge) {
+  if (error || !challenge) {
     notFound();
   }
+
+  const challengeForForm = {
+    id: challenge.id,
+    type: challenge.type,
+    title: challenge.title,
+    description: challenge.description,
+    reward: challenge.reward,
+    durationMinutes: challenge.duration_minutes,
+    isActive: challenge.is_active,
+  };
 
   return (
     <div className="space-y-6">
@@ -38,8 +48,7 @@ export default async function EditChallengePage({
           Modifica los detalles del reto: {challenge.title}
         </p>
       </div>
-      <ChallengeForm challenge={challenge} />
+      <ChallengeForm challenge={challengeForForm} />
     </div>
   );
 }
-

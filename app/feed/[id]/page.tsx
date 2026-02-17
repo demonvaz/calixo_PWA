@@ -179,11 +179,13 @@ export default function PostPage() {
         {/* Header with back button */}
         <div className="mb-6">
           <Button
-            variant="ghost"
             onClick={() => router.back()}
-            className="mb-4"
+            className="mb-4 bg-primary hover:bg-primary-dark text-white rounded-xl px-4 py-2.5 font-medium shadow-sm border-0 gap-2 transition-colors"
           >
-            ← Volver
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Volver
           </Button>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
             Publicación

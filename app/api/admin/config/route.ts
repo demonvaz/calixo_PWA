@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { config } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/admin/config
@@ -15,11 +13,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const allConfig = await db.select().from(config);
-    
-    // Convert to object format
-    const configObject: Record<string, any> = {};
-    allConfig.forEach((item) => {
+    const supabase = createServiceRoleClient();
+    const { data: allConfig, error } = await supabase
+      .from('config')
+      .select('key, value');
+
+    if (error) {
+      throw error;
+    }
+
+    const configObject: Record<string, unknown> = {};
+    (allConfig || []).forEach((item) => {
       configObject[item.key] = item.value;
     });
 
@@ -45,24 +49,20 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const updates = body as Record<string, any>;
+    const updates = body as Record<string, unknown>;
 
-    // Update each config key
-    const results = [];
+    const supabase = createServiceRoleClient();
+    const results: { key: string; value: unknown }[] = [];
+
     for (const [key, value] of Object.entries(updates)) {
-      const [updated] = await db
-        .update(config)
-        .set({ value, updatedAt: new Date() })
-        .where(eq(config.key, key))
-        .returning();
-      
-      if (!updated) {
-        // Create if doesn't exist
-        await db.insert(config).values({
-          key,
-          value,
-          updatedAt: new Date(),
-        });
+      const { error } = await supabase
+        .from('config')
+        .upsert(
+          { key, value, updated_at: new Date().toISOString() },
+          { onConflict: 'key' }
+        );
+      if (error) {
+        throw error;
       }
       results.push({ key, value });
     }
@@ -76,4 +76,3 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-

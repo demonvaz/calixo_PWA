@@ -1,34 +1,43 @@
 import { redirect, notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { coupons } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { CouponForm } from '@/components/admin/coupon-form';
 
 export default async function EditCouponPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const isAdmin = await requireAdmin();
   if (!isAdmin) {
     redirect('/admin');
   }
 
-  const couponId = parseInt(params.id);
+  const { id } = await params;
+  const couponId = parseInt(id);
   if (isNaN(couponId)) {
     notFound();
   }
 
-  const [coupon] = await db
-    .select()
-    .from(coupons)
-    .where(eq(coupons.id, couponId))
-    .limit(1);
+  const supabase = createServiceRoleClient();
+  const { data: coupon, error } = await supabase
+    .from('coupons')
+    .select('*')
+    .eq('id', couponId)
+    .single();
 
-  if (!coupon) {
+  if (error || !coupon) {
     notFound();
   }
+
+  const couponForForm = {
+    id: coupon.id,
+    code: coupon.code,
+    discountPercent: coupon.discount_percent,
+    maxUses: coupon.max_uses,
+    validUntil: coupon.valid_until,
+    isActive: coupon.is_active ?? true,
+  };
 
   return (
     <div className="space-y-6">
@@ -38,8 +47,7 @@ export default async function EditCouponPage({
           Modifica los detalles del cupón: {coupon.code}
         </p>
       </div>
-      <CouponForm coupon={coupon} />
+      <CouponForm coupon={couponForForm} />
     </div>
   );
 }
-

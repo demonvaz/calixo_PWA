@@ -64,6 +64,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [checkingLikeStatus, setCheckingLikeStatus] = useState(true);
+  const [showComments, setShowComments] = useState(false);
 
   // Check like status on mount
   useEffect(() => {
@@ -298,14 +299,12 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="text-base">{getChallengeTypeIcon(post.challenge.type)}</span>
             <span className="font-medium text-gray-900">{post.challenge.title}</span>
-            <span className="text-gray-400">•</span>
             {calculateDuration() && (
               <>
-                <span className="text-xs">{calculateDuration()}</span>
                 <span className="text-gray-400">•</span>
+                <span className="text-xs">{calculateDuration()}</span>
               </>
             )}
-            <span className="text-xs font-medium text-yellow-600">+{post.challenge.reward} monedas</span>
           </div>
         </div>
       )}
@@ -420,7 +419,10 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
           <Button
             variant="ghost"
             size="sm"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowComments((prev) => !prev);
+            }}
           >
             {localCommentsCount} comentarios
           </Button>
@@ -435,13 +437,14 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
         </Button>
       </CardFooter>
 
-      {/* Comments Section */}
-      {currentUserId && (
+      {/* Comments Section - solo cuando está desplegado */}
+      {currentUserId && showComments && (
         <div className="px-6 pb-4" data-no-navigate>
           <FeedComments
             feedItemId={post.feedItem.id}
             currentUserId={currentUserId}
             onCommentAdded={handleCommentAdded}
+            isExpanded={showComments}
           />
         </div>
       )}

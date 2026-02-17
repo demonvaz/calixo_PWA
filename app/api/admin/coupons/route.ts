@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { coupons } from '@/db/schema';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const couponSchema = z.object({
@@ -24,9 +23,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const allCoupons = await db.select().from(coupons).orderBy(coupons.createdAt);
+    const supabase = createServiceRoleClient();
+    const { data: allCoupons, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .order('created_at', { ascending: true });
 
-    return NextResponse.json(allCoupons);
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json(allCoupons || []);
   } catch (error) {
     console.error('Error fetching coupons:', error);
     return NextResponse.json(
@@ -50,17 +57,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = couponSchema.parse(body);
 
-    const [newCoupon] = await db
-      .insert(coupons)
-      .values({
+    const supabase = createServiceRoleClient();
+    const { data: newCoupon, error } = await supabase
+      .from('coupons')
+      .insert({
         code: validatedData.code.toUpperCase(),
-        discountPercent: validatedData.discountPercent,
-        maxUses: validatedData.maxUses || null,
-        validFrom: validatedData.validFrom ? new Date(validatedData.validFrom) : new Date(),
-        validUntil: new Date(validatedData.validUntil),
-        isActive: validatedData.isActive,
+        discount_percent: validatedData.discountPercent,
+        max_uses: validatedData.maxUses || null,
+        valid_from: validatedData.validFrom ? validatedData.validFrom : new Date().toISOString(),
+        valid_until: validatedData.validUntil,
+        is_active: validatedData.isActive,
       })
-      .returning();
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json(newCoupon, { status: 201 });
   } catch (error) {
@@ -77,4 +90,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

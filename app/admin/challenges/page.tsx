@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/permissions';
-import { db } from '@/db';
-import { challenges } from '@/db/schema';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { ChallengeForm } from '@/components/admin/challenge-form';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,11 @@ export default async function AdminChallengesPage() {
     redirect('/admin');
   }
 
-  const allChallenges = await db.select().from(challenges).orderBy(challenges.createdAt);
+  const supabase = createServiceRoleClient();
+  const { data: allChallenges } = await supabase
+    .from('challenges')
+    .select('*')
+    .order('created_at', { ascending: true });
 
   return (
     <div className="space-y-6">
@@ -32,7 +35,7 @@ export default async function AdminChallengesPage() {
       {/* Challenges List */}
       <Card className="p-6">
         <div className="space-y-4">
-          {allChallenges.length === 0 ? (
+          {(!allChallenges || allChallenges.length === 0) ? (
             <p className="text-neutral text-center py-8">
               No hay retos en el catálogo. Crea el primero.
             </p>
@@ -63,7 +66,7 @@ export default async function AdminChallengesPage() {
                       </td>
                       <td className="py-3 px-4">{challenge.reward} monedas</td>
                       <td className="py-3 px-4">
-                        {challenge.isActive ? (
+                        {challenge.is_active ? (
                           <span className="px-2 py-1 bg-complementary-emerald/10 text-complementary-emerald rounded-lg text-sm">
                             Activo
                           </span>
@@ -92,4 +95,3 @@ export default async function AdminChallengesPage() {
     </div>
   );
 }
-
