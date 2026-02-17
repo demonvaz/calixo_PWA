@@ -403,29 +403,16 @@ export function ProfilePhotoModal({
   return (
     <div
       className={cn(
-        'fixed z-[9999] flex items-center justify-center',
+        'fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain',
         'bg-black/50 backdrop-blur-sm',
         'transition-opacity duration-300',
         isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
       )}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100%',
-        height: '100%',
-        minHeight: '100vh',
-        margin: 0,
-        padding: '1rem',
-        overflow: 'auto',
-      }}
       onClick={handleBackdropClick}
     >
       <Card
         className={cn(
-          'w-full max-w-md shadow-2xl',
+          'w-full max-w-md max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto my-auto shadow-2xl',
           'transform transition-all duration-300',
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         )}

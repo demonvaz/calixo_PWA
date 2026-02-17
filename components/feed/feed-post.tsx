@@ -333,20 +333,11 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
           {isImageModalOpen && (
             <div
               className={cn(
-                'fixed z-[9999] flex items-center justify-center',
+                'fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6',
                 'bg-black/90 backdrop-blur-sm',
                 'transition-opacity duration-300',
                 'opacity-100'
               )}
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                width: '100%',
-                height: '100%',
-              }}
               onClick={(e) => {
                 // Cerrar solo si se hace clic directamente en el backdrop
                 if (e.target === e.currentTarget) {
@@ -361,39 +352,25 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
                 }
               }}
             >
-              {/* Contenedor de la imagen - no ocupa todo el espacio, solo lo necesario */}
-              <div 
-                className="relative flex items-center justify-center pointer-events-none"
-                style={{
-                  maxWidth: '90vw',
-                  maxHeight: '90vh',
-                }}
+              {/* Contenedor de la imagen - márgenes responsive arriba, abajo y lados */}
+              <div
+                className="relative flex items-center justify-center pointer-events-none max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] sm:max-w-[calc(100vw-3rem)] sm:max-h-[calc(100dvh-3rem)]"
               >
-                <div 
-                  className="relative pointer-events-auto"
-                  style={{
-                    maxWidth: '90vw',
-                    maxHeight: '90vh',
-                  }}
+                <div
+                  className="relative pointer-events-auto max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] sm:max-w-[calc(100vw-3rem)] sm:max-h-[calc(100dvh-3rem)]"
                   onClick={(e) => e.stopPropagation()}
                   onTouchStart={(e) => e.stopPropagation()}
                 >
                   <img
                     src={post.feedItem.imageUrl}
                     alt="Post image ampliada"
-                    className="object-contain"
-                    style={{
-                      maxWidth: '90vw',
-                      maxHeight: '90vh',
-                      width: 'auto',
-                      height: 'auto',
-                    }}
+                    className="object-contain w-auto h-auto max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] sm:max-w-[calc(100vw-3rem)] sm:max-h-[calc(100dvh-3rem)]"
                     onClick={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
                   />
                 </div>
               </div>
-              
+
               {/* Close Button */}
               <Button
                 variant="ghost"
@@ -406,7 +383,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded }: FeedPo
                   e.stopPropagation();
                   setIsImageModalOpen(false);
                 }}
-                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white border-white/20 z-10 pointer-events-auto"
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-black/50 hover:bg-black/70 text-white border-white/20 z-10 pointer-events-auto"
                 aria-label="Cerrar imagen"
               >
                 ✕

@@ -85,10 +85,10 @@ export function StartFocusModal({
   if (!focusChallenge) {
     return (
       <div
-        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain bg-black/50 backdrop-blur-sm"
         onClick={handleBackdropClick}
       >
-        <Card className="w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <Card className="w-full max-w-md max-h-[calc(100dvh-2rem)] my-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
           <CardContent className="p-6 text-center">
             <p className="text-gray-600 mb-4">El modo Focus no está disponible en este momento.</p>
             <Button onClick={onClose} variant="outline">
@@ -103,7 +103,7 @@ export function StartFocusModal({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[200] flex items-center justify-center p-4',
+        'fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain',
         'bg-black/50 backdrop-blur-sm transition-opacity duration-300',
         isOpen ? 'opacity-100' : 'opacity-0'
       )}
@@ -111,7 +111,7 @@ export function StartFocusModal({
     >
       <Card
         className={cn(
-          'w-full max-w-md shadow-2xl',
+          'w-full max-w-md max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto my-auto shadow-2xl',
           'transform transition-all duration-300',
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         )}

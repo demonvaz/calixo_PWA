@@ -94,7 +94,7 @@ export function SharePostModal({ isOpen, onClose, postUrl, postTitle, postImage 
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[9999] flex items-center justify-center',
+        'fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain',
         'bg-black/50 backdrop-blur-sm',
         'transition-opacity duration-300',
         isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -102,7 +102,7 @@ export function SharePostModal({ isOpen, onClose, postUrl, postTitle, postImage 
       onClick={onClose}
     >
       <Card
-        className="w-full max-w-md mx-4 bg-white shadow-xl"
+        className="w-full max-w-md max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto my-auto bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <CardHeader>

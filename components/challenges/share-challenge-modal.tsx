@@ -110,7 +110,7 @@ export function ShareChallengeModal({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[200] flex items-center justify-center p-4',
+        'fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain',
         'bg-black/50 backdrop-blur-sm',
         'transition-opacity duration-300',
         isOpen ? 'opacity-100' : 'opacity-0'
@@ -119,7 +119,7 @@ export function ShareChallengeModal({
     >
       <div
         className={cn(
-          'w-full max-w-md max-h-[90vh] overflow-y-auto',
+          'w-full max-w-md max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto my-auto',
           'transform transition-all duration-300',
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         )}

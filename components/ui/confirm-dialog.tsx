@@ -90,7 +90,7 @@ export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
       {dialog && (
         <div
           className={cn(
-            'fixed inset-0 z-[200] flex items-center justify-center p-4',
+            'fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain',
             'bg-black/50 backdrop-blur-sm',
             'transition-opacity duration-300',
             isOpen ? 'opacity-100' : 'opacity-0'
@@ -99,7 +99,7 @@ export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
         >
           <Card
             className={cn(
-              'w-full max-w-md shadow-2xl',
+              'w-full max-w-md max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto my-auto shadow-2xl',
               'transform transition-all duration-300',
               isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
             )}

@@ -180,7 +180,7 @@ export function FollowersModal({ isOpen, type, userId, onClose }: FollowersModal
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[200] flex items-center justify-center p-4',
+        'fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain',
         'bg-black/50 backdrop-blur-sm',
         'transition-opacity duration-300'
       )}
@@ -189,7 +189,7 @@ export function FollowersModal({ isOpen, type, userId, onClose }: FollowersModal
     >
       <Card
         className={cn(
-          'w-full max-w-md max-h-[85vh] shadow-2xl flex flex-col',
+          'w-full max-w-md max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] shadow-2xl flex flex-col my-auto overflow-hidden',
           'transform transition-all duration-300'
         )}
         onClick={(e) => e.stopPropagation()}
