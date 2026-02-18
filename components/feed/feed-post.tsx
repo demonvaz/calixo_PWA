@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FeedComments } from './feed-comments';
 import { SharePostModal } from './share-post-modal';
+import { ReportPostModal } from './report-post-modal';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 
@@ -65,6 +66,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
   const [localCommentsCount, setLocalCommentsCount] = useState(post.feedItem.commentsCount);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [checkingLikeStatus, setCheckingLikeStatus] = useState(true);
   const [showComments, setShowComments] = useState(false);
 
@@ -151,6 +153,15 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsShareModalOpen(true);
+  };
+
+  const handleReport = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!currentUserId) {
+      toast.error('Debes iniciar sesión para reportar');
+      return;
+    }
+    setIsReportModalOpen(true);
   };
 
   const getPostUrl = () => {
@@ -437,13 +448,26 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
           </Button>
         </div>
         
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={handleShare}
-        >
-          🔗 Compartir
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+          >
+            🔗 Compartir
+          </Button>
+          {currentUserId && (
+            <button
+              type="button"
+              onClick={handleReport}
+              className="text-xs text-neutral/70 hover:text-neutral px-2 py-1 rounded transition-colors"
+              title="Reportar"
+              aria-label="Reportar publicación"
+            >
+              Reportar
+            </button>
+          )}
+        </div>
       </CardFooter>
 
       {/* Comments Section - solo cuando está desplegado */}
@@ -465,6 +489,13 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
         postUrl={getPostUrl()}
         postTitle={getPostTitle()}
         postImage={post.feedItem.imageUrl}
+      />
+
+      {/* Report Modal */}
+      <ReportPostModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        feedItemId={post.feedItem.id}
       />
     </Card>
   );

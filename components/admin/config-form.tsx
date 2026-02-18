@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -83,7 +82,7 @@ export function ConfigForm() {
   }
 
   return (
-    <Card className="p-6">
+    <div className="rounded-xl border border-neutral/10 bg-white p-4 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="p-4 bg-accent-red/10 border border-accent-red rounded-lg text-accent-red">
@@ -195,7 +194,7 @@ export function ConfigForm() {
           </Button>
         </div>
       </form>
-    </Card>
+    </div>
   );
 }
 

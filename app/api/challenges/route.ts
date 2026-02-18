@@ -1,5 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getDateKey } from '@/lib/challenge-date';
+
+/** PRNG determinístico con semilla (mismo seed = misma secuencia) */
+function seededRandom(seed: string): () => number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return function () {
+    hash = Math.imul(hash ^ (hash >>> 16), 0x85ebca6b);
+    hash = Math.imul(hash ^ (hash >>> 13), 0xc2b2ae35);
+    return ((hash ^ (hash >>> 16)) >>> 0) / 0xffffffff;
+  };
+}
+
+/** Selecciona 3 retos diarios: 1 corto (≤30min), 1 medio (31-60min), 1 largo (>60min) */
+function selectDailyChallenges<T extends { id: number; duration_minutes?: number | null }>(
+  challenges: T[],
+  seed: string
+): T[] {
+  const rand = seededRandom(seed);
+
+  const short = challenges.filter((c) => (c.duration_minutes ?? 30) <= 30);
+  const medium = challenges.filter((c) => {
+    const m = c.duration_minutes ?? 45;
+    return m > 30 && m <= 60;
+  });
+  const long = challenges.filter((c) => (c.duration_minutes ?? 90) > 60);
+
+  const pickOne = (arr: T[]): T | null => {
+    if (arr.length === 0) return null;
+    return arr[Math.floor(rand() * arr.length)];
+  };
+
+  const selected: T[] = [];
+  const pickedShort = pickOne(short);
+  const pickedMedium = pickOne(medium);
+  const pickedLong = pickOne(long);
+
+  if (pickedShort) selected.push(pickedShort);
+  if (pickedMedium) selected.push(pickedMedium);
+  if (pickedLong) selected.push(pickedLong);
+
+  const remaining = challenges.filter((c) => !selected.includes(c));
+  while (selected.length < 3 && remaining.length > 0) {
+    const idx = Math.floor(rand() * remaining.length);
+    selected.push(remaining.splice(idx, 1)[0]);
+  }
+
+  for (let i = selected.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [selected[i], selected[j]] = [selected[j], selected[i]];
+  }
+
+  return selected;
+}
 
 /**
  * GET /api/challenges
@@ -70,7 +127,7 @@ export async function GET(request: NextRequest) {
           .from('user_challenges')
           .select('*')
           .eq('user_id', user.id)
-          .neq('status', 'canceled') // Exclude canceled challenges from the count
+          .not('status', 'in', '("canceled","not_claimed")')
           .gte('created_at', today.toISOString())
           .lt('created_at', tomorrow.toISOString());
 
@@ -104,6 +161,14 @@ export async function GET(request: NextRequest) {
     }
     
     console.log('Processing challenges:', challenges.length);
+
+    // Para type=daily: seleccionar 3 retos (1 corto, 1 medio, 1 largo) por usuario y día
+    if (type === 'daily' && challenges.length > 0) {
+      const dateKey = getDateKey();
+      const seed = `${dateKey}-${user.id}`;
+      challenges = selectDailyChallenges(challenges, seed);
+      console.log('Selected', challenges.length, 'daily challenges for', dateKey);
+    }
 
     // Para type=daily, obtener también el primer reto focus (para el banner Modo Focus)
     let focusChallenge = null;

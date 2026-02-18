@@ -44,6 +44,14 @@ export async function GET(
       );
     }
 
+    // No mostrar posts ocultos por moderación
+    if (feedItem.is_hidden) {
+      return NextResponse.json(
+        { error: 'Publicación no encontrada' },
+        { status: 404 }
+      );
+    }
+
     // Get user profile
     const { data: userData, error: userError } = await supabase
       .from('users')

@@ -57,21 +57,23 @@ export async function GET(
       }
     }
 
-    // Get total count (solo en primera carga para ahorrar peticiones)
+    // Get total count (solo en primera carga, excluir ocultos)
     let total = 0;
     if (offset === 0) {
       const { count } = await supabase
         .from('feed_items')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .or('is_hidden.eq.false,is_hidden.is.null');
       total = count ?? 0;
     }
 
-    // Get feed items for this user
+    // Get feed items for this user (excluir ocultos por moderación)
     const { data: feedItems, error: feedError } = await supabase
       .from('feed_items')
       .select('*')
       .eq('user_id', userId)
+      .or('is_hidden.eq.false,is_hidden.is.null')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

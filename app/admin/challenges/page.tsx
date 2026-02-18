@@ -1,10 +1,9 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { requireAdmin } from '@/lib/permissions';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { ChallengeForm } from '@/components/admin/challenge-form';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { AdminPageHeader } from '@/components/admin/admin-page-header';
+import { AdminEmpty } from '@/components/admin/admin-empty';
 
 export default async function AdminChallengesPage() {
   const isAdmin = await requireAdmin();
@@ -18,60 +17,49 @@ export default async function AdminChallengesPage() {
     .select('*')
     .order('created_at', { ascending: true });
 
+  const challenges = allChallenges ?? [];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-text-dark font-serif mb-2">Gestión de Retos</h2>
-          <p className="text-neutral">
-            Crea, edita y gestiona los retos del catálogo
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/admin/challenges/new">Crear Nuevo Reto</Link>
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Retos"
+        subtitle="Crea, edita y gestiona el catálogo"
+        action={{ label: 'Crear reto', href: '/admin/challenges/new' }}
+      />
 
-      {/* Challenges List */}
-      <Card className="p-6">
-        <div className="space-y-4">
-          {(!allChallenges || allChallenges.length === 0) ? (
-            <p className="text-neutral text-center py-8">
-              No hay retos en el catálogo. Crea el primero.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+        {challenges.length === 0 ? (
+          <AdminEmpty message="No hay retos. Crea el primero." />
+        ) : (
+          <>
+            <div className="overflow-x-auto hidden sm:block">
+              <table className="w-full min-w-[500px]">
                 <thead>
-                  <tr className="border-b border-neutral/20">
-                    <th className="text-left py-3 px-4 font-medium text-text-dark font-serif">ID</th>
-                    <th className="text-left py-3 px-4 font-medium text-text-dark font-serif">Título</th>
-                    <th className="text-left py-3 px-4 font-medium text-text-dark font-serif">Tipo</th>
-                    <th className="text-left py-3 px-4 font-medium text-text-dark font-serif">Recompensa</th>
-                    <th className="text-left py-3 px-4 font-medium text-text-dark font-serif">Estado</th>
-                    <th className="text-left py-3 px-4 font-medium text-text-dark font-serif">Acciones</th>
+                  <tr className="border-b border-neutral/10 bg-neutral/5">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Título</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Tipo</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Recompensa</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Estado</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {allChallenges.map((challenge) => (
-                    <tr key={challenge.id} className="border-b border-neutral/10">
-                      <td className="py-3 px-4 text-neutral">{challenge.id}</td>
-                      <td className="py-3 px-4 font-medium text-text-dark font-serif">
-                        {challenge.title}
-                      </td>
+                  {challenges.map((challenge) => (
+                    <tr key={challenge.id} className="border-b border-neutral/10 hover:bg-neutral/5">
+                      <td className="py-3 px-4 font-medium text-text-dark">{challenge.title}</td>
                       <td className="py-3 px-4">
-                        <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm">
+                        <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-xs">
                           {challenge.type}
                         </span>
                       </td>
-                      <td className="py-3 px-4">{challenge.reward} monedas</td>
+                      <td className="py-3 px-4 text-sm">{challenge.reward} monedas</td>
                       <td className="py-3 px-4">
                         {challenge.is_active ? (
-                          <span className="px-2 py-1 bg-complementary-emerald/10 text-complementary-emerald rounded-lg text-sm">
+                          <span className="px-2 py-0.5 rounded-lg bg-complementary-emerald/10 text-complementary-emerald text-xs">
                             Activo
                           </span>
                         ) : (
-                          <span className="px-2 py-1 bg-neutral-gray/10 text-neutral rounded-lg text-sm">
+                          <span className="px-2 py-0.5 rounded-lg bg-neutral/10 text-neutral text-xs">
                             Inactivo
                           </span>
                         )}
@@ -79,7 +67,7 @@ export default async function AdminChallengesPage() {
                       <td className="py-3 px-4">
                         <Link
                           href={`/admin/challenges/${challenge.id}/edit`}
-                          className="text-primary hover:underline text-sm"
+                          className="text-sm text-primary hover:underline"
                         >
                           Editar
                         </Link>
@@ -89,9 +77,38 @@ export default async function AdminChallengesPage() {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
-      </Card>
+
+            <div className="sm:hidden divide-y divide-neutral/10">
+              {challenges.map((challenge) => (
+                <div key={challenge.id} className="p-4 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <span className="font-medium text-text-dark">{challenge.title}</span>
+                    {challenge.is_active ? (
+                      <span className="px-2 py-0.5 rounded-lg bg-complementary-emerald/10 text-complementary-emerald text-xs">
+                        Activo
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-lg bg-neutral/10 text-neutral text-xs">
+                        Inactivo
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-neutral">
+                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">{challenge.type}</span>
+                    {' · '}{challenge.reward} monedas
+                  </p>
+                  <Link
+                    href={`/admin/challenges/${challenge.id}/edit`}
+                    className="inline-block text-sm text-primary font-medium"
+                  >
+                    Editar
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

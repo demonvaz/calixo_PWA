@@ -6,6 +6,9 @@ import { z } from 'zod';
 const couponUpdateSchema = z.object({
   code: z.string().min(1).max(50).optional(),
   discountPercent: z.number().int().min(1).max(100).optional(),
+  partnerName: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).optional().nullable(),
+  price: z.number().int().min(0).optional(),
   maxUses: z.number().int().min(1).optional().nullable(),
   validUntil: z.string().datetime().optional(),
   isActive: z.boolean().optional(),
@@ -37,6 +40,9 @@ export async function PUT(
     const updateData: Record<string, unknown> = {};
     if (validatedData.code) updateData.code = validatedData.code.toUpperCase();
     if (validatedData.discountPercent !== undefined) updateData.discount_percent = validatedData.discountPercent;
+    if (validatedData.partnerName !== undefined) updateData.partner_name = validatedData.partnerName;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.price !== undefined) updateData.price = validatedData.price;
     if (validatedData.maxUses !== undefined) updateData.max_uses = validatedData.maxUses;
     if (validatedData.validUntil) updateData.valid_until = validatedData.validUntil;
     if (validatedData.isActive !== undefined) updateData.is_active = validatedData.isActive;

@@ -96,6 +96,7 @@ export function MainNavigation() {
   // Estado inicial siempre null para evitar diferencias entre servidor y cliente
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Marcar como montado después de la hidratación
   useEffect(() => {
@@ -171,6 +172,18 @@ export function MainNavigation() {
       subscription.unsubscribe();
     };
   }, [router, isProtectedRoute, mounted]);
+
+  // Verificar si el usuario es admin cuando está autenticado
+  useEffect(() => {
+    if (!mounted || !isAuthenticated) {
+      setIsAdmin(false);
+      return;
+    }
+    fetch('/api/admin/check')
+      .then((res) => res.ok ? res.json() : { isAdmin: false })
+      .then((data) => setIsAdmin(data?.isAdmin === true))
+      .catch(() => setIsAdmin(false));
+  }, [mounted, isAuthenticated]);
 
   // When pathname changes to a protected route, optimistically show header
   useEffect(() => {
@@ -277,6 +290,36 @@ export function MainNavigation() {
                 );
               })}
               
+              {/* Admin - solo visible para usuarios con is_admin */}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  aria-label="Panel de administración"
+                  className={cn(
+                    'relative px-4 py-2 text-sm font-medium transition-colors duration-200',
+                    'hover:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                    'active:bg-transparent active:text-primary',
+                    pathname?.startsWith('/admin')
+                      ? 'text-primary'
+                      : 'text-neutral'
+                  )}
+                  style={{ 
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none'
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  Admin
+                  {pathname?.startsWith('/admin') && (
+                    <span 
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"
+                      style={{ animation: 'slideIn 0.3s ease-out' }}
+                    />
+                  )}
+                </Link>
+              )}
+              
               {/* Logout Button */}
               <form action={signOut} className="ml-2">
                 <button
@@ -305,6 +348,31 @@ export function MainNavigation() {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-neutral/10 shadow-lg" style={{ WebkitTapHighlightColor: 'transparent' }}>
         <div className="flex items-center justify-around h-16 px-1">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              aria-label="Panel de administración"
+              className={cn(
+                'flex items-center justify-center flex-1 h-full min-w-0',
+                'transition-all duration-200 relative',
+                'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                'active:bg-transparent'
+              )}
+              style={{ WebkitTapHighlightColor: 'transparent', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'manipulation' }}
+            >
+              <div className={cn(
+                'transition-all duration-200 relative',
+                pathname?.startsWith('/admin') ? 'text-primary scale-110' : 'text-neutral'
+              )}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              {pathname?.startsWith('/admin') && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary rounded-full" style={{ animation: 'slideIn 0.3s ease-out' }} />
+              )}
+            </Link>
+          )}
           {mobileNavigationItems.map((item) => {
             const isActive = pathname === item.href || 
               (item.href !== '/feed' && item.href !== '/profile' && pathname?.startsWith(item.href)) ||

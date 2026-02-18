@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useToast } from '@/components/ui/toast';
@@ -91,7 +90,7 @@ export function UserTable() {
   return (
     <div className="space-y-6">
       {/* Aviso Premium */}
-      <Card className="p-4 md:p-6 bg-primary/5 border-primary/20">
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <span className="text-2xl">⭐</span>
           <div>
@@ -104,10 +103,10 @@ export function UserTable() {
             </p>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Filtros */}
-      <Card className="p-4 md:p-6">
+      <div className="rounded-xl border border-neutral/10 bg-white p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row gap-4">
           <input
             type="text"
@@ -140,10 +139,10 @@ export function UserTable() {
             </Button>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Tabla - Desktop / Cards - Móvil */}
-      <Card className="overflow-hidden">
+      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
         <div className="overflow-x-auto hidden md:block">
           <table className="w-full min-w-[640px]">
             <thead>
@@ -289,7 +288,7 @@ export function UserTable() {
             ))
           )}
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

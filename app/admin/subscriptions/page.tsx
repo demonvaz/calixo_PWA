@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/permissions';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { Card } from '@/components/ui/card';
+import { AdminPageHeader } from '@/components/admin/admin-page-header';
+import { AdminStatCard } from '@/components/admin/admin-stat-card';
+import { AdminEmpty } from '@/components/admin/admin-empty';
 
 export default async function AdminSubscriptionsPage() {
   const isAdmin = await requireAdmin();
@@ -9,14 +11,12 @@ export default async function AdminSubscriptionsPage() {
     redirect('/admin');
   }
 
-  // Fetch stats
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const response = await fetch(`${baseUrl}/api/admin/subscriptions/stats`, {
     cache: 'no-store',
   });
   const stats = response.ok ? await response.json() : {};
 
-  // Fetch all subscriptions with user display_name
   const supabase = createServiceRoleClient();
   const { data: subscriptions } = await supabase
     .from('subscriptions')
@@ -40,7 +40,6 @@ export default async function AdminSubscriptionsPage() {
     userId: sub.user_id,
     status: sub.status,
     plan: sub.plan,
-    currentPeriodStart: sub.current_period_start,
     currentPeriodEnd: sub.current_period_end,
     createdAt: sub.created_at,
     displayName: userNames[sub.user_id] || sub.user_id,
@@ -48,93 +47,92 @@ export default async function AdminSubscriptionsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-dark-navy mb-2">Dashboard de Subscripciones</h2>
-        <p className="text-neutral-gray">
-          Estadísticas y gestión de subscripciones Stripe
-        </p>
+      <AdminPageHeader title="Subscripciones" subtitle="Estadísticas y gestión Stripe" />
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <AdminStatCard label="Activas" value={stats.totalActive || 0} icon="💳" />
+        <AdminStatCard label="Canceladas" value={stats.totalCanceled || 0} />
+        <AdminStatCard label="MRR" value={`$${(stats.mrr || 0).toFixed(2)}`} />
+        <AdminStatCard label="ARR" value={`$${(stats.arr || 0).toFixed(2)}`} />
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="text-sm text-neutral-gray mb-1">Subscripciones Activas</div>
-          <div className="text-3xl font-bold text-dark-navy">{stats.totalActive || 0}</div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-sm text-neutral-gray mb-1">Canceladas</div>
-          <div className="text-3xl font-bold text-dark-navy">{stats.totalCanceled || 0}</div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-sm text-neutral-gray mb-1">MRR (Ingresos Mensuales)</div>
-          <div className="text-3xl font-bold text-dark-navy">
-            ${(stats.mrr || 0).toFixed(2)}
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-sm text-neutral-gray mb-1">ARR (Ingresos Anuales)</div>
-          <div className="text-3xl font-bold text-dark-navy">
-            ${(stats.arr || 0).toFixed(2)}
-          </div>
-        </Card>
-      </div>
-
-      {/* Subscriptions List */}
-      <Card className="p-6">
-        <h3 className="text-xl font-bold text-dark-navy mb-4">Todas las Subscripciones</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-neutral-gray/20">
-                <th className="text-left py-3 px-4 font-medium text-dark-navy">Usuario</th>
-                <th className="text-left py-3 px-4 font-medium text-dark-navy">Plan</th>
-                <th className="text-left py-3 px-4 font-medium text-dark-navy">Estado</th>
-                <th className="text-left py-3 px-4 font-medium text-dark-navy">Válido Hasta</th>
-                <th className="text-left py-3 px-4 font-medium text-dark-navy">Creada</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allSubscriptions.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-8 text-neutral-gray">
-                    No hay subscripciones
-                  </td>
-                </tr>
-              ) : (
-                allSubscriptions.map((sub) => (
-                  <tr key={sub.id} className="border-b border-neutral-gray/10">
-                    <td className="py-3 px-4">{sub.displayName || sub.userId}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-1 bg-soft-blue/10 text-soft-blue rounded-lg text-sm">
-                        {sub.plan === 'monthly' ? 'Mensual ($4.99)' : 'Anual ($49.99)'}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {sub.status === 'active' ? (
-                        <span className="px-2 py-1 bg-accent-green/10 text-accent-green rounded-lg text-sm">
-                          Activa
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 bg-neutral-gray/10 text-neutral-gray rounded-lg text-sm">
-                          {sub.status}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-neutral-gray">
-                      {sub.currentPeriodEnd
-                        ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES')
-                        : '-'}
-                    </td>
-                    <td className="py-3 px-4 text-neutral-gray">
-                      {new Date(sub.createdAt).toLocaleDateString('es-ES')}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-neutral/10">
+          <h3 className="text-sm font-semibold text-text-dark">Todas las subscripciones</h3>
         </div>
-      </Card>
+        {allSubscriptions.length === 0 ? (
+          <AdminEmpty message="No hay subscripciones" />
+        ) : (
+          <>
+            <div className="overflow-x-auto hidden sm:block">
+              <table className="w-full min-w-[500px]">
+                <thead>
+                  <tr className="border-b border-neutral/10 bg-neutral/5">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Usuario</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Plan</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Estado</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Válido hasta</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-text-dark">Creada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allSubscriptions.map((sub) => (
+                    <tr key={sub.id} className="border-b border-neutral/10 hover:bg-neutral/5">
+                      <td className="py-3 px-4 text-sm">{sub.displayName || sub.userId}</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-xs">
+                          {sub.plan === 'monthly' ? 'Mensual ($4.99)' : 'Anual ($49.99)'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {sub.status === 'active' ? (
+                          <span className="px-2 py-0.5 rounded-lg bg-complementary-emerald/10 text-complementary-emerald text-xs">
+                            Activa
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-lg bg-neutral/10 text-neutral text-xs">
+                            {sub.status}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-neutral">
+                        {sub.currentPeriodEnd
+                          ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES')
+                          : '-'}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-neutral">
+                        {new Date(sub.createdAt).toLocaleDateString('es-ES')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="sm:hidden divide-y divide-neutral/10">
+              {allSubscriptions.map((sub) => (
+                <div key={sub.id} className="p-4 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <span className="font-medium text-text-dark text-sm">{sub.displayName || sub.userId}</span>
+                    {sub.status === 'active' ? (
+                      <span className="px-2 py-0.5 rounded-lg bg-complementary-emerald/10 text-complementary-emerald text-xs">
+                        Activa
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-lg bg-neutral/10 text-neutral text-xs">
+                        {sub.status}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-neutral">
+                    {sub.plan === 'monthly' ? 'Mensual' : 'Anual'} · Hasta {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES') : '-'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

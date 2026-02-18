@@ -42,31 +42,50 @@ export async function GET() {
       supabase.from('transactions').select('amount').eq('type', 'earn'),
       supabase.from('transactions').select('amount').eq('type', 'spend'),
     ]);
-    const coinsEarned = (earnedRes.data || []).reduce((sum, t) => sum + (t.amount || 0), 0);
-    const coinsSpent = (spentRes.data || []).reduce((sum, t) => sum + (t.amount || 0), 0);
+    const coinsEarned = (earnedRes.data || []).reduce((sum, t) => sum + Math.max(0, t.amount || 0), 0);
+    const coinsSpent = (spentRes.data || []).reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
 
-    // Most purchased items
+    // Cupones más comprados (transactions con type=spend y coupon_code)
     const { data: spendTransactions } = await supabase
       .from('transactions')
-      .select('item_id')
+      .select('coupon_code')
       .eq('type', 'spend');
-    const itemCounts: Record<number, number> = {};
+    const couponCounts: Record<string, number> = {};
     (spendTransactions || []).forEach((t) => {
-      if (t.item_id) {
-        itemCounts[t.item_id] = (itemCounts[t.item_id] || 0) + 1;
+      const code = t.coupon_code?.trim();
+      if (code) {
+        couponCounts[code] = (couponCounts[code] || 0) + 1;
       }
     });
-    const topItems = Object.entries(itemCounts)
-      .map(([itemId, count]) => ({ itemId: parseInt(itemId), count }))
+    const topCouponCodes = Object.entries(couponCounts)
+      .map(([code, count]) => ({ code, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
+    // Enriquecer con datos del cupón (partner_name)
+    const topItems = await Promise.all(
+      topCouponCodes.map(async ({ code, count }) => {
+        const { data: coupon } = await supabase
+          .from('coupons')
+          .select('id, code, partner_name')
+          .eq('code', code)
+          .single();
+        return {
+          code,
+          couponId: coupon?.id,
+          partnerName: coupon?.partner_name || code,
+          count,
+        };
+      })
+    );
+
     // Most liked posts
-    const { data: topPosts } = await supabase
+    const { data: topPostsData } = await supabase
       .from('feed_items')
       .select('id, likes_count')
       .order('likes_count', { ascending: false })
       .limit(10);
+    const topPosts = topPostsData || [];
 
     const analytics = {
       users: {
@@ -82,8 +101,8 @@ export async function GET() {
         spent: coinsSpent,
         net: coinsEarned - coinsSpent,
       },
-      topItems,
-      topPosts: (topPosts || []).map((p) => ({ id: p.id, likesCount: p.likes_count })),
+      topItems: topItems,
+      topPosts: topPosts.map((p: { id: number; likes_count?: number }) => ({ id: p.id, likesCount: p.likes_count ?? 0 })),
     };
 
     return NextResponse.json(analytics);

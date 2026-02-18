@@ -15,22 +15,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="flex">
-        {/* Sidebar */}
-        <AdminSidebar role={permissions.role!} />
-
-        {/* Main Content */}
-        <div className="flex-1 lg:ml-64 min-h-screen">
-          {/* Top Bar */}
-          <div className="bg-white border-b border-neutral/20 px-4 md:px-6 py-4 flex items-center justify-between pt-14 lg:pt-4">
-            <h1 className="text-xl md:text-2xl font-bold text-text-dark font-serif">Panel de Administración</h1>
-            <ModeToggle currentRole={permissions.role!} />
-          </div>
-
-          {/* Page Content */}
-          <main className="p-4 md:p-6">{children}</main>
-        </div>
+    <div className="min-h-screen bg-neutral/5">
+      <AdminSidebar role={permissions.role!} />
+      <div className="lg:ml-56 min-h-screen flex flex-col">
+        <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-neutral/10 px-4 sm:px-6 py-3 flex items-center justify-end pt-14 lg:pt-3">
+          <ModeToggle currentRole={permissions.role!} />
+        </header>
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

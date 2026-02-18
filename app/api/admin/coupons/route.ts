@@ -6,7 +6,10 @@ import { z } from 'zod';
 const couponSchema = z.object({
   code: z.string().min(1).max(50),
   discountPercent: z.number().int().min(1).max(100),
-  maxUses: z.number().int().min(1).optional(),
+  partnerName: z.string().min(1, 'El nombre del partner es requerido').max(100),
+  description: z.string().max(500).optional().nullable(),
+  price: z.number().int().min(0, 'El precio debe ser 0 o mayor'),
+  maxUses: z.number().int().min(1).optional().nullable(),
   validFrom: z.string().datetime().optional(),
   validUntil: z.string().datetime(),
   isActive: z.boolean().default(true),
@@ -63,6 +66,9 @@ export async function POST(request: NextRequest) {
       .insert({
         code: validatedData.code.toUpperCase(),
         discount_percent: validatedData.discountPercent,
+        partner_name: validatedData.partnerName,
+        description: validatedData.description || null,
+        price: validatedData.price,
         max_uses: validatedData.maxUses || null,
         valid_from: validatedData.validFrom ? validatedData.validFrom : new Date().toISOString(),
         valid_until: validatedData.validUntil,

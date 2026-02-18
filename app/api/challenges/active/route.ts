@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getDateKey, getDateKeyForTimestamp } from '@/lib/challenge-date';
 
 /**
  * GET /api/challenges/active
  * Get the currently active challenge for the authenticated user
+ * Retos 'finished' no reclamados expiran a las 2:00 AM (Madrid) y pasan a 'not_claimed'
  */
 export async function GET(request: NextRequest) {
   try {
@@ -41,6 +43,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         activeChallenge: null,
       });
+    }
+
+    // Si está 'finished' y es de un día anterior (pasó el cambio de retos a las 2 AM), expirar
+    if (activeChallenge.status === 'finished' && activeChallenge.finished_at) {
+      const challengeDateKey = getDateKeyForTimestamp(activeChallenge.finished_at);
+      const todayDateKey = getDateKey();
+      if (challengeDateKey < todayDateKey) {
+        await supabase
+          .from('user_challenges')
+          .update({ status: 'not_claimed' })
+          .eq('id', activeChallenge.id)
+          .eq('user_id', user.id);
+        return NextResponse.json({
+          activeChallenge: null,
+        });
+      }
     }
 
     // Get challenge details

@@ -25,7 +25,7 @@ export interface Profile {
 
 // Challenge related types
 export type ChallengeType = 'daily' | 'focus' | 'social';
-export type ChallengeStatus = 'pending' | 'in_progress' | 'finished' | 'claimed' | 'completed' | 'failed' | 'canceled';
+export type ChallengeStatus = 'pending' | 'in_progress' | 'finished' | 'claimed' | 'completed' | 'failed' | 'canceled' | 'not_claimed';
 
 export interface Challenge {
   id: number;

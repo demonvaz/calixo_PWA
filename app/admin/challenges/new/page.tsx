@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { requireAdmin } from '@/lib/permissions';
 import { ChallengeForm } from '@/components/admin/challenge-form';
 
@@ -10,11 +11,17 @@ export default async function NewChallengePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-dark-navy mb-2">Crear Nuevo Reto</h2>
-        <p className="text-neutral-gray">
-          Añade un nuevo reto al catálogo de Calixo
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-text-dark font-serif">Crear reto</h1>
+          <p className="text-sm text-neutral mt-0.5">Añade un reto al catálogo</p>
+        </div>
+        <Link
+          href="/admin/challenges"
+          className="text-sm text-neutral hover:text-primary transition-colors shrink-0"
+        >
+          ← Volver a retos
+        </Link>
       </div>
       <ChallengeForm />
     </div>

@@ -81,6 +81,7 @@ export default function FeedPage() {
   };
 
   const fetchFeed = async (loadMore = false) => {
+    if (!loadMore) setLoading(true);
     try {
       const currentOffset = loadMore ? offset : 0;
       const response = await fetch(

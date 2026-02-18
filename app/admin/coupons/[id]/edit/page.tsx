@@ -1,4 +1,5 @@
 import { redirect, notFound } from 'next/navigation';
+import Link from 'next/link';
 import { requireAdmin } from '@/lib/permissions';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { CouponForm } from '@/components/admin/coupon-form';
@@ -34,6 +35,9 @@ export default async function EditCouponPage({
     id: coupon.id,
     code: coupon.code,
     discountPercent: coupon.discount_percent,
+    partnerName: coupon.partner_name || '',
+    description: coupon.description || null,
+    price: coupon.price ?? 0,
     maxUses: coupon.max_uses,
     validUntil: coupon.valid_until,
     isActive: coupon.is_active ?? true,
@@ -41,11 +45,17 @@ export default async function EditCouponPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-dark-navy mb-2">Editar Cupón</h2>
-        <p className="text-neutral-gray">
-          Modifica los detalles del cupón: {coupon.code}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-text-dark font-serif">Editar cupón</h1>
+          <p className="text-sm text-neutral mt-0.5">{coupon.code}</p>
+        </div>
+        <Link
+          href="/admin/coupons"
+          className="text-sm text-neutral hover:text-primary transition-colors shrink-0"
+        >
+          ← Volver a cupones
+        </Link>
       </div>
       <CouponForm coupon={couponForForm} />
     </div>

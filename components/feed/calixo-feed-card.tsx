@@ -7,7 +7,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-const CALIXO_PHRASES = [
+const DEFAULT_IMAGE = '/photos/back.PNG';
+
+const FALLBACK_PHRASES = [
   'Quizás sea mejor que dejes de scrollear, y salgas a acumular momentos',
   'Tienes muchos retos por hacer, desconecta un poco',
   'La vida está ahí fuera esperándote',
@@ -15,15 +17,43 @@ const CALIXO_PHRASES = [
   'Menos scroll, más momentos memorables',
 ];
 
-function getRandomPhrase() {
-  const phrase = CALIXO_PHRASES[Math.floor(Math.random() * CALIXO_PHRASES.length)];
-  return phrase.toUpperCase();
+interface Banner {
+  id: number;
+  phrase: string;
+  image_url: string | null;
+}
+
+function getRandomItem<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 export function CalixoFeedCard() {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [phrase] = useState(() => getRandomPhrase());
+  const [banner, setBanner] = useState<Banner | null>(null);
   const [hasBounced, setHasBounced] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/banners')
+      .then((res) => res.ok ? res.json() : [])
+      .then((data: Banner[]) => {
+        if (data && data.length > 0) {
+          setBanner(getRandomItem(data));
+        } else {
+          setBanner({
+            id: 0,
+            phrase: getRandomItem(FALLBACK_PHRASES),
+            image_url: null,
+          });
+        }
+      })
+      .catch(() => {
+        setBanner({
+          id: 0,
+          phrase: getRandomItem(FALLBACK_PHRASES),
+          image_url: null,
+        });
+      });
+  }, []);
 
   useEffect(() => {
     const card = cardRef.current;
@@ -47,6 +77,18 @@ export function CalixoFeedCard() {
     observer.observe(card);
     return () => observer.disconnect();
   }, [hasBounced]);
+
+  const phrase = banner?.phrase ? banner.phrase.toUpperCase() : '';
+  const [imageError, setImageError] = useState(false);
+  const imageUrl = imageError || !banner?.image_url ? DEFAULT_IMAGE : banner.image_url;
+
+  if (!banner) {
+    return (
+      <Card className="overflow-hidden border-0 animate-pulse" style={{ backgroundColor: '#fe4b5b' }}>
+        <div className="aspect-square w-full bg-white/10" />
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -85,17 +127,18 @@ export function CalixoFeedCard() {
         </div>
       </CardHeader>
 
-      {/* Image - back.PNG con blur, overlay oscuro y texto estilizado */}
+      {/* Image con blur, overlay oscuro y texto */}
       <div className="relative w-full md:max-w-md md:mx-auto aspect-square bg-white/10 overflow-hidden">
         <Image
-          src="/photos/back.PNG"
-          alt="Desconecta y vive"
+          src={imageUrl}
+          alt=""
           fill
           className="object-cover scale-105"
           style={{ filter: 'blur(2px) brightness(0.85)' }}
           priority
+          unoptimized={imageUrl.startsWith('http')}
+          onError={() => setImageError(true)}
         />
-        {/* Overlay oscurecido para legibilidad + gradiente suave */}
         <div
           className="absolute inset-0 flex items-center justify-center p-8"
           style={{

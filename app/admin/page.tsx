@@ -1,6 +1,7 @@
+import Link from 'next/link';
 import { checkAdminPermissions } from '@/lib/permissions';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { Card } from '@/components/ui/card';
+import { AdminStatCard } from '@/components/admin/admin-stat-card';
 
 export default async function AdminDashboard() {
   const permissions = await checkAdminPermissions();
@@ -11,7 +12,6 @@ export default async function AdminDashboard() {
 
   const supabase = createServiceRoleClient();
 
-  // Obtener estadísticas con Supabase
   const [usersRes, premiumRes, challengesRes, feedRes, reportsRes, subsRes] = await Promise.all([
     supabase.from('users').select('*', { count: 'exact', head: true }),
     supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_premium', true),
@@ -29,112 +29,52 @@ export default async function AdminDashboard() {
   const activeSubscriptions = subsRes.count ?? 0;
 
   const stats = [
-    {
-      title: 'Usuarios Totales',
-      value: totalUsers,
-      icon: '👥',
-      color: 'text-complementary-emerald',
-    },
-    {
-      title: 'Usuarios Premium',
-      value: premiumUsers,
-      icon: '⭐',
-      color: 'text-primary',
-    },
-    {
-      title: 'Retos Totales',
-      value: totalChallenges,
-      icon: '🎯',
-      color: 'text-primary',
-    },
-    {
-      title: 'Posts en Feed',
-      value: totalFeedPosts,
-      icon: '📝',
-      color: 'text-accent-red',
-    },
-    {
-      title: 'Reportes Pendientes',
-      value: pendingReports,
-      icon: '⚠️',
-      color: 'text-orange-500',
-    },
-    {
-      title: 'Subscripciones Activas',
-      value: activeSubscriptions,
-      icon: '💳',
-      color: 'text-purple-500',
-    },
+    { label: 'Usuarios', value: totalUsers, icon: '👥' },
+    { label: 'Premium', value: premiumUsers, icon: '⭐' },
+    { label: 'Retos', value: totalChallenges, icon: '🎯' },
+    { label: 'Posts', value: totalFeedPosts, icon: '📝' },
+    { label: 'Reportes pendientes', value: pendingReports, icon: '⚠️' },
+    { label: 'Subscripciones activas', value: activeSubscriptions, icon: '💳' },
+  ];
+
+  const quickLinks = [
+    ...(permissions.isAdmin ? [
+      { href: '/admin/challenges/new', label: 'Crear reto' },
+      { href: '/admin/coupons/new', label: 'Crear cupón' },
+    ] : []),
+    { href: '/admin/moderation', label: 'Moderación', badge: pendingReports },
+    { href: '/admin/users', label: 'Usuarios' },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-text-dark font-serif mb-2">
-          Dashboard de Administración
-        </h2>
-        <p className="text-neutral">
-          Bienvenido al panel de administración de Calixo
-        </p>
+        <h1 className="text-xl sm:text-2xl font-bold text-text-dark font-serif">Dashboard</h1>
+        <p className="text-sm text-neutral mt-0.5">Resumen del panel</p>
       </div>
 
-      {/* Statistics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-neutral mb-1">{stat.title}</p>
-                <p className="text-3xl font-bold text-text-dark font-serif">{stat.value}</p>
-              </div>
-              <div className={`text-4xl ${stat.color}`}>{stat.icon}</div>
-            </div>
-          </Card>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        {stats.map((s) => (
+          <AdminStatCard key={s.label} label={s.label} value={s.value} icon={s.icon} />
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <Card className="p-6">
-        <h3 className="text-xl font-bold text-text-dark font-serif mb-4">Acciones Rápidas</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {permissions.isAdmin && (
-            <>
-              <a
-                href="/admin/challenges"
-                className="p-4 border border-neutral/20 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <div className="font-medium text-text-dark font-serif">Crear Reto</div>
-                <div className="text-sm text-neutral">Añadir nuevo reto al catálogo</div>
-              </a>
-              <a
-                href="/admin/coupons"
-                className="p-4 border border-neutral/20 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <div className="text-2xl mb-2">🎫</div>
-                <div className="font-medium text-text-dark font-serif">Crear Cupón</div>
-                <div className="text-sm text-neutral">Generar código de descuento</div>
-              </a>
-            </>
-          )}
-          <a
-            href="/admin/moderation"
-            className="p-4 border border-neutral/20 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors"
+      <div className="flex flex-wrap gap-2">
+        {quickLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-neutral/10 bg-white hover:border-primary hover:bg-primary/5 transition-colors text-sm font-medium text-text-dark"
           >
-            <div className="font-medium text-text-dark font-serif">Revisar Reportes</div>
-            <div className="text-sm text-neutral">
-              {pendingReports} pendientes
-            </div>
-          </a>
-          <a
-            href="/admin/users"
-            className="p-4 border border-neutral/20 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors"
-          >
-            <div className="font-medium text-text-dark font-serif">Gestionar Usuarios</div>
-            <div className="text-sm text-neutral">Ver y administrar usuarios</div>
-          </a>
-        </div>
-      </Card>
+            {link.label}
+            {link.badge != null && link.badge > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full bg-primary text-white text-xs">
+                {link.badge}
+              </span>
+            )}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
-

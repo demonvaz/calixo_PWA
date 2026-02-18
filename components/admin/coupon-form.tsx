@@ -3,13 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 
 interface CouponFormProps {
   coupon?: {
     id: number;
     code: string;
     discountPercent: number;
+    partnerName: string;
+    description: string | null;
+    price: number;
     maxUses: number | null;
     validUntil: Date;
     isActive: boolean;
@@ -24,6 +26,9 @@ export function CouponForm({ coupon }: CouponFormProps) {
   const [formData, setFormData] = useState({
     code: coupon?.code || '',
     discountPercent: coupon?.discountPercent || 10,
+    partnerName: coupon?.partnerName || '',
+    description: coupon?.description || '',
+    price: coupon?.price ?? 0,
     maxUses: coupon?.maxUses || null,
     validUntil: coupon
       ? new Date(coupon.validUntil).toISOString().split('T')[0]
@@ -45,7 +50,8 @@ export function CouponForm({ coupon }: CouponFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          validUntil: new Date(formData.validUntil).toISOString(),
+          description: formData.description || null,
+          validUntil: new Date(formData.validUntil + 'T23:59:59').toISOString(),
         }),
       });
 
@@ -64,7 +70,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
   };
 
   return (
-    <Card className="p-6">
+    <div className="rounded-xl border border-neutral/10 bg-white p-4 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="p-4 bg-accent-red/10 border border-accent-red rounded-lg text-accent-red">
@@ -87,6 +93,61 @@ export function CouponForm({ coupon }: CouponFormProps) {
             maxLength={50}
             placeholder="EJEMPLO2024"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-dark mb-2">
+            Nombre del Partner *
+          </label>
+          <input
+            type="text"
+            value={formData.partnerName}
+            onChange={(e) =>
+              setFormData({ ...formData, partnerName: e.target.value })
+            }
+            className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            required
+            maxLength={100}
+            placeholder="Ej: Olimpro, Nude Project"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-dark mb-2">
+            Descripción (opcional)
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            rows={2}
+            placeholder="Descripción del cupón"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-dark mb-2">
+            Precio en monedas *
+          </label>
+          <input
+            type="number"
+            value={formData.price}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                price: parseInt(e.target.value) || 0,
+              })
+            }
+            className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            required
+            min={0}
+            placeholder="Monedas para comprar el cupón"
+          />
+          <p className="text-sm text-neutral mt-1">
+            Coste en monedas para que el usuario compre este cupón en la tienda
+          </p>
         </div>
 
         <div>
@@ -171,7 +232,7 @@ export function CouponForm({ coupon }: CouponFormProps) {
           </Button>
         </div>
       </form>
-    </Card>
+    </div>
   );
 }
 

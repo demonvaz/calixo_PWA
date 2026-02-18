@@ -77,10 +77,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Get feed items (using regular client for RLS on feed_items)
+    // Excluir posts ocultos por moderación (is_hidden = true)
     let query = supabase
       .from('feed_items')
       .select('*')
-      .in('user_id', userIds);
+      .in('user_id', userIds)
+      .or('is_hidden.eq.false,is_hidden.is.null');
     
     // Only exclude own posts when viewing 'following' feed
     if (type === 'following') {
