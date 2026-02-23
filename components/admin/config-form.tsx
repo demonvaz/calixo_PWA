@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { useToast } from '@/components/ui/toast';
 
 interface ConfigValues {
   daily_free_challenges?: number;
@@ -14,10 +15,10 @@ interface ConfigValues {
 }
 
 export function ConfigForm() {
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const [config, setConfig] = useState<ConfigValues>({
     daily_free_challenges: 1,
@@ -50,7 +51,6 @@ export function ConfigForm() {
     e.preventDefault();
     setSaving(true);
     setError(null);
-    setSuccess(false);
 
     try {
       const response = await fetch('/api/admin/config', {
@@ -64,8 +64,7 @@ export function ConfigForm() {
         throw new Error(data.error || 'Error al guardar configuración');
       }
 
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      toast.success('Configuración guardada correctamente');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -82,16 +81,11 @@ export function ConfigForm() {
   }
 
   return (
-    <div className="rounded-xl border border-neutral/10 bg-white p-4 sm:p-6">
+    <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm p-4 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="p-4 bg-accent-red/10 border border-accent-red rounded-lg text-accent-red">
+          <div className="p-4 bg-accent-red/10 border border-accent-red rounded-xl text-accent-red">
             {error}
-          </div>
-        )}
-        {success && (
-          <div className="p-4 bg-accent-green/10 border border-accent-green rounded-lg text-accent-green">
-            Configuración guardada exitosamente
           </div>
         )}
 
@@ -106,7 +100,7 @@ export function ConfigForm() {
               onChange={(e) =>
                 setConfig({ ...config, daily_free_challenges: parseInt(e.target.value) || 1 })
               }
-              className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
               min={1}
             />
           </div>
@@ -121,7 +115,7 @@ export function ConfigForm() {
               onChange={(e) =>
                 setConfig({ ...config, daily_premium_challenges: parseInt(e.target.value) || 3 })
               }
-              className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
               min={1}
             />
           </div>
@@ -136,7 +130,7 @@ export function ConfigForm() {
               onChange={(e) =>
                 setConfig({ ...config, reward_daily: parseInt(e.target.value) || 50 })
               }
-              className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
               min={0}
             />
           </div>
@@ -151,7 +145,7 @@ export function ConfigForm() {
               onChange={(e) =>
                 setConfig({ ...config, reward_focus: parseInt(e.target.value) || 1 })
               }
-              className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
               min={0}
             />
           </div>
@@ -166,7 +160,7 @@ export function ConfigForm() {
               onChange={(e) =>
                 setConfig({ ...config, reward_social: parseInt(e.target.value) || 75 })
               }
-              className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
               min={0}
             />
           </div>
@@ -181,7 +175,7 @@ export function ConfigForm() {
               onChange={(e) =>
                 setConfig({ ...config, max_focus_duration_minutes: parseInt(e.target.value) || 1380 })
               }
-              className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
               min={1}
               max={1380}
             />

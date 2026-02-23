@@ -23,8 +23,8 @@ export default async function NewBannerPage() {
           ← Volver a banners
         </Link>
       </div>
-      <div className="rounded-xl border border-neutral/10 bg-white p-4 sm:p-6">
-        <BannerForm onSuccess={() => {}} />
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm p-4 sm:p-6">
+        <BannerForm />
       </div>
     </div>
   );

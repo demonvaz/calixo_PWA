@@ -4,10 +4,10 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { useToast } from '@/components/ui/toast';
 import { BannerPreview } from './banner-preview';
 
 interface BannerFormProps {
-  onSuccess?: () => void;
   editing?: {
     id: number;
     phrase: string;
@@ -17,8 +17,9 @@ interface BannerFormProps {
   };
 }
 
-export function BannerForm({ onSuccess, editing }: BannerFormProps) {
+export function BannerForm({ editing }: BannerFormProps) {
   const router = useRouter();
+  const toast = useToast();
   const [phrase, setPhrase] = useState(editing?.phrase ?? '');
   const [imageUrl, setImageUrl] = useState(editing?.image_url ?? '');
   const [sortOrder, setSortOrder] = useState(editing?.sort_order ?? 0);
@@ -73,7 +74,7 @@ export function BannerForm({ onSuccess, editing }: BannerFormProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al guardar');
-      onSuccess?.();
+      toast.success(editing ? 'Banner actualizado correctamente' : 'Banner creado correctamente');
       router.push('/admin/banners');
       router.refresh();
     } catch (err) {
@@ -135,7 +136,7 @@ export function BannerForm({ onSuccess, editing }: BannerFormProps) {
               value={sortOrder}
               onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)}
               min={0}
-              className="w-full px-4 py-2 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
             />
           </div>
 

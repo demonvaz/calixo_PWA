@@ -75,7 +75,7 @@ export function StartFocusModal({
   if (!focusChallenge) {
     return (
       <div
-        className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto overscroll-contain bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto overscroll-contain bg-black/70 backdrop-blur-md"
         onClick={handleBackdropClick}
       >
         <Card className="w-full max-w-sm my-auto shadow-2xl border-neutral/15" onClick={(e) => e.stopPropagation()}>
@@ -94,7 +94,7 @@ export function StartFocusModal({
     <div
       className={cn(
         'fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-contain',
-        'bg-black/50 backdrop-blur-sm transition-opacity duration-300',
+        'bg-black/70 backdrop-blur-md transition-opacity duration-300',
         isOpen ? 'opacity-100' : 'opacity-0'
       )}
       onClick={handleBackdropClick}
@@ -118,19 +118,22 @@ export function StartFocusModal({
           )}
         </CardHeader>
         <CardContent className="px-4 sm:px-5 pb-5 sm:pb-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-2 px-3 rounded-xl bg-primary/5 border border-primary/10">
-            <span className="text-sm font-medium text-text">Duración</span>
-            <div className="flex gap-1.5 sm:gap-2 flex-wrap">
+          {/* Duración - diseño moderno y equilibrado */}
+          <div className="rounded-xl overflow-hidden bg-gradient-to-br from-primary/5 via-white to-primary/5 border border-primary/10">
+            <div className="px-4 py-3 border-b border-primary/5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral">Duración</span>
+            </div>
+            <div className="p-4 flex flex-wrap justify-center gap-2">
               {HOURS_OPTIONS.map((h) => (
                 <button
                   key={h}
                   type="button"
                   onClick={() => setSelectedHours(h)}
                   className={cn(
-                    'min-w-[2.5rem] sm:min-w-[2.75rem] py-2 px-2 rounded-lg text-sm font-semibold transition-colors',
+                    'flex-1 min-w-[3rem] max-w-[4rem] py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                     selectedHours === h
-                      ? 'bg-primary text-white'
-                      : 'bg-white border border-neutral/20 text-text hover:border-primary/30 hover:bg-primary/5'
+                      ? 'bg-primary text-white shadow-md shadow-primary/25 scale-[1.02]'
+                      : 'bg-white/80 border border-neutral/15 text-text hover:border-primary/30 hover:bg-primary/5'
                   )}
                 >
                   {h}h
@@ -139,11 +142,12 @@ export function StartFocusModal({
             </div>
           </div>
 
-          <p className="text-sm text-neutral text-center">
+          {/* Recompensa */}
+          <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50/80 border border-amber-200/50">
             <span className="font-semibold text-accent-yellow-dark">{rewardCoins} monedas</span>
-            {' · '}
-            <span className="text-xs">+2 al compartir</span>
-          </p>
+            <span className="text-neutral/60">·</span>
+            <span className="text-xs text-neutral">+2 al compartir</span>
+          </div>
 
           <div className="flex flex-col gap-2 pt-1">
             <Button

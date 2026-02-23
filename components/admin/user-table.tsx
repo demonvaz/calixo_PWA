@@ -12,7 +12,7 @@ interface User {
   displayName: string | null;
   isPremium: boolean;
   coins: number;
-  streak: number;
+  energy: number;
   createdAt: string;
   isAdmin?: boolean;
 }
@@ -92,7 +92,11 @@ export function UserTable() {
       {/* Aviso Premium */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <span className="text-2xl">⭐</span>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.906c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.904a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+          </div>
           <div>
             <h3 className="font-semibold text-text-dark font-serif">
               Control de Premium
@@ -106,14 +110,14 @@ export function UserTable() {
       </div>
 
       {/* Filtros */}
-      <div className="rounded-xl border border-neutral/10 bg-white p-4 sm:p-5">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row gap-4">
           <input
             type="text"
             placeholder="Buscar por nombre..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark placeholder:text-neutral"
+            className="flex-1 px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark placeholder:text-neutral transition-colors"
           />
           <div className="flex flex-wrap gap-2">
             <Button
@@ -142,7 +146,7 @@ export function UserTable() {
       </div>
 
       {/* Tabla - Desktop / Cards - Móvil */}
-      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto hidden md:block">
           <table className="w-full min-w-[640px]">
             <thead>
@@ -157,7 +161,7 @@ export function UserTable() {
                   Monedas
                 </th>
                 <th className="text-left py-4 px-4 font-medium text-text-dark font-serif text-sm hidden lg:table-cell">
-                  Racha
+                  Energía
                 </th>
                 <th className="text-left py-4 px-4 font-medium text-text-dark font-serif text-sm">
                   Acción Premium
@@ -192,8 +196,8 @@ export function UserTable() {
                     </td>
                     <td className="py-4 px-4">
                       {user.isPremium ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/20 text-primary rounded-lg text-sm font-medium">
-                          <span>⭐</span> Premium
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/20 text-primary rounded-lg text-sm font-medium">
+                          Premium
                         </span>
                       ) : (
                         <span className="px-2.5 py-1 bg-neutral/10 text-neutral rounded-lg text-sm">
@@ -205,7 +209,7 @@ export function UserTable() {
                       {user.coins} monedas
                     </td>
                     <td className="py-4 px-4 hidden lg:table-cell text-neutral">
-                      {user.streak} racha
+                      {user.energy}%
                     </td>
                     <td className="py-4 px-4">
                       <Button
@@ -257,7 +261,7 @@ export function UserTable() {
                 </div>
                 {user.isPremium ? (
                   <span className="px-2.5 py-1 bg-primary/20 text-primary rounded-lg text-xs font-medium">
-                    ⭐ Premium
+                    Premium
                   </span>
                 ) : (
                   <span className="px-2.5 py-1 bg-neutral/10 text-neutral rounded-lg text-xs">
@@ -267,7 +271,7 @@ export function UserTable() {
               </div>
               <div className="flex justify-between items-center text-sm text-neutral">
                 <span>{user.coins} monedas</span>
-                <span>{user.streak} racha</span>
+                <span>{user.energy}% energía</span>
               </div>
               <Button
                 size="sm"

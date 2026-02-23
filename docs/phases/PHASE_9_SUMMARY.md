@@ -2,7 +2,7 @@
 
 ## Resumen de la Implementación
 
-La Fase 9 se ha completado exitosamente, implementando un sistema completo de notificaciones in-app que mantiene a los usuarios informados sobre todas las actividades importantes: retos completados, interacciones sociales, compras de items, y cambios en subscripciones. El sistema incluye badges en tiempo real, diferentes tipos de notificaciones, y marcado de leídas.
+La Fase 9 se ha completado exitosamente, implementando un sistema completo de notificaciones in-app que mantiene a los usuarios informados sobre todas las actividades importantes: retos completados, interacciones sociales, compras de items, y cambios en Suscripciones. El sistema incluye badges en tiempo real, diferentes tipos de notificaciones, y marcado de leídas.
 
 **Fecha de Completación:** 11 de noviembre de 2025  
 **Duración:** Fase 9  
@@ -381,7 +381,7 @@ npm run db:studio
 - [ ] Agregar VAPID keys
 - [ ] Permission prompt UI
 - [ ] Enviar notificaciones push
-- [ ] Gestión de subscripciones push
+- [ ] Gestión de Suscripciones push
 
 ### Preferencias
 - [ ] Página de configuración

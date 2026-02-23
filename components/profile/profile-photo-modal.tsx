@@ -404,7 +404,7 @@ export function ProfilePhotoModal({
     <div
       className={cn(
         'fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain',
-        'bg-black/50 backdrop-blur-sm',
+        'bg-black/70 backdrop-blur-md',
         'transition-opacity duration-300',
         isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
       )}

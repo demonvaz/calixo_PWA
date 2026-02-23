@@ -354,13 +354,15 @@ export default function ChallengesPage() {
             ))}
           </div>
 
-          <div className="mt-8">
-            <FocusModeBanner
-              isPremium={userProfile?.isPremium ?? false}
-              focusChallenge={focusChallenge}
-              onOpenModal={() => setShowFocusModal(true)}
-            />
-          </div>
+          {!(activeChallengeBanner?.challengeType === 'focus') && (
+            <div className="mt-8">
+              <FocusModeBanner
+                isPremium={userProfile?.isPremium ?? false}
+                focusChallenge={focusChallenge}
+                onOpenModal={() => setShowFocusModal(true)}
+              />
+            </div>
+          )}
 
           {challenges.length === 0 && !loading && (
             <div className="text-center py-12">

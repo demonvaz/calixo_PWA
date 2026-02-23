@@ -29,12 +29,12 @@ export default async function AdminDashboard() {
   const activeSubscriptions = subsRes.count ?? 0;
 
   const stats = [
-    { label: 'Usuarios', value: totalUsers, icon: '👥' },
-    { label: 'Premium', value: premiumUsers, icon: '⭐' },
-    { label: 'Retos', value: totalChallenges, icon: '🎯' },
-    { label: 'Posts', value: totalFeedPosts, icon: '📝' },
-    { label: 'Reportes pendientes', value: pendingReports, icon: '⚠️' },
-    { label: 'Subscripciones activas', value: activeSubscriptions, icon: '💳' },
+    { label: 'Usuarios', value: totalUsers },
+    { label: 'Premium', value: premiumUsers },
+    { label: 'Retos', value: totalChallenges },
+    { label: 'Posts', value: totalFeedPosts },
+    { label: 'Reportes pendientes', value: pendingReports },
+    { label: 'Suscripciones activas', value: activeSubscriptions },
   ];
 
   const quickLinks = [
@@ -55,7 +55,7 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {stats.map((s) => (
-          <AdminStatCard key={s.label} label={s.label} value={s.value} icon={s.icon} />
+          <AdminStatCard key={s.label} label={s.label} value={s.value} />
         ))}
       </div>
 
@@ -64,7 +64,7 @@ export default async function AdminDashboard() {
           <Link
             key={link.href}
             href={link.href}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-neutral/10 bg-white hover:border-primary hover:bg-primary/5 transition-colors text-sm font-medium text-text-dark"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral/10 bg-white shadow-sm hover:border-primary hover:bg-primary/5 hover:shadow transition-colors text-sm font-medium text-text-dark"
           >
             {link.label}
             {link.badge != null && link.badge > 0 && (

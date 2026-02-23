@@ -31,7 +31,7 @@ Calixo es una PWA (Progressive Web App) que ayuda a los usuarios a reducir su us
 - 🎨 **Editor de avatar** con 6 categorías de personalización
 - 🏪 **Tienda virtual** con +300 items únicos
 - 📱 **Feed social** con posts, likes y comentarios
-- 💳 **Subscripciones** con Stripe (mensual y anual)
+- 💳 **Suscripciones** con Stripe (mensual y anual)
 - 🔔 **Notificaciones** in-app con 6 tipos
 - 🪙 **Sistema de monedas** y recompensas
 - 📊 **Tracking de progreso** y rachas
@@ -212,7 +212,7 @@ calixo/
 - Sigue a otros usuarios
 - Feed personalizado (siguiendo) o global
 
-### Subscripciones Premium
+### Suscripciones Premium
 
 #### Plan Mensual: $4.99/mes
 - Retos diarios ilimitados
@@ -292,7 +292,7 @@ Tiempo de Desarrollo:   Completado
 - [x] Avatar CALI
 - [x] Tienda y monedas
 - [x] Feed social
-- [x] Subscripciones
+- [x] Suscripciones
 - [x] Notificaciones
 
 ### ✅ Todas las Fases Completadas

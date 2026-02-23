@@ -47,7 +47,7 @@ El proyecto Calixo PWA ha sido **completado exitosamente** según toda la docume
 - [x] Avatar CALI con 6 categorías de personalización
 - [x] Tienda virtual con +300 items
 - [x] Feed social con likes, comentarios, followers
-- [x] Subscripciones Stripe (mensual y anual)
+- [x] Suscripciones Stripe (mensual y anual)
 - [x] Sistema de notificaciones in-app
 - [x] Sistema de monedas y transacciones
 
@@ -58,7 +58,7 @@ El proyecto Calixo PWA ha sido **completado exitosamente** según toda la docume
 - [x] Cola de moderación de reportes
 - [x] Configuración del sistema
 - [x] Gestión de cupones
-- [x] Dashboard de subscripciones
+- [x] Dashboard de Suscripciones
 - [x] Analytics dashboard (DAU, WAU, MAU)
 
 ### ✅ PWA Features

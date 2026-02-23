@@ -134,7 +134,7 @@ En Supabase Dashboard → Authentication → Policies, verifica que todas las ta
 - [ ] **Retos se pueden iniciar y completar**
 - [ ] **Tienda funciona** (compras con monedas)
 - [ ] **Feed social carga posts**
-- [ ] **Subscripciones Stripe funcionan**
+- [ ] **Suscripciones Stripe funcionan**
 - [ ] **PWA se puede instalar**
 - [ ] **Service Worker está activo** (verificar en DevTools)
 - [ ] **Offline mode funciona**

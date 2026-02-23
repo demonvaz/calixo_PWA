@@ -41,6 +41,7 @@ export default async function EditCouponPage({
     maxUses: coupon.max_uses,
     validUntil: coupon.valid_until,
     isActive: coupon.is_active ?? true,
+    brandImage: coupon.brand_image || null,
   };
 
   return (

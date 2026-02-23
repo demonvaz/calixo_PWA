@@ -4,11 +4,11 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 const challengeSchema = z.object({
-  type: z.enum(['daily', 'focus', 'social']),
+  type: z.literal('daily'),
   title: z.string().min(1).max(200),
   description: z.string().optional(),
   reward: z.number().int().min(0),
-  durationMinutes: z.number().int().min(1).optional(),
+  durationMinutes: z.number().int().min(1),
   isActive: z.boolean().default(true),
 });
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         title: validatedData.title,
         description: validatedData.description || null,
         reward: validatedData.reward,
-        duration_minutes: validatedData.durationMinutes ?? null,
+        duration_minutes: validatedData.durationMinutes,
         is_active: validatedData.isActive,
       })
       .select()

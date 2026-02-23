@@ -20,7 +20,7 @@ docs/
 │   ├── PHASE_5_SUMMARY.md            # ✅ Avatar CALI
 │   ├── PHASE_6_SUMMARY.md            # ✅ Tienda y Monedas
 │   ├── PHASE_7_SUMMARY.md            # ✅ Feed Social
-│   ├── PHASE_8_SUMMARY.md            # ✅ Subscripciones Stripe
+│   ├── PHASE_8_SUMMARY.md            # ✅ Suscripciones Stripe
 │   ├── PHASE_9_SUMMARY.md            # ✅ Notificaciones
 │   ├── PHASE_10_SUMMARY.md           # ✅ Panel Admin (NUEVO)
 │   ├── PHASE_11_SUMMARY.md           # ✅ PWA Features

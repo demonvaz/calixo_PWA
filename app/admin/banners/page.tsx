@@ -26,7 +26,7 @@ export default async function AdminBannersPage() {
         action={{ label: 'Crear banner', href: '/admin/banners/new' }}
       />
 
-      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm overflow-hidden">
         {(!banners || banners.length === 0) ? (
           <AdminEmpty message="No hay banners. Crea el primero." />
         ) : (

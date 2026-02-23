@@ -13,6 +13,7 @@ const couponSchema = z.object({
   validFrom: z.string().datetime().optional(),
   validUntil: z.string().datetime(),
   isActive: z.boolean().default(true),
+  brandImage: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
 });
 
 /**
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
         description: validatedData.description || null,
         price: validatedData.price,
         max_uses: validatedData.maxUses || null,
+        brand_image: (validatedData.brandImage && validatedData.brandImage.trim()) ? validatedData.brandImage.trim() : null,
         valid_from: validatedData.validFrom ? validatedData.validFrom : new Date().toISOString(),
         valid_until: validatedData.validUntil,
         is_active: validatedData.isActive,

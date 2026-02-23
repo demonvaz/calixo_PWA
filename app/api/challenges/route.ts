@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getDateKey } from '@/lib/challenge-date';
+import { getDateKey, getDateKeyForTimestamp } from '@/lib/challenge-date';
 
 /** PRNG determinístico con semilla (mismo seed = misma secuencia) */
 function seededRandom(seed: string): () => number {
@@ -118,20 +118,20 @@ export async function GET(request: NextRequest) {
         maxDailyChallenges = userData.is_premium ? 3 : 1;
 
         // Get today's challenges count (excluding canceled challenges)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        // Usa la misma definición de "día" que getDateKey: 2:00 AM Madrid
+        const dateKey = getDateKey();
+        const threeDaysAgo = new Date();
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
-        const { data: todaysChallenges } = await supabase
+        const { data: recentChallenges } = await supabase
           .from('user_challenges')
-          .select('*')
+          .select('created_at')
           .eq('user_id', user.id)
           .not('status', 'in', '("canceled","not_claimed")')
-          .gte('created_at', today.toISOString())
-          .lt('created_at', tomorrow.toISOString());
+          .gte('created_at', threeDaysAgo.toISOString());
 
-        todaysChallengesCount = todaysChallenges?.length || 0;
+        todaysChallengesCount =
+          recentChallenges?.filter((uc) => getDateKeyForTimestamp(uc.created_at) === dateKey).length ?? 0;
 
         // Get active challenge IDs to exclude from the list
         const { data: activeChallenges } = await supabase

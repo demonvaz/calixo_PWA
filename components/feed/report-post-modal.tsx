@@ -55,7 +55,7 @@ export function ReportPostModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
       onClick={onClose}
     >
       <div

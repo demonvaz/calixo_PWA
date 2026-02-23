@@ -18,7 +18,7 @@ export default async function AdminLayout({
     <div className="min-h-screen bg-neutral/5">
       <AdminSidebar role={permissions.role!} />
       <div className="lg:ml-56 min-h-screen flex flex-col">
-        <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-neutral/10 px-4 sm:px-6 py-3 flex items-center justify-end pt-14 lg:pt-3">
+        <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-neutral/10 shadow-sm px-4 sm:px-6 py-3 flex items-center justify-end pt-14 lg:pt-3">
           <ModeToggle currentRole={permissions.role!} />
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>

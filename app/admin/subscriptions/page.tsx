@@ -47,21 +47,21 @@ export default async function AdminSubscriptionsPage() {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader title="Subscripciones" subtitle="Estadísticas y gestión Stripe" />
+      <AdminPageHeader title="Suscripciones" subtitle="Estadísticas y gestión Stripe" />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <AdminStatCard label="Activas" value={stats.totalActive || 0} icon="💳" />
+        <AdminStatCard label="Activas" value={stats.totalActive || 0} />
         <AdminStatCard label="Canceladas" value={stats.totalCanceled || 0} />
         <AdminStatCard label="MRR" value={`$${(stats.mrr || 0).toFixed(2)}`} />
         <AdminStatCard label="ARR" value={`$${(stats.arr || 0).toFixed(2)}`} />
       </div>
 
-      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-neutral/10">
-          <h3 className="text-sm font-semibold text-text-dark">Todas las subscripciones</h3>
+          <h3 className="text-sm font-semibold text-text-dark">Todas las Suscripciones</h3>
         </div>
         {allSubscriptions.length === 0 ? (
-          <AdminEmpty message="No hay subscripciones" />
+          <AdminEmpty message="No hay Suscripciones" />
         ) : (
           <>
             <div className="overflow-x-auto hidden sm:block">

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { useToast } from '@/components/ui/toast';
 
 interface Report {
   id: number;
@@ -17,6 +18,7 @@ interface Report {
 }
 
 export function ModerationQueue() {
+  const toast = useToast();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [resolvingId, setResolvingId] = useState<number | null>(null);
@@ -81,6 +83,7 @@ export function ModerationQueue() {
         throw new Error(data.error || 'Error al resolver');
       }
 
+      toast.success(modalAction === 'approve' ? 'Reporte aprobado' : 'Reporte rechazado');
       closeModal();
       fetchReports();
     } catch (err) {
@@ -100,7 +103,7 @@ export function ModerationQueue() {
 
   return (
     <>
-      <div className="rounded-xl border border-neutral/10 bg-white p-4 sm:p-6">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm p-4 sm:p-6">
         {reports.length === 0 ? (
           <div className="text-center py-8 text-neutral">
             No hay reportes pendientes
@@ -110,7 +113,7 @@ export function ModerationQueue() {
             {reports.map((report) => (
               <div
                 key={report.id}
-                className="border border-neutral/20 rounded-lg p-4 space-y-3"
+                className="border border-neutral/10 rounded-xl p-4 space-y-3 hover:bg-neutral/5 transition-colors"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -161,7 +164,7 @@ export function ModerationQueue() {
       {/* Modal para descripción de moderación */}
       {modalReport && modalAction && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
           onClick={closeModal}
         >
           <div
@@ -180,7 +183,7 @@ export function ModerationQueue() {
               value={moderationNote}
               onChange={(e) => setModerationNote(e.target.value)}
               placeholder="Descripción de la decisión de moderación..."
-              className="w-full px-3 py-2 text-sm border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              className="w-full px-4 py-2.5 text-sm border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark placeholder:text-neutral resize-none"
               rows={4}
             />
             {error && (

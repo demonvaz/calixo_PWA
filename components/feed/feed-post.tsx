@@ -353,7 +353,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
             <div
               className={cn(
                 'fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6',
-                'bg-black/90 backdrop-blur-sm',
+                'bg-black/80 backdrop-blur-md',
                 'transition-opacity duration-300',
                 'opacity-100'
               )}

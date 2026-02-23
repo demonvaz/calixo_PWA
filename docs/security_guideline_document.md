@@ -125,7 +125,7 @@ A continuación se presenta un plan de alto nivel dividido en fases que cubre ta
 
 ---
 
-## 8. Subscripciones con Stripe
+## 8. Suscripciones con Stripe
 
 ### Tareas
 - Integrar Stripe Checkout para planes mensual/anual.

@@ -18,7 +18,7 @@ docs/
 │   ├── PHASE_5_SUMMARY.md            # Fase 5: Avatar CALI
 │   ├── PHASE_6_SUMMARY.md            # Fase 6: Tienda y Monedas
 │   ├── PHASE_7_SUMMARY.md            # Fase 7: Feed Social
-│   ├── PHASE_8_SUMMARY.md            # Fase 8: Subscripciones
+│   ├── PHASE_8_SUMMARY.md            # Fase 8: Suscripciones
 │   ├── PHASE_9_SUMMARY.md            # Fase 9: Notificaciones
 │   ├── PHASE_10_SUMMARY.md          # Fase 10: Panel Admin
 │   ├── PHASE_11_SUMMARY.md          # Fase 11: PWA Features

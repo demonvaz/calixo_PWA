@@ -109,14 +109,14 @@ function ToastItem({
   const getToastStyles = () => {
     switch (toast.type) {
       case 'success':
-        return 'bg-complementary-emerald/20 md:bg-complementary-emerald/10 border-complementary-emerald/40 md:border-complementary-emerald/30 text-complementary-emerald-dark';
+        return 'bg-white border-complementary-emerald text-complementary-emerald-dark shadow-xl';
       case 'error':
-        return 'bg-primary/20 md:bg-primary/10 border-primary/40 md:border-primary/30 text-primary-dark';
+        return 'bg-white border-primary text-primary-dark shadow-xl';
       case 'warning':
-        return 'bg-accent-yellow/20 md:bg-accent-yellow/10 border-accent-yellow/40 md:border-accent-yellow/30 text-accent-yellow-dark';
+        return 'bg-white border-accent-yellow text-accent-yellow-dark shadow-xl';
       case 'info':
       default:
-        return 'bg-primary/20 md:bg-primary/10 border-primary/40 md:border-primary/30 text-primary-dark';
+        return 'bg-white border-primary text-primary-dark shadow-xl';
     }
   };
 
@@ -159,9 +159,8 @@ function ToastItem({
   return (
     <div
       className={cn(
-        'pointer-events-auto relative flex items-start gap-3 rounded-xl border p-4 shadow-lg',
+        'pointer-events-auto relative flex items-start gap-3 rounded-xl border-2 p-4',
         'animate-fade-in-up',
-        'backdrop-blur-none md:backdrop-blur-sm',
         getToastStyles()
       )}
       role="alert"

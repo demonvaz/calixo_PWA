@@ -27,7 +27,7 @@ export default async function AdminChallengesPage() {
         action={{ label: 'Crear reto', href: '/admin/challenges/new' }}
       />
 
-      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm overflow-hidden">
         {challenges.length === 0 ? (
           <AdminEmpty message="No hay retos. Crea el primero." />
         ) : (

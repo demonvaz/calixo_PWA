@@ -18,30 +18,38 @@ export async function updateSession(request: NextRequest) {
   // So we use the default fetch (even if APP_ENV = CAJA)
   // The server-side clients (in server.ts) will handle SSL bypass for Node.js runtime
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value);
-            supabaseResponse.cookies.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
+  let user: { email?: string; email_confirmed_at?: string | null } | null = null;
 
-  // Refresh session if it exists - getUser() automatically refreshes the session
-  // This is important for session persistence across page loads
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              request.cookies.set(name, value);
+              supabaseResponse.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+
+    // Refresh session if it exists - getUser() automatically refreshes the session
+    // This is important for session persistence across page loads
+    const {
+      data: { user: fetchedUser },
+    } = await supabase.auth.getUser();
+    user = fetchedUser;
+  } catch (err) {
+    // fetch failed (VPN, red, DNS, etc.) - continuar para que la página verifique auth
+    console.warn('Middleware: Supabase auth fetch failed, continuing request:', err instanceof Error ? err.message : err);
+    return supabaseResponse;
+  }
 
   // Protect routes that require authentication
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth');

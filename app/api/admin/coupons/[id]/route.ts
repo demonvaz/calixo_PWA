@@ -12,6 +12,7 @@ const couponUpdateSchema = z.object({
   maxUses: z.number().int().min(1).optional().nullable(),
   validUntil: z.string().datetime().optional(),
   isActive: z.boolean().optional(),
+  brandImage: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
 });
 
 /**
@@ -46,6 +47,7 @@ export async function PUT(
     if (validatedData.maxUses !== undefined) updateData.max_uses = validatedData.maxUses;
     if (validatedData.validUntil) updateData.valid_until = validatedData.validUntil;
     if (validatedData.isActive !== undefined) updateData.is_active = validatedData.isActive;
+    if (validatedData.brandImage !== undefined) updateData.brand_image = (validatedData.brandImage && String(validatedData.brandImage).trim()) ? String(validatedData.brandImage).trim() : null;
 
     const supabase = createServiceRoleClient();
     const { data: updatedCoupon, error } = await supabase

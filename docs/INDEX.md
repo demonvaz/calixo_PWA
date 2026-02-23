@@ -72,7 +72,7 @@ Resúmenes detallados de cada fase completada con estadísticas, archivos creado
   - Likes, comentarios, followers
   - ~1,550 líneas de código
 
-- **[Fase 8: Subscripciones Stripe](./phases/PHASE_8_SUMMARY.md)** ✅
+- **[Fase 8: Suscripciones Stripe](./phases/PHASE_8_SUMMARY.md)** ✅
   - Integración completa con Stripe
   - Checkout y webhooks
   - ~1,680 líneas de código
@@ -291,7 +291,7 @@ Iconos PWA:             8 iconos
 - ✅ Avatar CALI
 - ✅ Tienda y monedas
 - ✅ Feed social
-- ✅ Subscripciones Stripe
+- ✅ Suscripciones Stripe
 - ✅ Notificaciones
 - ✅ Panel Admin completo
 - ✅ PWA completa (offline, install, sync)

@@ -26,19 +26,19 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="rounded-xl border border-neutral/10 bg-white p-4">
+        <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm p-4 sm:p-5">
           <p className="text-xs text-neutral">Monedas ganadas</p>
           <p className="text-xl font-bold text-complementary-emerald font-serif mt-1">
             {(analytics.coins?.earned || 0).toLocaleString()}
           </p>
         </div>
-        <div className="rounded-xl border border-neutral/10 bg-white p-4">
+        <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm p-4 sm:p-5">
           <p className="text-xs text-neutral">Monedas gastadas</p>
           <p className="text-xl font-bold text-accent-red font-serif mt-1">
             {(analytics.coins?.spent || 0).toLocaleString()}
           </p>
         </div>
-        <div className="rounded-xl border border-neutral/10 bg-white p-4">
+        <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm p-4 sm:p-5">
           <p className="text-xs text-neutral">Neto</p>
           <p className="text-xl font-bold text-text-dark font-serif mt-1">
             {(analytics.coins?.net || 0).toLocaleString()}
@@ -46,7 +46,7 @@ export default async function AdminAnalyticsPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-neutral/10">
           <h3 className="text-sm font-semibold text-text-dark">Cupones más comprados</h3>
         </div>
@@ -69,7 +69,7 @@ export default async function AdminAnalyticsPage() {
         )}
       </div>
 
-      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-neutral/10">
           <h3 className="text-sm font-semibold text-text-dark">Posts más populares</h3>
         </div>

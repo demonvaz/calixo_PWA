@@ -54,7 +54,6 @@ export default async function EditBannerPage({
             sort_order: banner.sort_order,
             is_active: banner.is_active,
           }}
-          onSuccess={() => {}}
         />
       </div>
     </div>

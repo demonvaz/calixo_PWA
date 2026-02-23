@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 
 interface ChallengeFormProps {
   challenge?: {
@@ -18,6 +19,7 @@ interface ChallengeFormProps {
 
 export function ChallengeForm({ challenge }: ChallengeFormProps) {
   const router = useRouter();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +34,10 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.durationMinutes || formData.durationMinutes < 1) {
+      setError('La duración es obligatoria');
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -52,6 +58,7 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
         throw new Error(data.error || 'Error al guardar el reto');
       }
 
+      toast.success(challenge ? 'Reto actualizado correctamente' : 'Reto creado correctamente');
       router.push('/admin/challenges');
       router.refresh();
     } catch (err) {
@@ -62,30 +69,22 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
   };
 
   return (
-    <div className="rounded-xl border border-neutral/10 bg-white p-4 sm:p-6">
+    <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm p-4 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="p-4 bg-accent-red/10 border border-accent-red rounded-lg text-accent-red">
+          <div className="p-4 bg-accent-red/10 border border-accent-red rounded-xl text-accent-red">
             {error}
           </div>
         )}
 
         <div>
           <label className="block text-sm font-medium text-text-dark mb-2">
-            Tipo de Reto *
+            Tipo de Reto
           </label>
-          <select
-            value={formData.type}
-            onChange={(e) =>
-              setFormData({ ...formData, type: e.target.value as any })
-            }
-            className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            required
-          >
-            <option value="daily">Diario</option>
-            <option value="focus">Enfoque</option>
-            <option value="social">Social</option>
-          </select>
+          <p className="px-4 py-2.5 rounded-xl bg-neutral/5 text-text-dark text-sm">
+            {challenge ? (formData.type === 'daily' ? 'Diario' : formData.type === 'focus' ? 'Enfoque' : 'Social') : 'Diario'}
+          </p>
+          {!challenge && <input type="hidden" name="type" value="daily" />}
         </div>
 
         <div>
@@ -96,7 +95,7 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
             required
             maxLength={200}
           />
@@ -111,7 +110,7 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
-            className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
             rows={4}
           />
         </div>
@@ -126,32 +125,35 @@ export function ChallengeForm({ challenge }: ChallengeFormProps) {
             onChange={(e) =>
               setFormData({ ...formData, reward: parseInt(e.target.value) || 0 })
             }
-            className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
             required
             min={0}
           />
         </div>
 
-        {formData.type === 'focus' && (
-          <div>
-            <label className="block text-sm font-medium text-text-dark mb-2">
-              Duración (minutos)
-            </label>
-            <input
-              type="number"
-              value={formData.durationMinutes || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  durationMinutes: e.target.value ? parseInt(e.target.value) : null,
-                })
-              }
-              className="w-full px-4 py-2 border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              min={1}
-              max={1380}
-            />
-          </div>
-        )}
+        <div>
+          <label className="block text-sm font-medium text-text-dark mb-2">
+            Duración (minutos) *
+          </label>
+          <input
+            type="number"
+            value={formData.durationMinutes ?? ''}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                durationMinutes: e.target.value ? parseInt(e.target.value) : null,
+              })
+            }
+            placeholder="Ej: 25, 60"
+            className="w-full px-4 py-2.5 border border-neutral/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-text-dark"
+            min={1}
+            max={1380}
+            required
+          />
+          <p className="text-xs text-neutral mt-1">
+            Obligatorio. Máx. 1380 min (23 h).
+          </p>
+        </div>
 
         <div className="flex items-center gap-2">
           <input

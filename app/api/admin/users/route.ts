@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('users')
-      .select('id, display_name, is_premium, coins, streak, created_at, is_admin')
+      .select('id, display_name, is_premium, coins, avatar_energy, created_at, is_admin')
       .order('created_at', { ascending: false });
 
     if (search) {
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       displayName: u.display_name || null,
       isPremium: u.is_premium ?? false,
       coins: u.coins ?? 0,
-      streak: u.streak ?? 0,
+      energy: u.avatar_energy ?? 100,
       createdAt: u.created_at,
       isAdmin: u.is_admin ?? false,
     }));

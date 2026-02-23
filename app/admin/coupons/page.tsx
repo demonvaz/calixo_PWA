@@ -27,7 +27,7 @@ export default async function AdminCouponsPage() {
         action={{ label: 'Crear cupón', href: '/admin/coupons/new' }}
       />
 
-      <div className="rounded-xl border border-neutral/10 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-neutral/10 bg-white shadow-sm overflow-hidden">
         {coupons.length === 0 ? (
           <AdminEmpty message="No hay cupones. Crea el primero." />
         ) : (
