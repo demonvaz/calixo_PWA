@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { FollowersModal } from '@/components/profile/followers-modal';
 import { EnergyBanner } from '@/components/profile/energy-banner';
 import { PremiumBadge } from '@/components/profile/premium-badge';
+import { ReportUserModal } from '@/components/profile/report-user-modal';
 import Image from 'next/image';
 
 interface UserProfile {
@@ -86,6 +87,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followersModalType, setFollowersModalType] = useState<'followers' | 'following'>('followers');
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -295,16 +297,29 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
                     </span>
                   )}
                 </div>
-                {/* Botón Seguir / Editar perfil */}
-                <div className="flex justify-center sm:justify-end">
+                {/* Botón Seguir / Editar perfil / Reportar */}
+                <div className="flex justify-center sm:justify-end items-center gap-2">
                   {!isOwnProfile ? (
-                    <Button
-                      onClick={handleFollow}
-                      variant={isFollowing ? 'outline' : 'default'}
-                      className="flex-shrink-0"
-                    >
-                      {isFollowing ? 'Dejar de seguir' : 'Seguir'}
-                    </Button>
+                    <>
+                      {currentUserId && (
+                        <button
+                          type="button"
+                          onClick={() => setIsReportModalOpen(true)}
+                          className="text-sm text-neutral/70 hover:text-accent-red px-2 py-1 rounded transition-colors"
+                          title="Reportar usuario"
+                          aria-label="Reportar usuario"
+                        >
+                          Reportar
+                        </button>
+                      )}
+                      <Button
+                        onClick={handleFollow}
+                        variant={isFollowing ? 'outline' : 'default'}
+                        className="flex-shrink-0"
+                      >
+                        {isFollowing ? 'Dejar de seguir' : 'Seguir'}
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       onClick={() => router.push('/profile')}
@@ -365,6 +380,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
           type={followersModalType}
           userId={userId}
           onClose={() => setFollowersModalOpen(false)}
+        />
+
+        <ReportUserModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          reportedUserId={userId}
+          reportedUserName={profileData.profile.displayName}
         />
 
         {/* Timeline de publicaciones - grid simple */}

@@ -24,11 +24,12 @@ export async function GET(
     const { id } = await params;
     const feedItemId = parseInt(id);
 
-    // Get comments
+    // Get comments (excluir ocultos por moderación)
     const { data: comments, error: commentsError } = await supabase
       .from('feed_comments')
       .select('*')
       .eq('feed_item_id', feedItemId)
+      .or('is_hidden.eq.false,is_hidden.is.null')
       .order('created_at', { ascending: false });
 
     if (commentsError) {

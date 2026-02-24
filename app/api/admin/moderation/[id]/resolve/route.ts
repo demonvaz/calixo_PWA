@@ -55,6 +55,14 @@ export async function PUT(
         .eq('id', report.feed_item_id);
     }
 
+    // Si aprobar y hay feed_comment_id: ocultar el comentario
+    if (validatedData.action === 'approve' && (report as { feed_comment_id?: number }).feed_comment_id) {
+      await supabase
+        .from('feed_comments')
+        .update({ is_hidden: true })
+        .eq('id', (report as { feed_comment_id: number }).feed_comment_id);
+    }
+
     // Actualizar el reporte con status y nota de moderación
     const { data: updatedReport, error: updateError } = await supabase
       .from('reports')

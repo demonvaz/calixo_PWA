@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Spinner } from '@/components/ui/spinner';
 import { formatMentions } from '@/lib/utils/mentions';
+import { ReportCommentModal } from './report-comment-modal';
 
 interface Comment {
   id: number;
@@ -27,6 +28,7 @@ export function FeedComments({ feedItemId, currentUserId, onCommentAdded, isExpa
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [reportCommentId, setReportCommentId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -141,6 +143,20 @@ export function FeedComments({ feedItemId, currentUserId, onCommentAdded, isExpa
                     <span className="text-xs text-gray-500">
                       {formatDate(comment.createdAt)}
                     </span>
+                    {comment.userId !== currentUserId && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReportCommentId(comment.id);
+                        }}
+                        className="text-xs text-neutral/70 hover:text-neutral ml-auto"
+                        title="Reportar comentario"
+                        aria-label="Reportar comentario"
+                      >
+                        Reportar
+                      </button>
+                    )}
                   </div>
                   <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
                     {formatMentions(comment.comment).map((part, idx) => {
@@ -189,6 +205,12 @@ export function FeedComments({ feedItemId, currentUserId, onCommentAdded, isExpa
           </Button>
         </form>
       )}
+
+      <ReportCommentModal
+        isOpen={reportCommentId !== null}
+        onClose={() => setReportCommentId(null)}
+        feedCommentId={reportCommentId ?? 0}
+      />
     </div>
   );
 }

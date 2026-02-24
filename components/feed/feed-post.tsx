@@ -274,11 +274,11 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
       {...(!standalone && { onClick: handlePostClick })}
     >
       {/* Header */}
-      <CardHeader className="pb-3" data-no-navigate>
+      <CardHeader className="pb-2 md:pb-3 px-4 md:px-6 pt-4 md:pt-6" data-no-navigate>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             {post.profile?.profilePhotoUrl ? (
-              <div className="relative w-10 h-10 rounded-full overflow-hidden bg-neutral/10 flex items-center justify-center">
+              <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-neutral/10 flex items-center justify-center flex-shrink-0">
                 <Image
                   src={post.profile.profilePhotoUrl}
                   alt={post.profile.displayName || 'Usuario'}
@@ -287,7 +287,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
                 />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-xs md:text-sm flex-shrink-0">
                 {post.profile?.displayName?.[0]?.toUpperCase() || 'U'}
               </div>
             )}
@@ -305,7 +305,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
                   </span>
                 )}
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-[10px] md:text-xs text-gray-500">
                 {formatDate(post.feedItem.createdAt)}
               </div>
             </div>
@@ -315,7 +315,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
 
       {/* Challenge Info - Minimalist */}
       {post.challenge && (
-        <div className="px-6 pt-2 pb-3 border-b border-gray-100" data-no-navigate>
+        <div className="px-4 md:px-6 pt-1 md:pt-2 pb-2 md:pb-3 border-b border-gray-100" data-no-navigate>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="text-base">{getChallengeTypeIcon(post.challenge.type)}</span>
             <span className="font-medium text-gray-900">{post.challenge.title}</span>
@@ -333,7 +333,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
       {post.feedItem.imageUrl && (
         <>
           <div 
-            className="relative w-full md:max-w-md md:mx-auto aspect-square bg-gray-100 cursor-pointer"
+            className="relative w-full md:max-w-md md:mx-auto aspect-[4/3] md:aspect-square bg-gray-100 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               setIsImageModalOpen(true);
@@ -413,7 +413,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
       )}
 
       {/* Content */}
-      <CardContent className="pt-4">
+      <CardContent className="pt-3 md:pt-4 px-4 md:px-6">
         {post.feedItem.note && (
           <p className="text-gray-700 whitespace-pre-wrap">
             {post.feedItem.note}
@@ -422,7 +422,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
       </CardContent>
 
       {/* Footer */}
-      <CardFooter className="flex justify-between border-t pt-3" data-no-navigate>
+      <CardFooter className="flex justify-between border-t pt-2 md:pt-3 px-4 md:px-6" data-no-navigate>
         <div className="flex gap-4">
           <Button
             variant="ghost"
@@ -472,7 +472,7 @@ export function FeedPost({ post, currentUserId, onLike, onCommentAdded, standalo
 
       {/* Comments Section - solo cuando está desplegado */}
       {currentUserId && showComments && (
-        <div className="px-6 pb-4" data-no-navigate>
+        <div className="px-4 md:px-6 pb-4" data-no-navigate>
           <FeedComments
             feedItemId={post.feedItem.id}
             currentUserId={currentUserId}

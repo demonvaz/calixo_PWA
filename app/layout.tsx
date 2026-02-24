@@ -46,7 +46,7 @@ export default function RootLayout({
           <ConfirmDialogProvider>
             <SkipLink />
             <MainNavigation />
-            <div id="main-content" className="flex-1 pb-16 md:pb-0">
+            <div id="main-content" className="flex-1 pb-[max(4rem,calc(4rem+env(safe-area-inset-bottom)))] md:pb-0">
               <ServiceWorkerRegister />
               {children}
             </div>

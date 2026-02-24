@@ -5,6 +5,7 @@ import { z } from 'zod';
 const reportSchema = z.object({
   reportedUserId: z.string().uuid().optional(),
   feedItemId: z.number().int().optional(),
+  feedCommentId: z.number().int().optional(),
   reason: z.string().min(1).max(500),
   description: z.string().optional(),
 });
@@ -27,10 +28,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = reportSchema.parse(body);
 
-    // At least one of reportedUserId or feedItemId must be provided
-    if (!validatedData.reportedUserId && !validatedData.feedItemId) {
+    // At least one of reportedUserId, feedItemId or feedCommentId must be provided
+    if (!validatedData.reportedUserId && !validatedData.feedItemId && !validatedData.feedCommentId) {
       return NextResponse.json(
-        { error: 'Must report either a user or a feed item' },
+        { error: 'Debes reportar un usuario, una publicación o un comentario' },
         { status: 400 }
       );
     }
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
         reporter_id: user.id,
         reported_user_id: validatedData.reportedUserId || null,
         feed_item_id: validatedData.feedItemId || null,
+        feed_comment_id: validatedData.feedCommentId || null,
         reason: validatedData.reason,
         description: validatedData.description || null,
         status: 'pending',
@@ -57,6 +59,7 @@ export async function POST(request: NextRequest) {
       reporterId: newReport.reporter_id,
       reportedUserId: newReport.reported_user_id,
       feedItemId: newReport.feed_item_id,
+      feedCommentId: (newReport as { feed_comment_id?: number }).feed_comment_id ?? null,
       reason: newReport.reason,
       description: newReport.description,
       status: newReport.status,

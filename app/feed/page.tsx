@@ -133,11 +133,11 @@ export default function FeedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
+    <div className="min-h-screen bg-gray-50 py-3 md:py-8 px-3 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-xl md:text-4xl font-bold text-gray-900 mb-2">
             Feed Social
           </h1>
 
@@ -201,7 +201,7 @@ export default function FeedPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {feedData.feedItems.flatMap((post, index) => {
               const items: React.ReactNode[] = [];
               // Insertar CalixoFeedCard cada 10 publicaciones (después de la 10ª, 20ª, etc.)
