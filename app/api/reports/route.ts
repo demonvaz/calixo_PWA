@@ -7,7 +7,7 @@ const reportSchema = z.object({
   feedItemId: z.number().int().optional(),
   feedCommentId: z.number().int().optional(),
   reason: z.string().min(1).max(500),
-  description: z.string().optional(),
+  description: z.string().max(500).optional(),
 });
 
 /**
@@ -33,6 +33,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Debes reportar un usuario, una publicación o un comentario' },
         { status: 400 }
+      );
+    }
+
+    // Evitar duplicados: mismo reporter + mismo objetivo + mismo motivo
+    let duplicateCheck = supabase
+      .from('reports')
+      .select('id')
+      .eq('reporter_id', user.id)
+      .eq('reason', validatedData.reason);
+
+    if (validatedData.reportedUserId) {
+      duplicateCheck = duplicateCheck.eq('reported_user_id', validatedData.reportedUserId);
+    } else if (validatedData.feedItemId) {
+      duplicateCheck = duplicateCheck.eq('feed_item_id', validatedData.feedItemId);
+    } else if (validatedData.feedCommentId) {
+      duplicateCheck = duplicateCheck.eq('feed_comment_id', validatedData.feedCommentId);
+    }
+
+    const { data: existing } = await duplicateCheck.limit(1).maybeSingle();
+
+    if (existing) {
+      const target =
+        validatedData.reportedUserId
+          ? 'este usuario'
+          : validatedData.feedCommentId
+            ? 'este comentario'
+            : 'esta publicación';
+      return NextResponse.json(
+        {
+          error: `No se ha enviado el reporte porque ya tienes uno enviado para ${target} con el mismo motivo`,
+        },
+        { status: 409 }
       );
     }
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 
 const REPORT_REASONS = [
   { value: 'spam', label: 'Spam' },
@@ -26,7 +27,9 @@ export function ReportUserModal({
   reportedUserName,
   onReported,
 }: ReportUserModalProps) {
+  const toast = useToast();
   const [reason, setReason] = useState('spam');
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -37,7 +40,7 @@ export function ReportUserModal({
       const response = await fetch('/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportedUserId, reason }),
+        body: JSON.stringify({ reportedUserId, reason, description: description.trim() || undefined }),
       });
       if (response.ok) {
         setDone(true);
@@ -48,7 +51,8 @@ export function ReportUserModal({
         throw new Error(data.error || 'Error al reportar');
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al reportar');
+      toast.error(err instanceof Error ? err.message : 'Error al reportar');
+      onClose();
     } finally {
       setLoading(false);
     }
@@ -85,6 +89,14 @@ export function ReportUserModal({
                 </option>
               ))}
             </select>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Comentarios adicionales (opcional)"
+              maxLength={500}
+              rows={3}
+              className="w-full px-3 py-2 text-sm border border-neutral/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            />
             <div className="flex gap-2 justify-end">
               <Button type="button" variant="outline" size="sm" onClick={onClose}>
                 Cancelar
