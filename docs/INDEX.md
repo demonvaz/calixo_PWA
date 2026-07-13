@@ -28,6 +28,7 @@ docs/
 │   └── PROJECT_STATUS.md     # Dashboard con barras de progreso
 ├── setup/                    # Configuración e instalación
 ├── deployment/               # CI/CD y Vercel
+├── DATABASE_SCHEMA.md        # Esquema completo de Supabase
 ├── AUTH_IMPLEMENTATION.md    # Autenticación
 └── app_flow_document.md      # Flujos de usuario
 ```
@@ -61,6 +62,8 @@ Scripts SQL en `setup/` (ejecutar en Supabase SQL Editor):
 
 Migraciones versionadas: `supabase/migrations/`
 
+Esquema completo documentado: **[DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)**
+
 ---
 
 ## Deployment
@@ -76,6 +79,7 @@ Migraciones versionadas: `supabase/migrations/`
 
 | Documento | Descripción |
 |-----------|-------------|
+| [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) | Esquema completo de BD: tablas, enums, RLS, triggers |
 | [AUTH_IMPLEMENTATION.md](./AUTH_IMPLEMENTATION.md) | Auth con Supabase, middleware, flujos |
 | [app_flow_document.md](./app_flow_document.md) | Flujos de usuario y journeys |
 

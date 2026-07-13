@@ -32,6 +32,7 @@ docs/
 │   ├── DEPLOYMENT_GUIDE.md
 │   └── VERCEL_SETUP.md
 │
+├── DATABASE_SCHEMA.md            # Esquema completo de Supabase
 ├── AUTH_IMPLEMENTATION.md        # Autenticación
 └── app_flow_document.md          # Flujos de usuario
 ```
@@ -46,7 +47,7 @@ docs/
 
 **Deploy:** [Deployment Guide](./deployment/DEPLOYMENT_GUIDE.md) · [Vercel Setup](./deployment/VERCEL_SETUP.md)
 
-**Supabase:** Migraciones en `supabase/migrations/` + scripts SQL en `setup/`
+**Supabase:** [Esquema de BD](./DATABASE_SCHEMA.md) · Migraciones en `supabase/migrations/` · Scripts SQL en `setup/`
 
 ---
 
