@@ -353,7 +353,7 @@ APP_ENV=PRO
 
 - [Stripe Testing Guide](https://stripe.com/docs/testing)
 - [Next.js Environment Variables](https://nextjs.org/docs/app/building-your-application/configuring/environment-variables)
-- [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md)
+- [README_ENV.md](./README_ENV.md)
 
 ---
 

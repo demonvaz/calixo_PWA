@@ -8,7 +8,11 @@
 [![Stripe](https://img.shields.io/badge/Stripe-Payments-purple)](https://stripe.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Estado del Proyecto:** ✅ **COMPLETO - LISTO PARA PRODUCCIÓN** - **13/13 Fases Completadas (100%)**
+**Estado del Proyecto:** 🟡 **MVP avanzado (~65%)** — Ver [estado detallado](docs/progress/PROJECT_STATUS.md)
+
+```
+Progreso global:  ████████████████░░░░░░░░░░░░░░░░░░░░  65%
+```
 
 ---
 
@@ -25,21 +29,23 @@ Calixo es una PWA (Progressive Web App) que ayuda a los usuarios a reducir su us
 
 ## ✨ Funcionalidades Principales
 
-### ✅ Implementado
-- 🔐 **Autenticación completa** con Supabase
-- 🎯 **3 tipos de retos**: Diarios, Enfoque, y Sociales
-- 🎨 **Editor de avatar** con 6 categorías de personalización
-- 🏪 **Tienda virtual** con +300 items únicos
-- 📱 **Feed social** con posts, likes y comentarios
-- 💳 **Suscripciones** con Stripe (mensual y anual)
-- 🔔 **Notificaciones** in-app con 6 tipos
-- 🪙 **Sistema de monedas** y recompensas
-- 📊 **Tracking de progreso** y rachas
+### ✅ Implementado (funcional)
+- 🔐 **Autenticación** con Supabase (email, Google OAuth) — `████████░░` 78%
+- 🎯 **Retos diarios y enfoque** con timer y recompensas — `████████░░` 85%
+- 🎨 **Editor de avatar CALI** (6 categorías) — `██████░░░░` 62%
+- 🏪 **Tienda de cupones** con monedas — `████████░░` 88%
+- 📱 **Feed social** (posts, likes, comentarios, followers) — `████████░░` 78%
+- 💳 **Suscripciones Stripe** (mensual y anual) — `████████░░` 84%
+- 🔔 **Notificaciones in-app** — `█████░░░░░` 52%
+- 👤 **Perfil de usuario** completo — `████████░░` 84%
+- 🛡️ **Panel de administración** — `████████░░` 86%
 
-### ✅ Completado
-- ✅ Panel de administración completo
-- ✅ Accessibility & i18n implementado
-- ✅ CI/CD & Deployment configurado
+### ⚠️ Parcial o pendiente
+- 👥 Retos sociales (invitaciones rotas) — `████░░░░░░` 45%
+- 📲 PWA instalable (iconos faltantes) — `██████░░░░` 58%
+- ♿ Accesibilidad WCAG — `███░░░░░░░` 32%
+- 🌍 i18n (solo español hardcodeado) — `░░░░░░░░░░` 5%
+- 🧪 Tests automatizados — `░░░░░░░░░░` 0%
 
 ---
 
@@ -94,30 +100,21 @@ http://localhost:3000
 ## 📚 Documentación
 
 ### 🔥 Inicio Rápido
-- **[Setup Guide](docs/setup/SETUP_SUMMARY.md)** - Instalación completa
-- **[Environment Variables](docs/setup/README_ENV.md)** - Configuración de entorno
+- **[Variables de entorno](docs/setup/README_ENV.md)** - Configuración de entorno
 - **[PRE vs PRO Mode](docs/setup/ENVIRONMENT_MODES_GUIDE.md)** - Modos de desarrollo
+- **[Estado del proyecto](docs/progress/PROJECT_STATUS.md)** - Dashboard con barras de progreso
 
-### 📖 Documentación Completa
-- **[Documentation Index](docs/INDEX.md)** - Índice completo de documentación
-- **[Project Status](docs/progress/PROJECT_STATUS.md)** - Estado actual del proyecto
-- **[Progress Report](docs/progress/PROGRESS_REPORT.md)** - Reporte de progreso
-
-### 🏗️ Arquitectura
-- **[Tech Stack](docs/tech_stack_document.md)** - Tecnologías utilizadas
-- **[Backend Structure](docs/backend_structure_document.md)** - Arquitectura del backend
-- **[Frontend Guidelines](docs/frontend_guidelines_document.md)** - Guías de frontend
-
-### 🔐 Seguridad
-- **[Security Guidelines](docs/security_guideline_document.md)** - Políticas de seguridad
+### 📖 Documentación
+- **[Documentation Index](docs/INDEX.md)** - Índice completo
 - **[Auth Implementation](docs/AUTH_IMPLEMENTATION.md)** - Sistema de autenticación
+- **[App Flow](docs/app_flow_document.md)** - Flujos de usuario
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
 ### Frontend
-- **Next.js 14** - Framework React con App Router
+- **Next.js 16** - Framework React con App Router
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Utility-first CSS
 - **shadcn/ui** - Component library
@@ -125,12 +122,12 @@ http://localhost:3000
 ### Backend
 - **Next.js API Routes** - REST API
 - **Supabase** - Auth, Database (PostgreSQL), Storage
-- **Drizzle ORM** - Type-safe database queries
+- **Supabase Client** - Queries type-safe vía Supabase JS
 - **Stripe** - Payment processing
 
 ### DevOps
 - **Vercel** - Hosting y deployment
-- **GitHub Actions** - CI/CD (próximamente)
+- **GitHub Actions** - CI/CD (lint, type-check, build, deploy)
 
 ---
 
@@ -156,11 +153,10 @@ calixo/
 │   ├── schema.ts         # Drizzle schema
 │   ├── rls-policies.sql  # Row Level Security
 │   └── seed.ts           # Database seeding
-├── docs/                 # Documentation
-│   ├── phases/          # Phase summaries
-│   ├── setup/           # Setup guides
-│   ├── progress/        # Progress reports
-│   └── ...
+├── docs/                 # Documentación
+│   ├── progress/        # Estado del proyecto
+│   ├── setup/           # Guías de configuración
+│   └── deployment/      # Deployment
 ├── lib/                 # Utilities
 │   ├── supabase/       # Supabase clients
 │   ├── stripe/         # Stripe config
@@ -271,14 +267,16 @@ APP_ENV=PRO  # Stripe real, producción
 ## 📊 Estadísticas del Proyecto
 
 ```
-Fases Completadas:      13 / 13 (100%)
-Archivos Creados:       ~150+ archivos
-Líneas de Código:       ~20,000+ líneas
-Componentes React:      30+ componentes
-API Endpoints:          35+ endpoints
-Documentación:          25+ documentos
-Tiempo de Desarrollo:   Completado
+Progreso global:        ████████████████░░░░░░░░░░░░░░░░░░░░  65%
+Archivos:               ~280 archivos
+API Endpoints:          ~67 endpoints
+Componentes React:      ~80+ componentes
+Migraciones Supabase:   6 (parciales)
+Tests:                  0
+Documentación:          44+ documentos
 ```
+
+Ver dashboard completo: [docs/progress/PROJECT_STATUS.md](docs/progress/PROJECT_STATUS.md)
 
 ---
 
@@ -295,17 +293,25 @@ Tiempo de Desarrollo:   Completado
 - [x] Suscripciones
 - [x] Notificaciones
 
-### ✅ Todas las Fases Completadas
-- [x] **Fase 10:** Panel de Administración ✅
-- [x] **Fase 11:** PWA Avanzada (offline, installable) ✅
-- [x] **Fase 12:** Accessibility & i18n ✅
-- [x] **Fase 13:** CI/CD & Deployment ✅
+### 🟡 Fases con gaps conocidos
+- [~] **Fase 3:** BD — tablas sin migración (`52%`)
+- [~] **Fase 4:** Retos sociales rotos (`74%`)
+- [~] **Fase 5:** Avatar — compra inconsistente (`62%`)
+- [~] **Fase 11:** PWA — iconos faltantes (`58%`)
+- [~] **Fase 12:** a11y básico, i18n inexistente (`19%`)
 
-### 🚀 Próximas Mejoras (v1.1+)
+### 🔴 Bloqueantes para producción
+- [ ] Consolidar migraciones Supabase (todas las tablas + RLS)
+- [ ] Arreglar retos sociales y compra avatar
+- [ ] Generar iconos PWA
 - [ ] Tests automatizados
+- [ ] Completar reset password
+
+### 🚀 Mejoras futuras (v1.1+)
+- [ ] i18n real (next-intl)
 - [ ] Error monitoring (Sentry)
-- [ ] Analytics avanzado
 - [ ] Modo oscuro
+- [ ] Push notifications end-to-end
 
 ---
 
@@ -362,8 +368,7 @@ Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para más detal
 ## 📚 Recursos Adicionales
 
 - [Documentation Index](docs/INDEX.md) - Documentación completa
-- [Setup Guide](docs/setup/SETUP_SUMMARY.md) - Guía de instalación
-- [API Documentation](docs/backend_structure_document.md) - APIs disponibles
+- [Deployment Guide](docs/deployment/DEPLOYMENT_GUIDE.md) - Guía de deployment
 - [Contributing Guidelines](CONTRIBUTING.md) - Guía de contribución
 
 ---

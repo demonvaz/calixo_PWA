@@ -113,12 +113,7 @@ NEXT_PUBLIC_APP_URL=https://tudominio.com
 
 ## 📚 Documentación Completa
 
-Ver [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md) para:
-- Guía detallada de cada variable
-- Dónde obtener las claves
-- Configuración de webhooks
-- Troubleshooting
-- Mejores prácticas de seguridad
+Ver [ENVIRONMENT_MODES_GUIDE.md](./ENVIRONMENT_MODES_GUIDE.md) para detalle de PRE vs PRO y [DEPLOYMENT_GUIDE.md](../deployment/DEPLOYMENT_GUIDE.md) para webhooks y producción.
 
 ---
 
@@ -145,5 +140,5 @@ Ver [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md) para:
 
 ---
 
-**¿Más ayuda?** → [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md)
+**¿Más ayuda?** → [ENVIRONMENT_MODES_GUIDE.md](./ENVIRONMENT_MODES_GUIDE.md) · [DEPLOYMENT_GUIDE.md](../deployment/DEPLOYMENT_GUIDE.md)
 

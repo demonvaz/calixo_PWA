@@ -81,21 +81,8 @@ docs/         - Project documentation
 - Variables/code in English
 - Comments can be in English or Spanish
 
-## Implementation Phases
-Follow the implementation plan in `/docs/security_guideline_document.md`:
-1. Project Setup ✅
-2. Authentication
-3. Database & Schema
-4. Challenges System
-5. Avatar CALI
-6. In-app Currency & Store
-7. Social Feed & Profiles
-8. Stripe Subscriptions
-9. Notifications
-10. Admin Panel
-11. PWA Features
-12. Accessibility & i18n
-13. CI/CD & Deployment
+## Implementation Status
+See `/docs/progress/PROJECT_STATUS.md` for current progress (~65%) and known gaps.
 
 ## Best Practices
 - Write self-documenting code
