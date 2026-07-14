@@ -184,6 +184,21 @@ export default function SearchPage() {
     }
   };
 
+  const handleMessage = async (recipientId: string) => {
+    try {
+      const response = await fetch('/api/messages/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipientId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      router.push(`/messages/${data.conversationId}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al abrir chat');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
@@ -282,8 +297,15 @@ export default function SearchPage() {
                         </div>
                       </div>
 
-                      {/* Follow Button */}
-                      <div className="flex-shrink-0 w-full sm:w-auto">
+                      {/* Actions */}
+                      <div className="flex-shrink-0 w-full sm:w-auto flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => handleMessage(user.userId)}
+                          className="flex-1 sm:flex-none text-xs md:text-sm"
+                        >
+                          Mensaje
+                        </Button>
                         {pendingRequests[user.userId] || user.hasPendingRequest ? (
                           <Button
                             variant="outline"

@@ -24,7 +24,7 @@ export interface Profile {
 }
 
 // Challenge related types
-export type ChallengeType = 'daily' | 'focus' | 'social';
+export type ChallengeType = 'daily' | 'focus' | 'social' | 'group';
 export type ChallengeStatus = 'pending' | 'in_progress' | 'finished' | 'claimed' | 'completed' | 'failed' | 'canceled' | 'not_claimed';
 
 export interface Challenge {
@@ -140,5 +140,105 @@ export interface AdminUser {
 export interface Config {
   key: string;
   value: Record<string, unknown>;
+}
+
+// Messaging types
+export type MessageStatus = 'sent' | 'delivered' | 'seen';
+
+export interface ReadReceiptUser {
+  userId: string;
+  displayName: string;
+  profilePhotoUrl: string | null;
+  readAt?: string | null;
+}
+
+export interface ConversationPreview {
+  id: string;
+  updatedAt: string;
+  otherUser: {
+    id: string;
+    displayName: string;
+    profilePhotoPath?: string | null;
+    isPremium?: boolean;
+  } | null;
+  lastMessage: {
+    id: number;
+    content: string;
+    senderId: string;
+    status: MessageStatus;
+    createdAt: string;
+    isOwn: boolean;
+  } | null;
+  unreadCount: number;
+}
+
+export interface ChatMessage {
+  id: number;
+  senderId: string;
+  senderName?: string;
+  content: string;
+  imageUrl?: string | null;
+  status?: MessageStatus;
+  createdAt: string;
+  isOwn: boolean;
+  readBy?: ReadReceiptUser[];
+}
+
+// Group types
+export interface GroupPreview {
+  id: string;
+  name: string;
+  description?: string | null;
+  avatarPath?: string | null;
+  memberCount: number;
+  role?: string;
+  updatedAt: string;
+  lastMessage: {
+    content: string;
+    createdAt: string;
+    isOwn: boolean;
+  } | null;
+  unreadCount: number;
+}
+
+export interface GroupChallengeParticipant {
+  userId: string;
+  displayName?: string;
+  betAmount: number;
+  status: string;
+  failedAt?: string | null;
+  isMe?: boolean;
+}
+
+export interface GroupChallenge {
+  id: string;
+  groupId: string;
+  organizerId: string;
+  durationMinutes: number;
+  status: string;
+  baseReward: number;
+  totalPot: number;
+  weekKey: string;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  participants?: GroupChallengeParticipant[];
+}
+
+export interface GroupMemberStats {
+  userId: string;
+  displayName: string;
+  wins: number;
+  losses: number;
+  totalEarned: number;
+  successRate: number;
+}
+
+export interface GroupStats {
+  totalChallenges: number;
+  completedChallenges: number;
+  totalCoinsDistributed: number;
+  activeChallenge: GroupChallenge | null;
+  ranking: GroupMemberStats[];
+  recentChallenges: unknown[];
 }
 

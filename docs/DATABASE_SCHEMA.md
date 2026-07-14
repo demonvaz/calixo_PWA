@@ -34,6 +34,9 @@ Calixo usa **PostgreSQL** en Supabase con el esquema `public`. La identidad de u
 | **Retos** | `challenges`, `user_challenges`, `focus_sessions`, `social_sessions` | Catálogo, progreso, modo focus y retos sociales |
 | **Feed social** | `feed_items`, `feed_likes`, `feed_comments`, `feed_banners` | Publicaciones, interacciones y banners promocionales |
 | **Social graph** | `followers`, `follow_requests`, `notifications` | Seguimiento, solicitudes y avisos |
+| **Mensajería** | `conversations`, `conversation_participants`, `messages`, `message_read_receipts` | DMs privados |
+| **Grupos** | `chat_groups`, `group_members`, `group_invitations`, `group_messages`, `group_message_reads` | Grupos y chat grupal |
+| **Retos grupales** | `group_challenges`, `group_challenge_participants` | Retos con apuestas en grupos |
 | **Economía** | `transactions`, `coupons`, `user_coupons`, `store_items` | Monedas, tienda y cupones |
 | **Suscripciones** | `subscriptions` | Premium vía Stripe |
 | **Moderación** | `reports` | Reportes de usuarios, posts y comentarios |
@@ -610,6 +613,9 @@ Historial en Supabase (remoto). Migraciones locales en `supabase/migrations/`:
 | `20250218000001_user_challenges_not_claimed.sql` | Sistema confianza / claimed |
 | `20250223000001_coupons_brand_image.sql` | Imagen de marca cupones |
 | `20250224000001_reports_comments_restore.sql` | Reportes de comentarios |
+| `20260714000001_messaging_system.sql` | DMs: conversations, messages, read receipts |
+| `20260714000002_groups_system.sql` | Grupos: chat_groups, members, invitations, group_messages |
+| `20260714000003_group_challenges.sql` | Retos grupales, apuestas, participants |
 
 Migraciones adicionales aplicadas solo en remoto (ej. trust system, subscriptions, focus_sessions, reports…) — ver `list_migrations` en Supabase.
 

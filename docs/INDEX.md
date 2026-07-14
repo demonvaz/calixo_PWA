@@ -82,6 +82,9 @@ Esquema completo documentado: **[DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)**
 | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) | Esquema completo de BD: tablas, enums, RLS, triggers |
 | [AUTH_IMPLEMENTATION.md](./AUTH_IMPLEMENTATION.md) | Auth con Supabase, middleware, flujos |
 | [app_flow_document.md](./app_flow_document.md) | Flujos de usuario y journeys |
+| [MESSAGING.md](./MESSAGING.md) | Mensajes privados (DMs), estados enviado/entregado/visto |
+| [GROUPS.md](./GROUPS.md) | Grupos estilo WhatsApp, chat, invitaciones |
+| [GROUP_CHALLENGES.md](./GROUP_CHALLENGES.md) | Retos grupales, apuestas, Visibility API |
 
 ---
 

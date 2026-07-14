@@ -44,6 +44,7 @@ export default async function AdminDashboard() {
     ] : []),
     { href: '/admin/moderation', label: 'Moderación', badge: pendingReports },
     { href: '/admin/users', label: 'Usuarios' },
+    { href: '/admin/groups', label: 'Grupos' },
   ];
 
   return (

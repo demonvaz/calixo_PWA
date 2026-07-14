@@ -9,10 +9,13 @@ import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { NotificationBadge } from '@/components/notifications/notification-badge';
 import { ChallengeBadge } from '@/components/challenges/challenge-badge';
+import { MessagesBadge } from '@/components/messages/messages-badge';
 
 const navigationItems = [
   { href: '/feed', label: 'Feed' },
   { href: '/search', label: 'Búsqueda' },
+  { href: '/messages', label: 'Mensajes' },
+  { href: '/groups', label: 'Grupos' },
   { href: '/challenges', label: 'Retos' },
   { href: '/store', label: 'Tienda' },
   { href: '/profile', label: 'Perfil' },
@@ -35,9 +38,30 @@ const mobileNavigationItems = [
     href: '/search', 
     label: 'Búsqueda',
     icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <circle cx="11" cy="11" r="8"/>
         <path d="m21 21-4.35-4.35"/>
+      </svg>
+    )
+  },
+  { 
+    href: '/messages', 
+    label: 'Mensajes',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    )
+  },
+  { 
+    href: '/groups', 
+    label: 'Grupos',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
     )
   },
@@ -247,6 +271,7 @@ export function MainNavigation() {
                   (item.href === '/profile' && pathname === '/profile');
                 const isNotifications = item.href === '/notifications';
                 const isChallenges = item.href === '/challenges';
+                const isMessages = item.href === '/messages';
                 
                 return (
                   <Link
@@ -271,6 +296,11 @@ export function MainNavigation() {
                     {isNotifications && (
                       <span className="absolute top-0 right-0">
                         <NotificationBadge />
+                      </span>
+                    )}
+                    {isMessages && (
+                      <span className="absolute top-0 right-0">
+                        <MessagesBadge />
                       </span>
                     )}
                     {isChallenges && (
@@ -380,6 +410,7 @@ export function MainNavigation() {
               (item.href === '/profile' && pathname === '/profile');
             const isNotifications = item.href === '/notifications';
             const isChallenges = item.href === '/challenges';
+            const isMessages = item.href === '/messages';
             
             return (
               <Link
@@ -417,6 +448,11 @@ export function MainNavigation() {
                   {isNotifications && (
                     <span className="absolute top-0 right-0">
                       <NotificationBadge />
+                    </span>
+                  )}
+                  {isMessages && (
+                    <span className="absolute top-0 right-0">
+                      <MessagesBadge />
                     </span>
                   )}
                   {isChallenges && (

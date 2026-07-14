@@ -62,6 +62,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/notifications') ||
     request.nextUrl.pathname.startsWith('/store') ||
     request.nextUrl.pathname.startsWith('/subscription') ||
+    request.nextUrl.pathname.startsWith('/messages') ||
+    request.nextUrl.pathname.startsWith('/groups') ||
     (request.nextUrl.pathname === '/' && user); // Home page requires auth if user exists
 
   // Check if user email is verified

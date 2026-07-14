@@ -200,6 +200,21 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
     }
   };
 
+  const handleMessage = async () => {
+    try {
+      const response = await fetch('/api/messages/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipientId: userId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      router.push(`/messages/${data.conversationId}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al abrir chat');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -318,6 +333,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
                         className="flex-shrink-0"
                       >
                         {isFollowing ? 'Dejar de seguir' : 'Seguir'}
+                      </Button>
+                      <Button
+                        onClick={handleMessage}
+                        variant="outline"
+                        className="flex-shrink-0"
+                      >
+                        Mensaje
                       </Button>
                     </>
                   ) : (
