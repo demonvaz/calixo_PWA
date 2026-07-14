@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 
 interface AvatarPreviewProps {
-  equippedItems: Record<string, string>;
+  equippedItems?: Record<string, string>;
   energyLevel: 'alta' | 'media' | 'baja';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showLabel?: boolean;
@@ -29,7 +29,7 @@ const energyEmojis = {
 };
 
 export function AvatarPreview({
-  equippedItems,
+  equippedItems = {},
   energyLevel,
   size = 'md',
   showLabel = false,

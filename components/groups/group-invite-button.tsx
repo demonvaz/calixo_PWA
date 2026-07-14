@@ -7,9 +7,13 @@ import { useToast } from '@/components/ui/toast';
 
 interface GroupInviteButtonProps {
   groupId: string;
+  label?: string;
+  className?: string;
+  onInvited?: () => void;
+  showAddIcon?: boolean;
 }
 
-export function GroupInviteButton({ groupId }: GroupInviteButtonProps) {
+export function GroupInviteButton({ groupId, label = 'Invitar', className, onInvited, showAddIcon }: GroupInviteButtonProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{ userId: string; displayName: string }[]>([]);
@@ -44,6 +48,7 @@ export function GroupInviteButton({ groupId }: GroupInviteButtonProps) {
       setOpen(false);
       setQuery('');
       setResults([]);
+      onInvited?.();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error al invitar');
     }
@@ -53,10 +58,15 @@ export function GroupInviteButton({ groupId }: GroupInviteButtonProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="text-sm text-primary ml-auto"
+        className={className || 'text-sm text-primary ml-auto'}
         type="button"
       >
-        Invitar
+        {showAddIcon && (
+          <span className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-light flex-shrink-0">
+            +
+          </span>
+        )}
+        {label}
       </button>
     );
   }

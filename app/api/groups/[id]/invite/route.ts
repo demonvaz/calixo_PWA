@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { inviteMemberSchema } from '@/lib/validations/groups';
-import { MAX_GROUP_MEMBERS } from '@/lib/groups/constants';
+import { inviteGroupMember } from '@/lib/groups/invite-member';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -41,60 +41,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { inviteeId } = parsed.data;
 
-    const { data: existingMember } = await admin
-      .from('group_members')
-      .select('user_id')
-      .eq('group_id', groupId)
-      .eq('user_id', inviteeId)
-      .single();
-
-    if (existingMember) {
-      return NextResponse.json({ error: 'El usuario ya es miembro' }, { status: 400 });
+    const result = await inviteGroupMember(admin, groupId, user.id, inviteeId);
+    if ('error' in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
-    const { count: memberCount } = await admin
-      .from('group_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('group_id', groupId);
-
-    if ((memberCount || 0) >= MAX_GROUP_MEMBERS) {
-      return NextResponse.json(
-        { error: `El grupo ha alcanzado el máximo de ${MAX_GROUP_MEMBERS} miembros` },
-        { status: 400 }
-      );
-    }
-
-    const { data: invitation, error } = await admin
-      .from('group_invitations')
-      .upsert({
-        group_id: groupId,
-        inviter_id: user.id,
-        invitee_id: inviteeId,
-        status: 'pending',
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    const { data: group } = await admin.from('chat_groups').select('name').eq('id', groupId).single();
-    const { data: inviter } = await admin.from('users').select('display_name').eq('id', user.id).single();
-
-    await admin.from('notifications').insert({
-      user_id: inviteeId,
-      type: 'social',
-      title: 'Invitación a grupo',
-      message: `${inviter?.display_name || 'Usuario'} te invitó a "${group?.name}"`,
-      payload: {
-        type: 'group_invite',
-        groupId,
-        invitationId: invitation.id,
-        inviterId: user.id,
-      },
-      seen: false,
-    });
-
-    return NextResponse.json({ invitation });
+    return NextResponse.json({ invitation: result.invitation });
   } catch (error) {
     console.error('Error inviting member:', error);
     return NextResponse.json({ error: 'Error al invitar' }, { status: 500 });

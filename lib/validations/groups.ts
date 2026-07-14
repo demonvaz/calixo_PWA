@@ -1,8 +1,13 @@
 import { z } from 'zod';
+import { MAX_GROUP_MEMBERS } from '@/lib/groups/constants';
 
 export const createGroupSchema = z.object({
   name: z.string().min(2).max(100),
   description: z.string().max(500).optional(),
+  inviteIds: z
+    .array(z.string().uuid())
+    .max(MAX_GROUP_MEMBERS - 1, `Máximo ${MAX_GROUP_MEMBERS - 1} invitados`)
+    .optional(),
 });
 
 export const updateGroupSchema = z.object({

@@ -6,14 +6,24 @@ import type { ConversationPreview } from '@/types';
 
 interface ConversationListProps {
   conversations: ConversationPreview[];
+  onStartChat?: () => void;
 }
 
-export function ConversationList({ conversations }: ConversationListProps) {
+export function ConversationList({ conversations, onStartChat }: ConversationListProps) {
   if (conversations.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-500">
+      <div className="text-center py-16 text-gray-500 px-4">
         <p className="text-lg font-medium mb-2">Sin mensajes</p>
-        <p className="text-sm">Busca usuarios y envíales un mensaje</p>
+        <p className="text-sm mb-4">Busca usuarios y envíales un mensaje</p>
+        {onStartChat && (
+          <button
+            type="button"
+            onClick={onStartChat}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            Iniciar conversación
+          </button>
+        )}
       </div>
     );
   }
@@ -27,7 +37,7 @@ export function ConversationList({ conversations }: ConversationListProps) {
           className="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
         >
           <div className="relative flex-shrink-0">
-            <AvatarPreview energyLevel="alta" size={48} />
+            <AvatarPreview energyLevel="alta" equippedItems={{}} size="sm" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-baseline">

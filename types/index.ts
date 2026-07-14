@@ -185,6 +185,28 @@ export interface ChatMessage {
 }
 
 // Group types
+export interface GroupMember {
+  userId: string;
+  role: 'admin' | 'member';
+  joinedAt: string;
+  displayName?: string;
+  profilePhotoPath?: string | null;
+  profilePhotoUrl?: string | null;
+  isPremium?: boolean;
+}
+
+export interface GroupDetail {
+  id: string;
+  name: string;
+  description?: string | null;
+  avatarPath?: string | null;
+  createdBy?: string;
+  updatedAt?: string;
+  myRole: 'admin' | 'member';
+  myUserId: string;
+  members: GroupMember[];
+}
+
 export interface GroupPreview {
   id: string;
   name: string;

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createGroupSchema } from '@/lib/validations/groups';
+import { inviteGroupMember } from '@/lib/groups/invite-member';
+import { MAX_GROUP_MEMBERS } from '@/lib/groups/constants';
 
 /**
  * GET /api/groups
@@ -121,6 +123,39 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error || !group) throw error;
+
+    const inviteIds = parsed.data.inviteIds || [];
+    if (inviteIds.length > 0) {
+      if (inviteIds.includes(user.id)) {
+        return NextResponse.json({ error: 'No puedes invitarte a ti mismo' }, { status: 400 });
+      }
+
+      if (inviteIds.length > MAX_GROUP_MEMBERS - 1) {
+        return NextResponse.json(
+          { error: `Máximo ${MAX_GROUP_MEMBERS - 1} invitados al crear el grupo` },
+          { status: 400 }
+        );
+      }
+
+      const { data: validUsers } = await admin
+        .from('users')
+        .select('id')
+        .in('id', inviteIds);
+
+      if ((validUsers || []).length !== inviteIds.length) {
+        return NextResponse.json(
+          { error: 'Uno o más usuarios no son válidos' },
+          { status: 400 }
+        );
+      }
+
+      for (const inviteeId of inviteIds) {
+        const result = await inviteGroupMember(admin, group.id, user.id, inviteeId);
+        if ('error' in result && result.status !== 400) {
+          throw new Error(result.error);
+        }
+      }
+    }
 
     return NextResponse.json({
       group: {
